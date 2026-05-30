@@ -11,14 +11,18 @@ export default function App() {
   return (
     <BrowserRouter>
       <BookingProvider>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/masters" element={<MastersPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/slots" element={<SlotsPage />} />
-          <Route path="/confirm" element={<ConfirmationPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        <div style={{ backgroundColor: '#111111' }} className="min-h-screen">
+          <div className="mx-auto w-full max-w-md min-h-screen relative" style={{ backgroundColor: '#1a1a1a' }}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/masters" element={<MastersPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/slots" element={<SlotsPage />} />
+              <Route path="/confirm" element={<ConfirmationPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </div>
+        </div>
       </BookingProvider>
     </BrowserRouter>
   )
