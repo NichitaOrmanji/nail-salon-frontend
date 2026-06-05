@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
+import { useAuth } from '../context/AuthContext'
 
 // ——— Иконки ———
 
@@ -318,6 +319,7 @@ export default function HomePage() {
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 50%, #1a1a1a 100%)' }} />
 
         <button
+          onClick={() => navigate(isLoggedIn ? '/account' : '/profile')}
           className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
         >
