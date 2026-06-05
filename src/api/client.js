@@ -41,6 +41,6 @@ api.interceptors.response.use(
   }
 )
 
-export const SLUG = 'test-salon'
+export const SLUG = 'jcnails'
 
 export default api
