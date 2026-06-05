@@ -274,6 +274,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
 export default function HomePage() {
   const navigate = useNavigate()
   const { reset } = useBooking()
+  const { isLoggedIn } = useAuth()
   const [sheetOpen, setSheetOpen] = useState(false)
 
   function handleNavigate(path) {
