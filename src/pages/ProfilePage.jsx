@@ -1,19 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import PhoneField from '../components/layout/PhoneField'
 
 function IconBack() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M15 18l-6-6 6-6"/>
-    </svg>
-  )
-}
-
-function IconPhone() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l1.02-.935a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
     </svg>
   )
 }
@@ -109,17 +102,8 @@ export default function ProfilePage() {
         </div>
 
         {/* Форма */}
-        <div className="rounded-2xl overflow-hidden mb-4" style={{ backgroundColor: '#242424' }}>
-          <div className="flex items-center gap-3 px-4 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
-            <span className="text-gray-500"><IconPhone /></span>
-            <input
-              type="tel"
-              placeholder="+373 ___ __ ___"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              className="flex-1 bg-transparent text-white placeholder-gray-600 outline-none text-sm"
-            />
-          </div>
+<div className="rounded-2xl mb-4 relative" style={{ backgroundColor: '#242424' }}>
+              <PhoneField value={phone} onChange={setPhone} />
           <div className="flex items-center gap-3 px-4 py-4">
             <span className="text-gray-500"><IconLock /></span>
             <input
