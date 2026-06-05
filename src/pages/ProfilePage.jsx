@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import PhoneInput from 'react-phone-input-2'
+import 'react-phone-input-2/lib/style.css'
 
 function IconBack() {
   return (
@@ -110,16 +112,33 @@ export default function ProfilePage() {
 
         {/* Форма */}
         <div className="rounded-2xl overflow-hidden mb-4" style={{ backgroundColor: '#242424' }}>
-          <div className="flex items-center gap-3 px-4 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
-            <span className="text-gray-500"><IconPhone /></span>
-            <input
-              type="tel"
-              placeholder="+373 ___ __ ___"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              className="flex-1 bg-transparent text-white placeholder-gray-600 outline-none text-sm"
-            />
-          </div>
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid #2e2e2e' }}>
+  <PhoneInput
+    country={'md'}
+    value={phone}
+    onChange={value => setPhone('+' + value)}
+    inputStyle={{
+      backgroundColor: 'transparent',
+      border: 'none',
+      color: '#ffffff',
+      fontSize: '14px',
+      width: '100%',
+      paddingLeft: '48px',
+    }}
+    buttonStyle={{
+      backgroundColor: 'transparent',
+      border: 'none',
+      borderRight: '1px solid #2e2e2e',
+    }}
+    dropdownStyle={{
+      backgroundColor: '#242424',
+      color: '#ffffff',
+    }}
+    containerStyle={{
+      width: '100%',
+    }}
+  />
+</div>
           <div className="flex items-center gap-3 px-4 py-4">
             <span className="text-gray-500"><IconLock /></span>
             <input
