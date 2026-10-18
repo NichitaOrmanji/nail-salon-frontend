@@ -27,11 +27,16 @@ export default function ProfilePage() {
   const [tab, setTab] = useState('login')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [surname, setSurname] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
+  const isRegister = tab === 'register'
+  const canSubmit = phone.trim() && password.trim() && (!isRegister || name.trim())
+
   async function handleSubmit() {
-    if (!phone.trim() || !password.trim()) return
+    if (!canSubmit) return
     setError(null)
     setLoading(true)
 
@@ -39,7 +44,7 @@ export default function ProfilePage() {
       if (tab === 'login') {
         await login(phone, password)
       } else {
-        await register(phone, password)
+        await register({ phone, password, name: name.trim(), surname: surname.trim() })
       }
       navigate('/')
     } catch (err) {
@@ -102,8 +107,28 @@ export default function ProfilePage() {
         </div>
 
         {/* Форма */}
-<div className="rounded-2xl mb-4 relative" style={{ backgroundColor: '#242424' }}>
-              <PhoneField value={phone} onChange={setPhone} />
+        <div className="rounded-2xl mb-4 relative" style={{ backgroundColor: '#242424' }}>
+          {isRegister && (
+            <>
+              <input
+                type="text"
+                placeholder="Имя"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full px-4 py-4 bg-transparent text-white placeholder-gray-600 outline-none text-sm"
+                style={{ borderBottom: '1px solid #2e2e2e' }}
+              />
+              <input
+                type="text"
+                placeholder="Фамилия (необязательно)"
+                value={surname}
+                onChange={e => setSurname(e.target.value)}
+                className="w-full px-4 py-4 bg-transparent text-white placeholder-gray-600 outline-none text-sm"
+                style={{ borderBottom: '1px solid #2e2e2e' }}
+              />
+            </>
+          )}
+          <PhoneField value={phone} onChange={setPhone} />
           <div className="flex items-center gap-3 px-4 py-4">
             <span className="text-gray-500"><IconLock /></span>
             <input
@@ -124,11 +149,11 @@ export default function ProfilePage() {
         {/* Кнопка */}
         <button
           onClick={handleSubmit}
-          disabled={!phone.trim() || !password.trim() || loading}
+          disabled={!canSubmit || loading}
           className="w-full py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
           style={{
             backgroundColor: '#f472b6',
-            opacity: phone.trim() && password.trim() && !loading ? 1 : 0.4
+            opacity: canSubmit && !loading ? 1 : 0.4
           }}
         >
           {loading ? 'Подождите...' : tab === 'login' ? 'Войти' : 'Зарегистрироваться'}

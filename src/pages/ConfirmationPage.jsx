@@ -1,17 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
+import { isValidPhoneNumber } from 'libphonenumber-js'
 import { useBooking } from '../context/BookingContext'
 import { createAppointment } from '../api/appointments'
-
-const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря']
-
-function IconBack() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 18l-6-6 6-6"/>
-    </svg>
-  )
-}
+import { fetchSlotsByMaster } from '../api/slots'
+import SalonHeader from '../components/layout/SalonHeader'
+import PhoneField from '../components/layout/PhoneField'
+import { formatDisplayDate, formatDuration, formatPrice } from '../utils/format'
 
 function IconSuccess() {
   return (
@@ -22,61 +17,51 @@ function IconSuccess() {
   )
 }
 
-function formatDisplayDate(dateStr) {
-  if (!dateStr) return ''
-  const [year, month, day] = dateStr.split('-').map(Number)
-  return `${day} ${MONTHS[month - 1]} ${year}`
-}
-
-function formatDuration(minutes) {
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (h && m) return `${h} ч ${m} мин`
-  if (h) return `${h} ч`
-  return `${m} мин`
+// «Любой специалист»: берём первого мастера, свободного в выбранное время
+async function resolveMasterId({ master, service, date, time }) {
+  if (master?.id) return master.id
+  const byTime = await fetchSlotsByMaster({ serviceId: service.id, date })
+  const free = byTime[time]
+  if (!free?.length) throw new Error('Это время уже занято. Выберите другое.')
+  return free[0]
 }
 
 export default function ConfirmationPage() {
   const navigate = useNavigate()
-  const { master, services, date, time, reset } = useBooking()
-  const [name, setName] = useState('')
-  const [phone, setPhone] = useState('')
+  const { master, service, date, time, reset, getNextRoute } = useBooking()
+
+  // Данные клиента запоминаем, чтобы не вводить их при каждой записи
+  const [name, setName] = useState(() => localStorage.getItem('client_name') || '')
+  const [phone, setPhone] = useState(() => localStorage.getItem('client_phone') || '')
   const [email, setEmail] = useState('')
   const [notes, setNotes] = useState('')
   const [sent, setSent] = useState(false)
   const [submitError, setSubmitError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const totalPrice = services.reduce((sum, s) => sum + s.price, 0)
-  const totalDuration = services.reduce((sum, s) => sum + (s.duration || 0), 0)
-  const canSubmit = name.trim() && phone.trim()
+  const phoneValid = phone && isValidPhoneNumber(phone)
+  const canSubmit = name.trim() && phoneValid
 
   async function handleSubmit() {
     if (!canSubmit || submitting) return
     setSubmitError(null)
     setSubmitting(true)
 
-    const duration = services.reduce((sum, s) => sum + (s.duration || 0), 0)
-    const [hours, minutes] = time.split(':').map(Number)
-    const end = new Date()
-    end.setHours(hours)
-    end.setMinutes(minutes + duration)
-    const endTime = end.toTimeString().slice(0, 5)
-
-    const payload = {
-      master: master?.id || null,
-      service: services[0]?.id || null,
-      client_name: name,
-      client_phone: phone,
-      client_email: email,
-      date: date,
-      start_time: time,
-      end_time: endTime,
-      notes: notes
-    }
-
     try {
-      await createAppointment(payload)
+      const masterId = await resolveMasterId({ master, service, date, time })
+      // end_time бэкенд считает сам по длительности услуги
+      await createAppointment({
+        master: masterId,
+        service: service.id,
+        client_name: name.trim(),
+        client_phone: phone,
+        client_email: email.trim(),
+        date,
+        start_time: time,
+        notes: notes.trim()
+      })
+      localStorage.setItem('client_name', name.trim())
+      localStorage.setItem('client_phone', phone)
       setSent(true)
       reset()
     } catch (err) {
@@ -95,7 +80,7 @@ export default function ConfirmationPage() {
         </div>
         <h2 className="text-white text-2xl font-bold mb-2 tracking-tight">Вы записаны</h2>
         <p className="text-gray-500 text-sm text-center mb-10">
-          Ждём вас в салоне. Напомним за день до визита.
+          Ждём вас в салоне. Запись появится в личном кабинете.
         </p>
         <button
           onClick={() => navigate('/')}
@@ -108,23 +93,15 @@ export default function ConfirmationPage() {
     )
   }
 
+  // Открыли страницу напрямую или после обновления без выбора — отправляем на нужный шаг
+  if (!service || master === null || !date || !time) {
+    return <Navigate to={getNextRoute('confirm')} replace />
+  }
+
   return (
     <div className="min-h-screen pb-10" style={{ backgroundColor: '#1a1a1a' }}>
 
-      {/* Шапка */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
-        <button
-          onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-          style={{ backgroundColor: '#242424' }}
-        >
-          <IconBack />
-        </button>
-        <div className="flex-1">
-          <div className="text-white text-sm font-semibold">Название салона</div>
-          <div className="text-gray-500 text-xs">ул. Пушкина, 1</div>
-        </div>
-      </div>
+      <SalonHeader />
 
       <div className="px-6 py-6 space-y-6">
 
@@ -139,19 +116,12 @@ export default function ConfirmationPage() {
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
             <span className="text-gray-500 text-sm">Специалист</span>
-            <span className="text-white text-sm font-medium">{master?.name || 'Любой'}</span>
+            <span className="text-white text-sm font-medium">{master.id ? master.name : 'Любой свободный'}</span>
           </div>
 
-          <div className="px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
-            <span className="text-gray-500 text-sm block mb-2">Услуги</span>
-            <div className="space-y-1.5">
-              {services.map(s => (
-                <div key={s.id} className="flex justify-between">
-                  <span className="text-white text-sm">{s.name}</span>
-                  <span className="text-gray-400 text-sm">{s.price} L</span>
-                </div>
-              ))}
-            </div>
+          <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
+            <span className="text-gray-500 text-sm">Услуга</span>
+            <span className="text-white text-sm font-medium text-right">{service.name}</span>
           </div>
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
@@ -161,12 +131,12 @@ export default function ConfirmationPage() {
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
             <span className="text-gray-500 text-sm">Длительность</span>
-            <span className="text-white text-sm font-medium">{formatDuration(totalDuration)}</span>
+            <span className="text-white text-sm font-medium">{formatDuration(service.duration)}</span>
           </div>
 
           <div className="flex justify-between items-center px-5 py-4">
             <span className="text-gray-500 text-sm">Итого</span>
-            <span className="text-white text-base font-bold">{totalPrice} L</span>
+            <span className="text-white text-base font-bold">{formatPrice(service.price)}</span>
           </div>
 
         </div>
@@ -174,24 +144,18 @@ export default function ConfirmationPage() {
         {/* Форма */}
         <div>
           <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">Ваши данные</p>
-          <div className="rounded-2xl overflow-hidden space-y-px" style={{ backgroundColor: '#242424' }}>
+          {/* Без overflow-hidden: иначе обрезается список стран в PhoneField */}
+          <div className="rounded-2xl relative" style={{ backgroundColor: '#242424' }}>
 
             <input
               type="text"
               placeholder="Имя"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none text-sm"
+              className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none text-sm rounded-t-2xl"
               style={{ backgroundColor: '#242424', borderBottom: '1px solid #2e2e2e' }}
             />
-            <input
-              type="tel"
-              placeholder="+373 ___ __ ___"
-              value={phone}
-              onChange={e => setPhone(e.target.value)}
-              className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none text-sm"
-              style={{ backgroundColor: '#242424', borderBottom: '1px solid #2e2e2e' }}
-            />
+            <PhoneField value={phone} onChange={setPhone} />
             <input
               type="email"
               placeholder="Email (необязательно)"
@@ -205,11 +169,14 @@ export default function ConfirmationPage() {
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none resize-none text-sm"
+              className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none resize-none text-sm rounded-b-2xl"
               style={{ backgroundColor: '#242424' }}
             />
 
           </div>
+          {phone && !phoneValid && (
+            <p className="text-gray-500 text-xs mt-2 px-1">Проверьте номер телефона</p>
+          )}
         </div>
 
         {/* Ошибка отправки */}

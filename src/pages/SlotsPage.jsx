@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
-import { fetchSlots } from '../api/slots'
+import { fetchSlots, fetchSlotsByMaster, fetchFreePoints } from '../api/slots'
 import Spinner from '../components/layout/Spinner'
+import SalonHeader from '../components/layout/SalonHeader'
+import { formatDisplayDate, toDateString } from '../utils/format'
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
 const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс']
@@ -14,18 +16,6 @@ function getDaysInMonth(year, month) {
 function getFirstDayOfMonth(year, month) {
   const day = new Date(year, month, 1).getDay()
   return day === 0 ? 6 : day - 1
-}
-
-function formatDate(year, month, day) {
-  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-}
-
-function IconBack() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 18l-6-6 6-6"/>
-    </svg>
-  )
 }
 
 function IconChevronLeft() {
@@ -44,61 +34,56 @@ function IconChevronRight() {
   )
 }
 
-function formatDisplayDate(dateStr) {
-  if (!dateStr) return ''
-  const [year, month, day] = dateStr.split('-').map(Number)
-  return `${day} ${MONTHS[month - 1]}`
+// Свободное время на дату с учётом того, что уже выбрано:
+// конкретный мастер → его слоты; «любой» → слоты всех мастеров услуги;
+// услуга ещё не выбрана → свободное время салона
+async function loadSlots({ master, service, date }) {
+  if (service && master?.id) {
+    return fetchSlots({ masterId: master.id, serviceId: service.id, date })
+  }
+  if (service) {
+    const byTime = await fetchSlotsByMaster({ serviceId: service.id, date })
+    return Object.keys(byTime).sort()
+  }
+  return fetchFreePoints(date)
+}
+
+// Бэкенд не отсекает уже прошедшее время сегодняшнего дня
+function dropPastSlots(slots, date) {
+  const now = new Date()
+  if (date !== toDateString(now)) return slots
+  const current = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+  return slots.filter(slot => slot > current)
 }
 
 export default function SlotsPage() {
   const navigate = useNavigate()
-  const { master, services, setDate, setTime, getNextRoute } = useBooking()
+  const { master, service, date, time, setDate, setTime, getNextRoute } = useBooking()
   const today = new Date()
-  const [year, setYear] = useState(today.getFullYear())
-  const [month, setMonth] = useState(today.getMonth())
-  const [selectedDate, setSelectedDate] = useState(null)
-  const [selectedSlot, setSelectedSlot] = useState(null)
+  const todayStr = toDateString(today)
+  const initial = date ? new Date(`${date}T00:00`) : today
+  const [year, setYear] = useState(initial.getFullYear())
+  const [month, setMonth] = useState(initial.getMonth())
+  const [selectedDate, setSelectedDate] = useState(date)
+  const [selectedSlot, setSelectedSlot] = useState(time)
   const [slots, setSlots] = useState([])
   const [loading, setLoading] = useState(false)
   const [slotsError, setSlotsError] = useState(null)
 
   const daysInMonth = getDaysInMonth(year, month)
   const firstDay = getFirstDayOfMonth(year, month)
+  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth()
 
-  function prevMonth() {
-    if (month === 0) { setMonth(11); setYear(y => y - 1) }
-    else setMonth(m => m - 1)
-    setSelectedDate(null)
-    setSelectedSlot(null)
-    setSlots([])
-    setSlotsError(null)
-  }
-
-  function nextMonth() {
-    if (month === 11) { setMonth(0); setYear(y => y + 1) }
-    else setMonth(m => m + 1)
-    setSelectedDate(null)
-    setSelectedSlot(null)
-    setSlots([])
-    setSlotsError(null)
-  }
-
-  async function handleDayClick(day) {
-    const date = formatDate(year, month, day)
-    setSelectedDate(date)
-    setDate(date)
+  async function selectDate(dateStr) {
+    setSelectedDate(dateStr)
+    setDate(dateStr)
     setSelectedSlot(null)
     setTime(null)
     setLoading(true)
     setSlotsError(null)
-
     try {
-      const data = await fetchSlots({
-        masterId: master?.id || '',
-        serviceId: services[0]?.id || '',
-        date
-      })
-      setSlots(data)
+      const data = await loadSlots({ master, service, date: dateStr })
+      setSlots(dropPastSlots(data, dateStr))
     } catch (err) {
       setSlots([])
       setSlotsError(err.message || 'Не удалось загрузить слоты')
@@ -107,33 +92,43 @@ export default function SlotsPage() {
     }
   }
 
-  const isToday = (day) => {
-    const d = new Date()
-    return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day
+  // Вернулись на шаг — подгружаем слоты для уже выбранной даты
+  useEffect(() => {
+    if (!date) return
+    loadSlots({ master, service, date })
+      .then(data => setSlots(dropPastSlots(data, date)))
+      .catch(err => setSlotsError(err.message || 'Не удалось загрузить слоты'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function changeMonth(delta) {
+    const d = new Date(year, month + delta, 1)
+    setYear(d.getFullYear())
+    setMonth(d.getMonth())
+    setSelectedDate(null)
+    setSelectedSlot(null)
+    setSlots([])
+    setSlotsError(null)
   }
+
+  function selectSlot(slot) {
+    setSelectedSlot(slot)
+    setTime(slot)
+  }
+
+  const subtitle = service
+    ? `${service.name}${master?.id ? ` · ${master.name}` : ''}`
+    : 'Выберите удобный день'
 
   return (
     <div className="min-h-screen pb-32" style={{ backgroundColor: '#1a1a1a' }}>
 
-      {/* Шапка */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
-        <button
-          onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-          style={{ backgroundColor: '#242424' }}
-        >
-          <IconBack />
-        </button>
-        <div className="flex-1">
-          <div className="text-white text-sm font-semibold">Название салона</div>
-          <div className="text-gray-500 text-xs">ул. Пушкина, 1</div>
-        </div>
-      </div>
+      <SalonHeader />
 
       {/* Заголовок */}
       <div className="px-6 pt-6 pb-4">
         <h2 className="text-white text-2xl font-bold tracking-tight">Дата и время</h2>
-        <p className="text-gray-500 text-sm mt-1">Выберите удобный день</p>
+        <p className="text-gray-500 text-sm mt-1">{subtitle}</p>
       </div>
 
       <div className="px-6">
@@ -145,14 +140,15 @@ export default function SlotsPage() {
           </span>
           <div className="flex gap-2">
             <button
-              onClick={prevMonth}
+              onClick={() => changeMonth(-1)}
+              disabled={isCurrentMonth}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-              style={{ backgroundColor: '#242424' }}
+              style={{ backgroundColor: '#242424', opacity: isCurrentMonth ? 0.3 : 1 }}
             >
               <IconChevronLeft />
             </button>
             <button
-              onClick={nextMonth}
+              onClick={() => changeMonth(1)}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
               style={{ backgroundColor: '#242424' }}
             >
@@ -173,15 +169,15 @@ export default function SlotsPage() {
           {Array(firstDay).fill(null).map((_, i) => <div key={`e-${i}`} />)}
           {Array(daysInMonth).fill(null).map((_, i) => {
             const day = i + 1
-            const date = formatDate(year, month, day)
-            const isSelected = selectedDate === date
-            const isPast = new Date(date) < new Date(today.toDateString())
-            const todayMark = isToday(day)
+            const dateStr = toDateString(new Date(year, month, day))
+            const isSelected = selectedDate === dateStr
+            const isPast = dateStr < todayStr
+            const todayMark = dateStr === todayStr
 
             return (
               <button
                 key={day}
-                onClick={() => !isPast && handleDayClick(day)}
+                onClick={() => selectDate(dateStr)}
                 disabled={isPast}
                 className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl text-sm transition-all active:scale-90"
                 style={{
@@ -206,7 +202,7 @@ export default function SlotsPage() {
               <div className="flex flex-col items-center py-8 gap-4">
                 <p className="text-red-400 text-center text-sm">{slotsError}</p>
                 <button
-                  onClick={() => handleDayClick(new Date(selectedDate).getDate())}
+                  onClick={() => selectDate(selectedDate)}
                   className="px-6 py-3 rounded-2xl text-white text-sm font-medium active:scale-95"
                   style={{ backgroundColor: '#242424' }}
                 >
@@ -224,7 +220,7 @@ export default function SlotsPage() {
                   {slots.map(slot => (
                     <button
                       key={slot}
-                      onClick={() => { setSelectedSlot(slot); setTime(slot) }}
+                      onClick={() => selectSlot(slot)}
                       className="py-3 rounded-xl text-sm font-medium transition-all active:scale-95"
                       style={{
                         backgroundColor: selectedSlot === slot ? '#f472b6' : '#242424',
@@ -257,7 +253,7 @@ export default function SlotsPage() {
             style={{ backgroundColor: '#f472b6' }}
           >
             <div className="text-sm font-semibold">Далее</div>
-            <div className="text-xs opacity-75 mt-0.5">{formatDisplayDate(selectedDate)} в {selectedSlot}</div>
+            <div className="text-xs opacity-75 mt-0.5">{formatDisplayDate(selectedDate, { withYear: false })} в {selectedSlot}</div>
           </button>
         </div>
       )}

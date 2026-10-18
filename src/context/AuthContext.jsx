@@ -3,30 +3,34 @@ import { login as apiLogin, register as apiRegister } from '../api/auth'
 
 const AuthContext = createContext(null)
 
-export function AuthProvider({ children }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [loading, setLoading] = useState(true)
+function saveTokens(data) {
+  localStorage.setItem('access_token', data.access)
+  localStorage.setItem('refresh_token', data.refresh)
+}
 
+export function AuthProvider({ children }) {
   // При запуске приложения проверяем — есть ли токен в localStorage
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('access_token'))
+
+  // api/client.js сообщает, что токен устарел
   useEffect(() => {
-    const token = localStorage.getItem('access_token')
-    setIsLoggedIn(!!token)
-    setLoading(false)
+    const onLogout = () => setIsLoggedIn(false)
+    window.addEventListener('auth:logout', onLogout)
+    return () => window.removeEventListener('auth:logout', onLogout)
   }, [])
 
   // Вход
   async function login(phone, password) {
-    const data = await apiLogin(phone, password)
-    localStorage.setItem('access_token', data.access)
-    localStorage.setItem('refresh_token', data.refresh)
+    saveTokens(await apiLogin(phone, password))
+    localStorage.setItem('client_phone', phone)
     setIsLoggedIn(true)
   }
 
   // Регистрация
-  async function register(phone, password) {
-    const data = await apiRegister(phone, password)
-    localStorage.setItem('access_token', data.access)
-    localStorage.setItem('refresh_token', data.refresh)
+  async function register({ phone, password, name, surname }) {
+    saveTokens(await apiRegister({ phone, password, name, surname }))
+    localStorage.setItem('client_phone', phone)
+    localStorage.setItem('client_name', [name, surname].filter(Boolean).join(' '))
     setIsLoggedIn(true)
   }
 
@@ -38,12 +42,13 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext)
   if (!context) {

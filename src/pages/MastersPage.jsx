@@ -2,15 +2,9 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
 import { fetchMasters } from '../api/masters'
+import { fetchSlotsByMaster } from '../api/slots'
 import Spinner from '../components/layout/Spinner'
-
-function IconBack() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 18l-6-6 6-6"/>
-    </svg>
-  )
-}
+import SalonHeader from '../components/layout/SalonHeader'
 
 function IconUser() {
   return (
@@ -25,7 +19,7 @@ function Stars({ count }) {
   return (
     <span>
       {[1,2,3,4,5].map(i => (
-        <span key={i} style={{ color: i <= count ? '#f59e0b' : '#374151' }}>★</span>
+        <span key={i} style={{ color: i <= Math.round(count) ? '#f59e0b' : '#374151' }}>★</span>
       ))}
     </span>
   )
@@ -33,33 +27,52 @@ function Stars({ count }) {
 
 export default function MastersPage() {
   const navigate = useNavigate()
-  const { master, setMaster, getNextRoute } = useBooking()
+  const { master, setMaster, service, date, time, setDate, setTime, getNextRoute } = useBooking()
   const [masters, setMasters] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [selected, setSelected] = useState(master?.id ?? null)
+  const [selected, setSelected] = useState(master ? (master.id ?? 'any') : null)
+
+  // Время уже выбрано — показываем только мастеров, свободных в это время
+  const filteredByTime = !!(service && date && time)
+
+  async function loadMasters() {
+    const data = await fetchMasters({ serviceId: service?.id })
+    if (!filteredByTime) return data
+    const byTime = await fetchSlotsByMaster({ serviceId: service.id, date })
+    const free = byTime[time] || []
+    return data.filter(m => free.includes(m.id))
+  }
+
+  function load() {
+    return loadMasters()
+      .then(data => { setMasters(data); setLoading(false) })
+      .catch(err => { setError(err.message || 'Не удалось загрузить мастеров'); setLoading(false) })
+  }
 
   useEffect(() => {
-    fetchMasters()
-      .then(data => { setMasters(data); setLoading(false) })
-      .catch(() => { setError('Не удалось загрузить мастеров'); setLoading(false) })
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function handleSelect(m) {
     setSelected(m.id ?? 'any')
     setMaster(m)
+    // Время подбиралось без учёта этого мастера — выбираем заново
+    if (!filteredByTime && (date || time)) {
+      setDate(null)
+      setTime(null)
+    }
     setTimeout(() => navigate(getNextRoute('masters')), 300)
   }
 
   function retry() {
     setError(null)
     setLoading(true)
-    fetchMasters()
-      .then(data => { setMasters(data); setLoading(false) })
-      .catch(() => { setError('Не удалось загрузить мастеров'); setLoading(false) })
+    load()
   }
 
-  const allMasters = [
+  const allMasters = masters.length === 0 ? [] : [
     { id: null, name: 'Любой специалист', specialty: '' },
     ...masters.map(m => ({ ...m, specialty: m.description || 'Мастер маникюра и педикюра' }))
   ]
@@ -67,25 +80,14 @@ export default function MastersPage() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#1a1a1a' }}>
 
-      {/* Шапка */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
-        <button
-          onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-          style={{ backgroundColor: '#242424' }}
-        >
-          <IconBack />
-        </button>
-        <div className="flex-1">
-          <div className="text-white text-sm font-semibold">Название салона</div>
-          <div className="text-gray-500 text-xs">ул. Пушкина, 1</div>
-        </div>
-      </div>
+      <SalonHeader />
 
       {/* Заголовок */}
       <div className="px-6 pt-6 pb-4">
         <h2 className="text-white text-2xl font-bold tracking-tight">Специалист</h2>
-        <p className="text-gray-500 text-sm mt-1">Выберите мастера или пропустите</p>
+        <p className="text-gray-500 text-sm mt-1">
+          {filteredByTime ? `Свободны в ${time}` : service ? `Делают «${service.name}»` : 'Выберите мастера или пропустите'}
+        </p>
       </div>
 
       {/* Состояния */}
@@ -104,8 +106,15 @@ export default function MastersPage() {
         </div>
       )}
 
+      {!loading && !error && masters.length === 0 && (
+        <div className="text-center py-12 px-6">
+          <p className="text-white text-sm font-medium mb-1">Нет свободных мастеров</p>
+          <p className="text-gray-500 text-sm">Попробуйте другое время или услугу</p>
+        </div>
+      )}
+
       {/* Список мастеров */}
-      {!loading && !error && (
+      {!loading && !error && masters.length > 0 && (
         <div className="px-4 pb-8 space-y-1">
           {allMasters.map(m => {
             const isSelected = selected === (m.id ?? 'any')
@@ -134,10 +143,10 @@ export default function MastersPage() {
                     {m.specialty && (
                       <div className="text-gray-500 text-xs mt-0.5">{m.specialty}</div>
                     )}
-                    {m.rating && (
+                    {m.avg_rating && (
                       <div className="flex items-center gap-2 mt-1">
-                        <Stars count={m.rating} />
-                        <span className="text-gray-500 text-xs">{m.reviews} отзывов</span>
+                        <Stars count={m.avg_rating} />
+                        <span className="text-gray-500 text-xs">{m.avg_rating} · {m.reviews_count} отзывов</span>
                       </div>
                     )}
                   </div>

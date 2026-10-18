@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
 import { useAuth } from '../context/AuthContext'
+import { useCompany } from '../context/CompanyContext'
 
 // ——— Иконки ———
 
@@ -99,17 +100,8 @@ function IconStar({ filled }) {
   )
 }
 
-// ——— Данные салона ———
-
-const SALON = {
-  name: 'JC nails',
-  address: 'Bulevardul Moscova, 1/2',
-  phone: '+373 671 380-96',
-  rating: 5,
-  reviewsCount: 9,
-  logo: '/SALON.logo.png',
-  mapUrl: 'https://maps.google.com/maps?q=47.0447862,28.8607939&z=15&output=embed'
-}
+// ——— Отзывы о салоне ———
+// На бэкенде отзывы есть только у мастеров, поэтому пока статичные
 
 const REVIEWS = [
   { name: 'Elena', date: '21 апреля 2026', rating: 5, text: '' },
@@ -133,7 +125,11 @@ function Avatar({ name }) {
 // ——— Bottom Sheet ———
 
 function SalonInfoSheet({ open, onClose, onBook }) {
+  const salon = useCompany()
   const [showAllReviews, setShowAllReviews] = useState(false)
+  const mapUrl = salon.latitude && salon.longitude
+    ? `https://maps.google.com/maps?q=${salon.latitude},${salon.longitude}&z=15&output=embed`
+    : `https://maps.google.com/maps?q=${encodeURIComponent(salon.address)}&z=15&output=embed`
   const visibleReviews = showAllReviews ? REVIEWS : REVIEWS.slice(0, 3)
 
   if (!open) return null
@@ -170,14 +166,14 @@ function SalonInfoSheet({ open, onClose, onBook }) {
           {/* Шапка */}
           <div className="flex items-center gap-4 mb-6">
             <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
-              <img src={SALON.logo} alt="Лого" className="w-full h-full object-cover"
+              <img src={salon.logo} alt="Лого" className="w-full h-full object-cover"
                 onError={e => { e.target.style.display = 'none' }} />
             </div>
             <div>
-              <h2 className="text-white text-xl font-bold">{SALON.name}</h2>
+              <h2 className="text-white text-xl font-bold">{salon.name}</h2>
               <div className="flex items-center gap-1 mt-1">
                 <IconStar filled />
-                <span className="text-gray-400 text-sm">{SALON.reviewsCount} отзывов</span>
+                <span className="text-gray-400 text-sm">{REVIEWS.length} отзывов</span>
               </div>
             </div>
           </div>
@@ -185,25 +181,25 @@ function SalonInfoSheet({ open, onClose, onBook }) {
           {/* Адрес */}
           <div className="flex items-center gap-3 mb-6">
             <span className="text-gray-500"><IconPin /></span>
-            <span className="text-gray-300 text-sm">{SALON.address}</span>
+            <span className="text-gray-300 text-sm">{salon.address}</span>
           </div>
 
           {/* Контакты */}
           <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">Контакты</p>
           <div className="flex items-center gap-3 mb-6">
             <span className="text-gray-500"><IconPhone /></span>
-            <a href={`tel:${SALON.phone}`} className="text-gray-300 text-sm">{SALON.phone}</a>
+            <a href={`tel:${salon.phone}`} className="text-gray-300 text-sm">{salon.phone}</a>
           </div>
 
           {/* Карта */}
           <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">Расположение</p>
           <div className="flex items-center gap-3 mb-3">
             <span className="text-gray-500"><IconPin /></span>
-            <span className="text-gray-300 text-sm">{SALON.address}</span>
+            <span className="text-gray-300 text-sm">{salon.address}</span>
           </div>
           <div className="rounded-2xl overflow-hidden mb-6" style={{ height: '180px' }}>
             <iframe
-              src={SALON.mapUrl}
+              src={mapUrl}
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -215,7 +211,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
 
           {/* Отзывы */}
           <p className="text-white text-lg font-bold mb-1">Отзывы</p>
-          <p className="text-gray-500 text-sm mb-4">{SALON.reviewsCount} отзывов</p>
+          <p className="text-gray-500 text-sm mb-4">{REVIEWS.length} отзывов</p>
 
           <div className="rounded-2xl p-4 mb-4 text-center" style={{ backgroundColor: '#242424' }}>
             <p className="text-gray-400 text-sm mb-2">Оцените и оставьте отзыв</p>
@@ -275,6 +271,7 @@ export default function HomePage() {
   const navigate = useNavigate()
   const { reset } = useBooking()
   const { isLoggedIn } = useAuth()
+  const salon = useCompany()
   const [sheetOpen, setSheetOpen] = useState(false)
 
   function handleNavigate(path) {
@@ -284,6 +281,7 @@ export default function HomePage() {
 
   function handleBook() {
     setSheetOpen(false)
+    handleNavigate('/services')
   }
 
   const menuItems = [
@@ -313,7 +311,7 @@ export default function HomePage() {
       {/* Фото салона */}
       <div className="relative h-52">
         <img
-          src="/salon.jpg"
+          src={salon.main_photo}
           alt="Салон"
           className="w-full h-full object-cover"
         />
@@ -338,7 +336,7 @@ export default function HomePage() {
           style={{ borderColor: '#1a1a1a' }}
         >
           <img
-            src={SALON.logo}
+            src={salon.logo}
             alt="Лого"
             className="w-full h-full object-cover"
             onError={e => { e.target.style.display = 'none' }}
@@ -351,8 +349,8 @@ export default function HomePage() {
           className="flex items-center gap-2 mb-8 active:opacity-70 transition-all"
         >
           <div className="text-left">
-            <h1 className="text-white text-3xl font-bold tracking-tight">{SALON.name}</h1>
-            <p className="text-gray-400 text-base mt-1">{SALON.address}</p>
+            <h1 className="text-white text-3xl font-bold tracking-tight">{salon.name}</h1>
+            <p className="text-gray-400 text-base mt-1">{salon.address}</p>
           </div>
           <span className="text-gray-400 mt-1 flex-shrink-0"><IconChevronDown /></span>
         </button>
