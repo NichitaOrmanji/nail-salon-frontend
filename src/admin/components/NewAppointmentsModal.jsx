@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import Modal from './Modal'
 import { Button, ErrorText } from './ui'
 import Spinner from '../../components/layout/Spinner'
-import { fetchAppointments, updateAppointment } from '../api/appointments'
+import { fetchPendingAppointments, updateAppointment, MAX_PENDING_ITEMS } from '../api/appointments'
 import { notifyDataChanged, useAutoRefresh } from '../utils/events'
-import { todayString, addDays, formatShortDate } from '../utils/time'
+import { formatShortDate } from '../utils/time'
 
-// Новые (ожидающие подтверждения) записи на ближайшие 30 дней
+// Новые (ожидающие подтверждения) записи — все будущие, как в бейдже «Новые: N»
 export default function NewAppointmentsModal({ onClose }) {
   const navigate = useNavigate()
   const [items, setItems] = useState(null)
@@ -16,8 +16,7 @@ export default function NewAppointmentsModal({ onClose }) {
   const [busyId, setBusyId] = useState(null)
 
   const load = useCallback(() => {
-    const today = todayString()
-    return fetchAppointments({ dateFrom: today, dateTo: addDays(today, 30), statuses: ['pending'] })
+    return fetchPendingAppointments()
       .then(data => { setItems(data); setError(null) })
       .catch(err => setError(err.message))
   }, [])
@@ -55,6 +54,9 @@ export default function NewAppointmentsModal({ onClose }) {
       )}
       {items && items.length > 0 && (
         <div className="space-y-3">
+          {items.length >= MAX_PENDING_ITEMS && (
+            <p className="text-gray-500 text-xs">Показаны первые {MAX_PENDING_ITEMS} записей — подтвердите их, чтобы увидеть остальные</p>
+          )}
           {items.map(a => (
             <div key={a.id} className="rounded-2xl p-4" style={{ backgroundColor: '#242424' }}>
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">

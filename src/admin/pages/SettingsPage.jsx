@@ -45,13 +45,18 @@ export default function SettingsPage() {
 
   function set(field, value) {
     setDone(false)
-    // Вставили пару из Google Maps «47.0447862, 28.8607939» — раскладываем по двум полям
-    const pair = (field === 'latitude' || field === 'longitude') && value.match(/^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$/)
-    if (pair) {
-      setForm(f => ({ ...f, latitude: pair[1], longitude: pair[2] }))
-      return
-    }
     setForm(f => ({ ...f, [field]: value }))
+  }
+
+  // Вставили пару из Google Maps «47.0447862, 28.8607939» — раскладываем по двум полям.
+  // Только при вставке: при наборе с клавиатуры пара «47.04, 28.8» ещё не дописана
+  function handleCoordinatePaste(e) {
+    const text = e.clipboardData?.getData('text') || ''
+    const pair = text.match(/^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$/)
+    if (!pair) return
+    e.preventDefault()
+    setDone(false)
+    setForm(f => ({ ...f, latitude: pair[1], longitude: pair[2] }))
   }
 
   async function handleSubmit(e) {
@@ -121,10 +126,10 @@ export default function SettingsPage() {
           </Field>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Широта">
-              <TextInput inputMode="decimal" value={form.latitude} onChange={e => set('latitude', e.target.value)} placeholder="47.044786" />
+              <TextInput inputMode="decimal" value={form.latitude} onChange={e => set('latitude', e.target.value)} onPaste={handleCoordinatePaste} placeholder="47.044786" />
             </Field>
             <Field label="Долгота">
-              <TextInput inputMode="decimal" value={form.longitude} onChange={e => set('longitude', e.target.value)} placeholder="28.860794" />
+              <TextInput inputMode="decimal" value={form.longitude} onChange={e => set('longitude', e.target.value)} onPaste={handleCoordinatePaste} placeholder="28.860794" />
             </Field>
           </div>
           <p className="text-gray-500 text-xs -mt-2">

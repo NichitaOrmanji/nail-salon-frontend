@@ -6,6 +6,9 @@ export const SLOT_PX = 48
 export const PX_PER_MIN = SLOT_PX / SLOT_MINUTES
 export const MIN_BLOCK_PX = 24
 
+// Вопрос перед закрытием формы или карточки с несохранённым вводом
+export const DISCARD_CONFIRM = 'Есть несохранённые изменения. Закрыть без сохранения?'
+
 const DEFAULT_START = 9 * 60
 const DEFAULT_END = 20 * 60
 

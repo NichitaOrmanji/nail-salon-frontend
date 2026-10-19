@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const COUNTRIES = [
   { code: 'MD', dial: '+373', flag: '🇲🇩', name: 'Молдова' },
@@ -28,11 +28,24 @@ function joinPhone(country, local) {
   return local ? country.dial + local : ''
 }
 
-export default function PhoneField({ value, onChange }) {
+// inputId / inputLabel — необязательные id и aria-label поля номера (панель салона)
+export default function PhoneField({ value, onChange, inputId, inputLabel }) {
   const [initial] = useState(() => splitPhone(value))
   const [selectedCountry, setSelectedCountry] = useState(initial.country)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [localNumber, setLocalNumber] = useState(initial.local)
+
+  // Escape закрывает только список стран: перехватываем раньше окна, в котором стоит поле
+  useEffect(() => {
+    if (!dropdownOpen) return
+    const onKey = e => {
+      if (e.key !== 'Escape') return
+      e.stopPropagation()
+      setDropdownOpen(false)
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [dropdownOpen])
 
   function handleCountrySelect(country) {
     setSelectedCountry(country)
@@ -66,6 +79,8 @@ export default function PhoneField({ value, onChange }) {
       {/* Номер */}
       <input
         type="tel"
+        id={inputId}
+        aria-label={inputLabel}
         placeholder="___ __ ___"
         value={localNumber}
         onChange={handleNumberChange}

@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { fetchAppointments } from '../api/appointments'
 import { fetchStaffMasters, fetchDaysOff, addDayOff, removeDayOff } from '../api/masters'
 import { notifyDataChanged, useAutoRefresh } from '../utils/events'
 import { todayString, addDays, formatDayTitle, isValidDateString } from '../utils/time'
 import { ACTIVE_STATUSES } from '../utils/statuses'
-import { buildColumns, buildRange } from '../utils/journal'
+import { buildColumns, buildRange, DISCARD_CONFIRM } from '../utils/journal'
 import JournalGrid from '../components/journal/JournalGrid'
 import AppointmentCard from '../components/journal/AppointmentCard'
 import AppointmentFormModal from '../components/journal/AppointmentFormModal'
@@ -15,21 +15,48 @@ import { IconChevronLeft, IconChevronRight } from '../components/Icons'
 import Spinner from '../../components/layout/Spinner'
 
 // Журнал записей на день.
-// Дата и открытая карточка хранятся в адресе: ?date=2026-10-20&open=15
+// Дата и открытая карточка хранятся в адресе: ?date=2026-10-20&open=15.
+// Открытие карточки и формы добавляет запись в историю (state.journalOverlay),
+// поэтому кнопка «Назад» на телефоне закрывает их, а не уводит из панели.
 export default function JournalPage() {
   const { me, isManager } = useStaffAuth()
   const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const historyState = location.state && typeof location.state === 'object' ? location.state : null
   const dateParam = searchParams.get('date')
-  const date = isValidDateString(dateParam) ? dateParam : todayString()
+  const dateInUrl = isValidDateString(dateParam)
+  const date = dateInUrl ? dateParam : todayString()
   const openId = Number(searchParams.get('open')) || null
+
+  // Дата без ?date= фиксируется в адресе один раз: в полночь день под открытой
+  // формой или карточкой не меняется
+  useEffect(() => {
+    if (dateInUrl) return
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      next.set('date', date)
+      return next
+    }, { replace: true, state: historyState })
+  }, [dateInUrl, date, setSearchParams, historyState])
 
   const [data, setData] = useState(null) // { date, appointments, masters, daysOff }
   const [loadError, setLoadError] = useState(null)
   const [actionError, setActionError] = useState(null)
   const [showCancelled, setShowCancelled] = useState(false)
-  // { appointment } — редактирование, { initial } — создание
+  // { id, appointment } — редактирование, { id, initial } — создание
   const [form, setForm] = useState(null)
   const requestRef = useRef(0)
+  const formIdRef = useRef(0)
+  // После сохранения формы, открытой поверх карточки: вернуться на запись карточки и заменить её
+  const pendingParamsRef = useRef(null)
+  const toolbarRef = useRef(null)
+  // Несохранённая заметка в открытой карточке; cardResetKey — сбросить её после «Закрыть без сохранения»
+  const cardDirtyRef = useRef(false)
+  const [cardResetKey, setCardResetKey] = useState(0)
+  const handleCardDirty = useCallback(dirty => {
+    cardDirtyRef.current = dirty
+  }, [])
 
   const load = useCallback(() => {
     const requestId = ++requestRef.current
@@ -56,19 +83,70 @@ export default function JournalPage() {
 
   const current = data && data.date === date ? data : null
 
-  function setParams(next) {
-    const params = {}
-    const nextDate = next.date ?? date
-    if (nextDate !== todayString()) params.date = nextDate
+  // Дата всегда в адресе; по умолчанию запись истории заменяется
+  function setParams(next, { push = false, state = historyState } = {}) {
+    const params = { date: next.date ?? date }
     const nextOpen = 'open' in next ? next.open : openId
     if (nextOpen) params.open = String(nextOpen)
-    setSearchParams(params, { replace: true })
+    setSearchParams(params, { replace: !push, state })
+  }
+
+  // Уйти от карточки с несохранённой заметкой — только после подтверждения
+  function confirmLeaveCard() {
+    if (!openId || !cardDirtyRef.current) return true
+    if (!window.confirm(DISCARD_CONFIRM)) return false
+    cardDirtyRef.current = false
+    setCardResetKey(k => k + 1)
+    return true
+  }
+
+  function openCard(id) {
+    if (id === openId) return
+    if (!confirmLeaveCard()) return
+    if (openId || historyState?.journalOverlay) {
+      // Карточка уже открыта — меняем её на месте, без новой записи истории
+      setParams({ open: id })
+    } else {
+      setParams({ open: id }, { push: true, state: { journalOverlay: true } })
+    }
+  }
+
+  function closeCard() {
+    if (historyState?.journalOverlay && !historyState.journalForm) {
+      navigate(-1)
+    } else {
+      setParams({ open: null }, { state: null })
+    }
   }
 
   function goToDate(value) {
     if (!isValidDateString(value)) return
+    if (!confirmLeaveCard()) return
     setActionError(null)
-    setParams({ date: value, open: null })
+    setParams({ date: value, open: null }, { state: null })
+  }
+
+  useEffect(() => {
+    const pending = pendingParamsRef.current
+    if (!pending || historyState?.journalForm) return
+    pendingParamsRef.current = null
+    setSearchParams({ date: pending.date, open: String(pending.open) }, { replace: true, state: { journalOverlay: true } })
+  }, [location.key, historyState, setSearchParams])
+
+  // Форма — тоже отдельная запись истории: «Назад» её закрывает
+  function openForm(spec) {
+    const id = ++formIdRef.current
+    // Под формой — запись истории открытой карточки
+    const overCard = !!openId && !!historyState?.journalOverlay
+    setForm({ ...spec, id, overCard })
+    setParams({}, { push: true, state: { journalOverlay: true, journalForm: id } })
+  }
+
+  const formVisible = !!form && historyState?.journalForm === form.id
+
+  function closeForm() {
+    if (formVisible) navigate(-1)
+    setForm(null)
   }
 
   const visibleAppointments = useMemo(() => {
@@ -91,8 +169,9 @@ export default function JournalPage() {
   const selected = current && openId ? current.appointments.find(a => a.id === openId) || null : null
 
   function openCreate(col, time) {
+    if (!confirmLeaveCard()) return
     const masterId = col?.master && col.master.is_active !== false ? col.master.id : null
-    setForm({ initial: { masterId, date, time } })
+    openForm({ initial: { masterId, date, time } })
   }
 
   async function toggleDayOff(col) {
@@ -113,9 +192,19 @@ export default function JournalPage() {
   }
 
   function handleSaved(saved) {
-    setForm(null)
     if (saved?.id && saved.date) {
-      setParams({ date: saved.date, open: saved.id })
+      if (formVisible && form.overCard) {
+        // Убираем запись формы и заменяем запись карточки — без лишнего шага «Назад»
+        pendingParamsRef.current = { date: saved.date, open: saved.id }
+        navigate(-1)
+        setForm(null)
+      } else {
+        setForm(null)
+        // Запись истории формы становится записью карточки
+        setParams({ date: saved.date, open: saved.id }, { state: { journalOverlay: true } })
+      }
+    } else {
+      closeForm()
     }
   }
 
@@ -125,7 +214,7 @@ export default function JournalPage() {
     <div className="h-full flex flex-col">
 
       {/* Панель дня */}
-      <div className="flex-shrink-0 px-3 md:px-5 py-3 flex flex-wrap items-center gap-2" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}>
+      <div ref={toolbarRef} className="flex-shrink-0 px-3 md:px-5 py-3 flex flex-wrap items-center gap-2" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}>
         <div className="flex items-center gap-1">
           <Button aria-label="Предыдущий день" className="w-11 px-0" onClick={() => goToDate(addDays(date, -1))}>
             <IconChevronLeft />
@@ -176,30 +265,35 @@ export default function JournalPage() {
           dataKey={date}
           selectedId={openId}
           canManage={isManager}
-          onSelect={a => setParams({ open: a.id })}
+          onSelect={a => openCard(a.id)}
           onEmptyClick={openCreate}
           onToggleDayOff={toggleDayOff}
         />
       )}
 
-      {selected && !form && (
+      {/* Под открытой формой карточка не размонтируется — несохранённая заметка остаётся */}
+      {selected && (
         <AppointmentCard
-          key={selected.id}
+          key={`${selected.id}-${cardResetKey}`}
           appointment={selected}
           isManager={isManager}
-          onClose={() => setParams({ open: null })}
-          onEdit={a => setForm({ appointment: a })}
+          hidden={formVisible}
+          topAnchorRef={toolbarRef}
+          onDirtyChange={handleCardDirty}
+          onClose={closeCard}
+          onEdit={a => openForm({ appointment: a })}
         />
       )}
 
-      {form && current && (
+      {formVisible && current && (
         <AppointmentFormModal
+          key={form.id}
           appointment={form.appointment}
           initial={form.initial}
           masters={current.masters}
           me={me}
           isManager={isManager}
-          onClose={() => setForm(null)}
+          onClose={closeForm}
           onSaved={handleSaved}
         />
       )}

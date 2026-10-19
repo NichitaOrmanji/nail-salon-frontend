@@ -24,7 +24,8 @@ export function StaffAuthProvider({ children }) {
         return data
       },
       err => {
-        if (!err.status || err.status >= 500) setMeError(err.message)
+        // sessionEnded — из панели уже вышли, пока шёл запрос
+        if (!err.sessionEnded && (!err.status || err.status >= 500)) setMeError(err.message)
         throw err
       }
     )

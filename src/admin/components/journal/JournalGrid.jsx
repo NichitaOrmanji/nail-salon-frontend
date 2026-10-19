@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { timeToMin, minToTime, nowMinutes } from '../../utils/time'
 import { statusInfo } from '../../utils/statuses'
 import { SLOT_MINUTES, SLOT_PX, PX_PER_MIN, MIN_BLOCK_PX, layoutBlocks } from '../../utils/journal'
@@ -6,6 +7,12 @@ import { IconMoreVertical } from '../Icons'
 
 const TIME_COL_PX = 56
 const COL_MIN_PX = 140
+// Ширина одной дорожки, когда записи в колонке пересекаются
+const LANE_MIN_PX = 96
+// Блок ниже этого — одна строка «11:15 Имя»
+const COMPACT_BLOCK_PX = 30
+const MENU_WIDTH_PX = 240
+const SCREEN_GUTTER_PX = 16
 
 // Заштрихованная (нерабочая) область колонки
 const OFF_STYLE = {
@@ -39,16 +46,66 @@ function columnHours(col) {
   return `${minToTime(col.work.start)}–${minToTime(col.work.end)}`
 }
 
+// Меню колонки — поверх всего (через portal), прижато к кнопке, но не выходит за экран
+function ColumnMenu({ anchorRef, onClose, children }) {
+  const menuRef = useRef(null)
+
+  useLayoutEffect(() => {
+    const anchor = anchorRef.current
+    const menu = menuRef.current
+    if (!anchor || !menu) return
+    const place = () => {
+      const rect = anchor.getBoundingClientRect()
+      const width = Math.min(MENU_WIDTH_PX, window.innerWidth - SCREEN_GUTTER_PX * 2)
+      const left = Math.min(Math.max(SCREEN_GUTTER_PX, rect.right - width), window.innerWidth - SCREEN_GUTTER_PX - width)
+      menu.style.width = `${width}px`
+      menu.style.left = `${Math.max(0, left)}px`
+      menu.style.top = `${rect.bottom + 4}px`
+    }
+    place()
+    window.addEventListener('resize', place)
+    return () => window.removeEventListener('resize', place)
+  }, [anchorRef])
+
+  // Escape закрывает только меню (раньше карточки и других обработчиков окна)
+  useEffect(() => {
+    const onKey = e => {
+      if (e.key !== 'Escape') return
+      e.stopPropagation()
+      onClose()
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [onClose])
+
+  return createPortal(
+    <>
+      <div className="fixed inset-0 z-50" onClick={onClose} />
+      <div
+        ref={menuRef}
+        role="menu"
+        className="fixed z-50 rounded-xl overflow-hidden shadow-xl"
+        style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e', maxWidth: `calc(100vw - ${SCREEN_GUTTER_PX * 2}px)` }}
+      >
+        {children}
+      </div>
+    </>,
+    document.body
+  )
+}
+
 function ColumnHeader({ col, canManage, onToggleDayOff }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const buttonRef = useRef(null)
   const showMenu = canManage && col.master && col.master.is_active !== false
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
 
   return (
     <div
-      className="sticky top-0 z-20 flex items-start gap-1 pl-3 pr-1 py-2 min-w-0"
+      className="sticky top-0 z-20 flex items-start gap-1 pl-3 pr-0.5 py-1 min-w-0"
       style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e', borderLeft: '1px solid #2e2e2e' }}
     >
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 py-1">
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="text-white text-sm font-semibold truncate" style={{ opacity: col.hidden ? 0.6 : 1 }}>
             {col.master ? col.master.name : 'Без мастера'}
@@ -62,34 +119,32 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
         </div>
       </div>
       {showMenu && (
-        <div className="relative flex-shrink-0">
+        <div className="flex-shrink-0">
           <button
+            ref={buttonRef}
             type="button"
             aria-label="Меню колонки"
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
             onClick={() => setMenuOpen(o => !o)}
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-gray-400"
+            className="w-11 h-11 rounded-lg flex items-center justify-center text-gray-400"
           >
             <IconMoreVertical size={18} />
           </button>
           {menuOpen && (
-            <>
-              <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
-              <div
-                className="absolute right-0 top-full mt-1 z-40 rounded-xl overflow-hidden shadow-xl"
-                style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e', minWidth: '220px' }}
+            <ColumnMenu anchorRef={buttonRef} onClose={closeMenu}>
+              <button
+                type="button"
+                role="menuitem"
+                className="w-full text-left px-4 py-2 min-h-[44px] text-sm text-white"
+                onClick={() => {
+                  setMenuOpen(false)
+                  onToggleDayOff(col)
+                }}
               >
-                <button
-                  type="button"
-                  className="w-full text-left px-4 min-h-[44px] text-sm text-white"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    onToggleDayOff(col)
-                  }}
-                >
-                  {col.work.dayOff ? 'Снять выходной' : 'Сделать выходным в этот день'}
-                </button>
-              </div>
-            </>
+                {col.work.dayOff ? 'Снять выходной' : 'Сделать выходным в этот день'}
+              </button>
+            </ColumnMenu>
           )}
         </div>
       )}
@@ -127,9 +182,19 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, onClic
       }}
       title={`${a.start_time}–${a.end_time} ${a.client_name}${a.service ? ' · ' + a.service.name : ''}`}
     >
-      <div className={`text-[11px] leading-tight text-white break-words ${muted ? 'line-through' : ''}`}>
-        <span className="font-semibold">{a.start_time}–{a.end_time}</span>{' '}
-        {a.client_name}{a.service ? ` · ${a.service.name}` : ''}
+      {/* Время не переносится по символам, имя и услуга обрезаются многоточием */}
+      <div className={`min-w-0 text-[11px] leading-tight text-white ${muted ? 'line-through' : ''}`}>
+        {height < COMPACT_BLOCK_PX ? (
+          <div className="truncate">
+            <span className="font-semibold">{a.start_time}</span> {a.client_name}
+          </div>
+        ) : (
+          <>
+            <div className="font-semibold whitespace-nowrap truncate">{a.start_time}–{a.end_time}</div>
+            <div className="truncate">{a.client_name}</div>
+            {a.service && height >= 56 && <div className="truncate text-gray-300">{a.service.name}</div>}
+          </>
+        )}
       </div>
     </button>
   )
@@ -158,6 +223,16 @@ export default function JournalGrid({ columns, appointments, range, isToday, dat
     }
   }, [dataKey, isToday, range.start])
 
+  // Раскладка пересекающихся записей; колонка шире, если дорожек много
+  const layout = useMemo(() => {
+    return columns.map(col => {
+      const colAppointments = appointments.filter(a => (col.master ? a.master?.id === col.master.id : !a.master))
+      const lanes = layoutBlocks(colAppointments)
+      const maxLanes = Math.max(1, ...Object.values(lanes).map(l => l.lanes))
+      return { col, colAppointments, lanes, minWidth: Math.max(COL_MIN_PX, maxLanes * LANE_MIN_PX) }
+    })
+  }, [columns, appointments])
+
   const nowVisible = isToday && now >= range.start && now <= range.end
   const nowTop = (now - range.start) * PX_PER_MIN
 
@@ -173,8 +248,8 @@ export default function JournalGrid({ columns, appointments, range, isToday, dat
       <div
         className="grid"
         style={{
-          gridTemplateColumns: `${TIME_COL_PX}px repeat(${columns.length}, minmax(${COL_MIN_PX}px, 1fr))`,
-          minWidth: TIME_COL_PX + COL_MIN_PX * columns.length,
+          gridTemplateColumns: `${TIME_COL_PX}px ${layout.map(l => `minmax(${l.minWidth}px, 1fr)`).join(' ')}`,
+          minWidth: TIME_COL_PX + layout.reduce((sum, l) => sum + l.minWidth, 0),
         }}
       >
         {/* Угол над колонкой времени */}
@@ -201,9 +276,7 @@ export default function JournalGrid({ columns, appointments, range, isToday, dat
         </div>
 
         {/* Колонки мастеров */}
-        {columns.map(col => {
-          const colAppointments = appointments.filter(a => (col.master ? a.master?.id === col.master.id : !a.master))
-          const lanes = layoutBlocks(colAppointments)
+        {layout.map(({ col, colAppointments, lanes }) => {
           const work = col.work
           return (
             <div

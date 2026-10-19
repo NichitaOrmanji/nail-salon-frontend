@@ -102,6 +102,18 @@ export default function AdminLayout() {
   }, [loadPending])
   useAutoRefresh(loadPending)
 
+  // Выезжающее меню закрывается Escape (раньше карточки записи под ним)
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKey = e => {
+      if (e.key !== 'Escape') return
+      e.stopPropagation()
+      setMenuOpen(false)
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [menuOpen])
+
   const sidebarProps = {
     me,
     isManager,
@@ -120,8 +132,8 @@ export default function AdminLayout() {
 
       {/* Выезжающее меню (< 768px) */}
       {menuOpen && (
-        <div className="md:hidden fixed inset-0 z-40 flex">
-          <aside className="w-72 max-w-[85vw] h-full relative" style={{ backgroundColor: '#1a1a1a', borderRight: '1px solid #2e2e2e' }}>
+        <div className="md:hidden fixed inset-0 z-[45] flex">
+          <aside role="dialog" aria-label="Меню" className="w-72 max-w-[85vw] h-full relative" style={{ backgroundColor: '#1a1a1a', borderRight: '1px solid #2e2e2e' }}>
             <button
               type="button"
               aria-label="Закрыть меню"

@@ -164,7 +164,7 @@ function MasterModal({ master, services, onClose, onChanged, onCreated }) {
           <>
             <ScheduleSection key={`schedule-${master.id}`} master={master} onSaved={onChanged} />
             <DaysOffSection master={master} />
-            <AccessSection key={`access-${master.id}-${master.user || ''}-${master.has_access}`} master={master} onChanged={onChanged} />
+            <AccessSection key={`access-${master.id}`} master={master} onChanged={onChanged} />
             <Section title={master.is_active ? 'Скрыть мастера' : 'Мастер скрыт'}>
               <p className="text-gray-500 text-xs mb-3">
                 {master.is_active

@@ -26,6 +26,14 @@ export async function updateAppointment(id, data) {
   return response.data
 }
 
+// Все будущие записи «Ожидает» (тот же набор, что считает бейдж; не больше 200)
+export const MAX_PENDING_ITEMS = 200
+
+export async function fetchPendingAppointments() {
+  const response = await staffApi.get('/appointments/pending/')
+  return expectArray(response.data)
+}
+
 export async function fetchPendingCount() {
   const response = await staffApi.get('/appointments/pending-count/')
   return Number(response.data?.count) || 0

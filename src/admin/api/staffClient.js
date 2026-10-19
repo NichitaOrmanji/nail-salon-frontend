@@ -27,7 +27,20 @@ export function saveStaffTokens({ access, refresh }) {
   } catch { /* хранилище недоступно */ }
 }
 
+// Номер сессии: растёт при каждом выходе. Ответы на запросы, отправленные
+// до выхода (в т.ч. обновление токена), не должны вернуть токены в хранилище
+let sessionGeneration = 0
+// Общий запрос обновления токена (см. refreshAccessToken)
+let refreshPromise = null
+
+export function getStaffSessionGeneration() {
+  return sessionGeneration
+}
+
 export function clearStaffTokens() {
+  sessionGeneration += 1
+  // Обновление токена старой сессии больше не общее для новых запросов
+  refreshPromise = null
   try {
     localStorage.removeItem(ACCESS_KEY)
     localStorage.removeItem(REFRESH_KEY)
@@ -145,6 +158,7 @@ export function expectArray(data) {
 }
 
 staffApi.interceptors.request.use(config => {
+  config._generation = sessionGeneration
   const token = getStaffAccessToken()
   if (token && !isAuthUrl(config.url)) {
     config.headers.Authorization = `Bearer ${token}`
@@ -152,23 +166,50 @@ staffApi.interceptors.request.use(config => {
   return config
 })
 
-// Один общий запрос обновления токена на все параллельные 401
-let refreshPromise = null
+// Сессия завершилась (вышли), пока шёл запрос: ответ не применяем, повторов нет
+function sessionEndedError() {
+  const error = new Error('Сессия завершена. Войдите снова.')
+  error.sessionEnded = true
+  return error
+}
 
+// Один общий запрос обновления токена на все параллельные 401.
+// Ошибка с refreshRejected — сервер отверг refresh-токен (400/401), нужно выйти;
+// сетевая ошибка или 5xx — токены сохраняются, можно повторить позже
 function refreshAccessToken() {
   if (!refreshPromise) {
     const refresh = readStorage(REFRESH_KEY)
-    refreshPromise = (refresh
-      ? staffApi.post('/auth/refresh/', { refresh }).then(response => {
+    const generation = sessionGeneration
+    if (!refresh) {
+      const error = new Error('Нет refresh-токена')
+      error.refreshRejected = true
+      return Promise.reject(error)
+    }
+    const promise = staffApi.post('/auth/refresh/', { refresh })
+      .then(response => {
+        if (generation !== sessionGeneration) throw sessionEndedError()
         const access = response.data?.access
-        if (!access) throw new Error('Нет токена в ответе')
-        saveStaffTokens({ access, refresh: response.data?.refresh })
+        if (!access) throw new Error('Ошибка сервера. Попробуйте позже.')
+        // Пока шёл запрос, токены уже сменились (смена пароля, другая вкладка) —
+        // не перетираем их, повтор возьмёт текущий access-токен
+        if (readStorage(REFRESH_KEY) === refresh) {
+          saveStaffTokens({ access, refresh: response.data?.refresh })
+        }
         return access
+      }, error => {
+        if (generation !== sessionGeneration) throw sessionEndedError()
+        const stored = readStorage(REFRESH_KEY)
+        if (stored && stored !== refresh) {
+          // Старый refresh-токен отвергнут, но уже сохранены новые — работаем с ними
+          return getStaffAccessToken()
+        }
+        if (error?.status === 400 || error?.status === 401) error.refreshRejected = true
+        throw error
       })
-      : Promise.reject(new Error('Нет refresh-токена'))
-    ).finally(() => {
-      refreshPromise = null
-    })
+      .finally(() => {
+        if (refreshPromise === promise) refreshPromise = null
+      })
+    refreshPromise = promise
   }
   return refreshPromise
 }
@@ -187,16 +228,32 @@ staffApi.interceptors.response.use(
     const message = extractMessage(data)
 
     if (status === 401 && !isAuthUrl(config.url)) {
+      // Запрос ушёл до выхода из панели — ничего не обновляем и не выходим повторно
+      if (config._generation !== sessionGeneration) {
+        return Promise.reject(sessionEndedError())
+      }
       if (!config._retried) {
+        let refreshed = false
         try {
           await refreshAccessToken()
+          refreshed = true
+        } catch (refreshError) {
+          if (refreshError?.sessionEnded) return Promise.reject(refreshError)
+          if (!refreshError?.refreshRejected) {
+            // Нет сети или ошибка сервера: токены не трогаем, следующий запрос попробует снова
+            return Promise.reject(refreshError instanceof Error ? refreshError : new Error('Ошибка сервера. Попробуйте позже.'))
+          }
+          // refresh-токен недействителен — ниже выходим из панели
+        }
+        if (refreshed) {
+          if (config._generation !== sessionGeneration) return Promise.reject(sessionEndedError())
           // Новый токен подставит перехватчик запроса
           config._retried = true
           return staffApi(config)
-        } catch {
-          // refresh не удался — ниже выходим из панели
         }
       }
+      // Параллельный запрос уже вывел из панели — второй раз не выходим
+      if (config._generation !== sessionGeneration) return Promise.reject(sessionEndedError())
       const text = 'Сессия истекла. Войдите снова.'
       forceStaffLogout(text)
       return Promise.reject(apiError(text, status, data))

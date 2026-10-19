@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from 'react'
-import { Button, ErrorText, TextArea } from '../ui'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
+import { Button, TextArea } from '../ui'
 import StatusBadge from '../StatusBadge'
 import { IconClose } from '../Icons'
 import { updateAppointment } from '../../api/appointments'
 import { notifyDataChanged } from '../../utils/events'
 import { formatShortDate, todayString } from '../../utils/time'
 import { ACTIVE_STATUSES } from '../../utils/statuses'
+import { DISCARD_CONFIRM } from '../../utils/journal'
 import { formatDuration, formatPrice } from '../../../utils/format'
 
 function Row({ label, children }) {
@@ -17,28 +18,76 @@ function Row({ label, children }) {
   )
 }
 
-// Карточка записи: боковая панель (≥ 640px) или весь экран (< 640px).
+// Карточка записи: боковая панель (≥ 640px, под панелью дня — шапка с «Новые: N»
+// и «+ Запись» остаются доступны) или весь экран (< 640px).
 // Заметка хранится локально — опрос журнала не сбрасывает её, пока не сохранили.
-export default function AppointmentCard({ appointment: a, isManager, onClose, onEdit }) {
-  const [notes, setNotes] = useState(a.notes || '')
+// hidden — карточка спрятана под открытой формой, но не размонтирована (ввод сохраняется).
+// topAnchorRef — элемент, под которым начинается боковая панель.
+export default function AppointmentCard({ appointment: a, isManager, hidden = false, topAnchorRef, onDirtyChange, onClose, onEdit }) {
+  const serverNotes = a.notes || ''
+  const [notes, setNotes] = useState(serverNotes)
+  const [baseNotes, setBaseNotes] = useState(serverNotes)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const panelRef = useRef(null)
 
-  const onCloseRef = useRef(onClose)
+  // Заметку изменили на сервере (форма, другой сотрудник): если своих правок нет — берём новую
+  if (serverNotes !== baseNotes) {
+    setBaseNotes(serverNotes)
+    if (notes === baseNotes) setNotes(serverNotes)
+  }
+
+  const notesChanged = notes !== serverNotes
+  const isActive = ACTIVE_STATUSES.includes(a.status)
+  const canMarkVisit = isActive && a.date <= todayString()
+  const canRestore = a.status === 'cancelled' || a.status === 'no_show' || a.status === 'completed'
+  const hasActions = isActive || canRestore || isManager
+
+  // Журнал знает, есть ли несохранённая заметка (переспросить при переходе к другой записи)
   useEffect(() => {
-    onCloseRef.current = onClose
+    onDirtyChange?.(notesChanged)
+  }, [notesChanged, onDirtyChange])
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange])
+
+  // Закрыть карточку; несохранённую заметку — только после подтверждения
+  function requestClose() {
+    if (notesChanged && !window.confirm(DISCARD_CONFIRM)) return
+    onClose()
+  }
+
+  const requestCloseRef = useRef(requestClose)
+  useEffect(() => {
+    requestCloseRef.current = requestClose
   })
   useEffect(() => {
+    if (hidden) return
     const onKey = e => {
-      if (e.key === 'Escape') onCloseRef.current?.()
+      if (e.key !== 'Escape') return
+      // Поверх карточки открыто модальное окно — Escape относится к нему
+      if (document.querySelector('[aria-modal="true"]')) return
+      requestCloseRef.current()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [hidden])
 
-  const notesChanged = notes !== (a.notes || '')
-  const isActive = ACTIVE_STATUSES.includes(a.status)
-  const canMarkVisit = isActive && a.date <= todayString()
+  // Боковая панель начинается под панелью дня (её высота меняется при переносе строк)
+  useLayoutEffect(() => {
+    const anchor = topAnchorRef?.current
+    const panel = panelRef.current
+    if (!anchor || !panel) return
+    const update = () => {
+      panel.style.setProperty('--card-top', `${Math.max(0, Math.round(anchor.getBoundingClientRect().bottom))}px`)
+    }
+    update()
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null
+    observer?.observe(anchor)
+    window.addEventListener('resize', update)
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [topAnchorRef, hidden])
 
   async function patch(data, confirmText) {
     if (confirmText && !window.confirm(confirmText)) return
@@ -56,7 +105,8 @@ export default function AppointmentCard({ appointment: a, isManager, onClose, on
 
   return (
     <div
-      className="fixed inset-0 sm:inset-y-0 sm:left-auto sm:right-0 sm:w-[400px] z-40 flex flex-col shadow-2xl"
+      ref={panelRef}
+      className={`fixed inset-0 sm:left-auto sm:top-[var(--card-top,0px)] sm:w-[360px] lg:w-[400px] z-40 flex-col shadow-2xl ${hidden ? 'hidden' : 'flex'}`}
       style={{ backgroundColor: '#1a1a1a', borderLeft: '1px solid #2e2e2e' }}
       role="dialog"
       aria-label="Карточка записи"
@@ -69,7 +119,7 @@ export default function AppointmentCard({ appointment: a, isManager, onClose, on
         <StatusBadge status={a.status} />
         <button
           type="button"
-          onClick={onClose}
+          onClick={requestClose}
           aria-label="Закрыть"
           className="w-11 h-11 rounded-xl flex items-center justify-center text-gray-400 active:scale-90"
         >
@@ -100,38 +150,49 @@ export default function AppointmentCard({ appointment: a, isManager, onClose, on
 
         <div className="py-3">
           <div className="text-gray-500 text-sm mb-2">Заметка</div>
-          <TextArea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Заметка для персонала" />
+          <TextArea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Заметка для персонала" aria-label="Заметка" />
           {notesChanged && (
             <div className="flex justify-end gap-2 mt-2">
-              <Button onClick={() => setNotes(a.notes || '')} disabled={busy}>Отменить</Button>
+              <Button onClick={() => setNotes(serverNotes)} disabled={busy}>Отменить</Button>
               <Button variant="primary" onClick={() => patch({ notes })} disabled={busy}>Сохранить</Button>
             </div>
           )}
         </div>
-
-        <ErrorText className="mb-3">{error}</ErrorText>
       </div>
 
-      <div className="flex-shrink-0 px-5 py-3 flex flex-wrap gap-2" style={{ borderTop: '1px solid #2e2e2e' }}>
-        {a.status === 'pending' && (
-          <Button variant="primary" disabled={busy} onClick={() => patch({ status: 'confirmed' })}>Подтвердить</Button>
-        )}
-        {canMarkVisit && (
-          <>
-            <Button disabled={busy} style={{ color: '#60a5fa' }} onClick={() => patch({ status: 'completed' })}>Пришёл</Button>
-            <Button disabled={busy} style={{ color: '#f87171' }} onClick={() => patch({ status: 'no_show' })}>Не пришёл</Button>
-          </>
-        )}
-        {isActive && (
-          <Button variant="danger" disabled={busy} onClick={() => patch({ status: 'cancelled' }, 'Отменить запись?')}>Отменить</Button>
-        )}
-        {(a.status === 'cancelled' || a.status === 'no_show') && (
-          <Button disabled={busy} onClick={() => patch({ status: 'confirmed' })}>Вернуть</Button>
-        )}
-        {isManager && (
-          <Button disabled={busy} onClick={() => onEdit(a)}>Перенести/изменить</Button>
-        )}
-      </div>
+      {/* Низ закреплён: ошибка действия видна над кнопками даже на маленьком экране.
+          Нет ни кнопок, ни ошибки — пустую полосу не показываем */}
+      {(hasActions || error) && (
+        <div className="flex-shrink-0 px-5 py-3 flex flex-wrap gap-2" style={{ borderTop: '1px solid #2e2e2e' }}>
+          {error && <p role="alert" className="basis-full text-red-400 text-sm">{error}</p>}
+          {a.status === 'pending' && (
+            <Button variant="primary" disabled={busy} onClick={() => patch({ status: 'confirmed' })}>Подтвердить</Button>
+          )}
+          {canMarkVisit && (
+            <>
+              <Button disabled={busy} style={{ color: '#60a5fa' }} onClick={() => patch({ status: 'completed' })}>Пришёл</Button>
+              <Button disabled={busy} style={{ color: '#f87171' }} onClick={() => patch({ status: 'no_show' })}>Не пришёл</Button>
+            </>
+          )}
+          {isActive && (
+            <Button variant="danger" disabled={busy} onClick={() => patch({ status: 'cancelled' }, 'Отменить запись?')}>Отменить</Button>
+          )}
+          {canRestore && (
+            <Button
+              disabled={busy}
+              onClick={() => patch(
+                { status: 'confirmed' },
+                a.status === 'completed' ? 'Вернуть запись в «Подтверждена»? Отметка «Пришёл» снимется.' : undefined
+              )}
+            >
+              Вернуть
+            </Button>
+          )}
+          {isManager && (
+            <Button disabled={busy} onClick={() => onEdit(a)}>Перенести/изменить</Button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

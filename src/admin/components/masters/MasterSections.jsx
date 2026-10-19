@@ -120,16 +120,23 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
   )
 }
 
+// Выходные по датам показываем и добавляем на год вперёд
+const DAYS_OFF_AHEAD = 365
+
 export function DaysOffSection({ master, readOnly }) {
   const [items, setItems] = useState(null)
   const [newDate, setNewDate] = useState('')
   const [error, setError] = useState(null)
   const [warning, setWarning] = useState(null)
+  const [message, setMessage] = useState(null)
   const [busy, setBusy] = useState(false)
 
+  const today = todayString()
+  const maxDate = addDays(today, DAYS_OFF_AHEAD)
+
   const load = useCallback(() => {
-    const today = todayString()
-    return fetchDaysOff({ dateFrom: today, dateTo: addDays(today, 60) })
+    const from = todayString()
+    return fetchDaysOff({ dateFrom: from, dateTo: addDays(from, DAYS_OFF_AHEAD) })
       .then(list => setItems(list.filter(d => d.master === master.id).sort((a, b) => a.date.localeCompare(b.date))))
       .catch(err => setError(err.message))
   }, [master.id])
@@ -141,12 +148,18 @@ export function DaysOffSection({ master, readOnly }) {
   async function handleAdd(e) {
     e.preventDefault()
     if (!newDate) return
+    if (newDate < today || newDate > maxDate) {
+      setError(`Выберите дату с ${formatShortDate(today)} по ${formatShortDate(maxDate)}`)
+      return
+    }
     setError(null)
     setWarning(null)
+    setMessage(null)
     setBusy(true)
     try {
       const result = await addDayOff(master.id, newDate)
       const count = Number(result?.appointments_count) || 0
+      setMessage(`Выходной добавлен: ${formatShortDate(newDate)}`)
       if (count > 0) {
         setWarning(`${formatShortDate(newDate)}: у мастера ${count} записей — перенесите или отмените их`)
       }
@@ -162,6 +175,8 @@ export function DaysOffSection({ master, readOnly }) {
 
   async function handleRemove(date) {
     setError(null)
+    setMessage(null)
+    setWarning(null)
     setBusy(true)
     try {
       await removeDayOff(master.id, date)
@@ -175,13 +190,22 @@ export function DaysOffSection({ master, readOnly }) {
   }
 
   return (
-    <Section title="Выходные по датам (ближайшие 60 дней)">
+    <Section title="Выходные по датам (на год вперёд)">
       {!readOnly && (
-        <form onSubmit={handleAdd} className="flex flex-wrap gap-2 mb-3">
-          <TextInput type="date" min={todayString()} value={newDate} onChange={e => setNewDate(e.target.value)} className="flex-1 min-w-[150px]" aria-label="Дата выходного" />
+        <form onSubmit={handleAdd} noValidate className="flex flex-wrap gap-2 mb-3">
+          <TextInput
+            type="date"
+            min={today}
+            max={maxDate}
+            value={newDate}
+            onChange={e => { setNewDate(e.target.value); setMessage(null) }}
+            className="flex-1 min-w-[150px]"
+            aria-label="Дата выходного"
+          />
           <Button type="submit" variant="primary" disabled={!newDate || busy}>Добавить</Button>
         </form>
       )}
+      {message && <p className="text-xs mb-3" style={{ color: '#34d399' }}>{message}</p>}
       <WarningText className="mb-3">{warning}</WarningText>
       <ErrorText className="mb-3">{error}</ErrorText>
       {items === null && !error && <p className="text-gray-500 text-sm">Загрузка...</p>}
@@ -202,6 +226,8 @@ export function DaysOffSection({ master, readOnly }) {
   )
 }
 
+// Ключ — только id мастера: после перезагрузки списка секция не пересоздаётся,
+// и сообщение «Доступ выдан, логин: …» остаётся на экране
 export function AccessSection({ master, onChanged }) {
   const [username, setUsername] = useState(master.user || '')
   const [password, setPassword] = useState('')
@@ -209,6 +235,16 @@ export function AccessSection({ master, onChanged }) {
   const [error, setError] = useState(null)
   const [message, setMessage] = useState(null)
   const [busy, setBusy] = useState(false)
+
+  // Логин или доступ изменились (сохранили, перезагрузили список) — поля берём из данных мастера
+  const accessKey = `${master.user || ''}|${master.has_access}`
+  const [syncedKey, setSyncedKey] = useState(accessKey)
+  if (accessKey !== syncedKey) {
+    setSyncedKey(accessKey)
+    setUsername(master.user || '')
+    setPassword('')
+    setChangingPassword(false)
+  }
 
   async function handleGrant(e) {
     e.preventDefault()
@@ -241,6 +277,7 @@ export function AccessSection({ master, onChanged }) {
     try {
       await revokeMasterAccess(master.id)
       setUsername('')
+      setMessage('Доступ отключён')
       onChanged()
     } catch (err) {
       setError(err.message)

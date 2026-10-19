@@ -1,4 +1,4 @@
-import staffApi from './staffClient'
+import staffApi, { saveStaffTokens, getStaffSessionGeneration } from './staffClient'
 
 // Вход: { access, refresh, me }
 export async function staffLogin(username, password) {
@@ -12,6 +12,12 @@ export async function fetchStaffMe() {
   return response.data
 }
 
+// После смены пароля старые токены недействительны — бэк отдаёт новые { access, refresh }
 export async function changePassword(oldPassword, newPassword) {
-  await staffApi.post('/auth/password/', { old_password: oldPassword, new_password: newPassword })
+  const generation = getStaffSessionGeneration()
+  const response = await staffApi.post('/auth/password/', { old_password: oldPassword, new_password: newPassword })
+  // Пока шёл запрос, из панели вышли — новые токены не сохраняем
+  if (generation === getStaffSessionGeneration() && response.data?.access) {
+    saveStaffTokens(response.data)
+  }
 }

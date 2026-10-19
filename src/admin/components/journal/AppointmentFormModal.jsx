@@ -7,6 +7,7 @@ import { createAppointment, updateAppointment, fetchFreeTimes, lookupClient } fr
 import { fetchStaffServices } from '../../api/services'
 import { notifyDataChanged } from '../../utils/events'
 import { timeToMin, todayString, nowMinutes } from '../../utils/time'
+import { DISCARD_CONFIRM } from '../../utils/journal'
 
 function isValidTime(value) {
   return /^\d{2}:\d{2}$/.test(value || '')
@@ -178,6 +179,14 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
     }
   }
 
+  // Чипы — свободное время мастера; введённое вручную время вне списка — предупреждаем
+  // (сохранить всё равно можно, окончательно решает сервер)
+  const freeTimes = freeData && Array.isArray(freeData.times) ? freeData.times : null
+  const timeEdited = !isEdit || date !== start.date || time !== start.time || duration !== start.duration || serviceId !== start.serviceId || masterId !== start.masterId
+  if (timeEdited && freeTimes && isValidTime(time) && !warnings.length && !freeTimes.includes(time)) {
+    warnings.push('Это время занято или вне графика')
+  }
+
   const masterChanged = masterId !== start.masterId
   const serviceRequired = !isEdit || masterChanged
   // У записи без мастера можно менять клиента и заметку, но перенос — только с мастером
@@ -192,6 +201,16 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
               : !date ? 'Укажите дату'
                 : !isValidTime(time) ? 'Укажите время'
                   : null
+
+  // Есть несохранённый ввод — закрытие (Escape, крестик, «Отмена») переспрашивает
+  const dirty = phone !== start.phone || name !== start.name || masterId !== start.masterId || serviceId !== start.serviceId ||
+    duration !== start.duration || date !== start.date || time !== start.time || notes !== start.notes || status !== 'confirmed'
+
+  function requestClose() {
+    if (saving) return
+    if (dirty && !window.confirm(DISCARD_CONFIRM)) return
+    onClose()
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -247,9 +266,13 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
     }
   }
 
+  // Ошибка — над кнопками, в закреплённом низу окна: на телефоне её видно сразу
   const footer = (
     <>
-      <Button onClick={onClose}>Отмена</Button>
+      {error && (
+        <p role="alert" className="basis-full text-red-400 text-sm">{error}</p>
+      )}
+      <Button onClick={requestClose}>Отмена</Button>
       <Button variant="primary" type="submit" form="appointment-form" disabled={saving}>
         {saving ? 'Сохраняем...' : isEdit ? 'Сохранить' : 'Создать запись'}
       </Button>
@@ -257,15 +280,17 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
   )
 
   return (
-    <Modal title={isEdit ? 'Изменить запись' : 'Новая запись'} onClose={onClose} footer={footer}>
+    <Modal title={isEdit ? 'Изменить запись' : 'Новая запись'} onClose={requestClose} footer={footer}>
       <form id="appointment-form" onSubmit={handleSubmit} noValidate className="space-y-4">
 
-        <Field label="Телефон">
+        {/* Не <label>-обёртка: иначе подпись относится к кнопке выбора страны, а не к полю номера */}
+        <div>
+          <label htmlFor="appointment-phone" className="block text-gray-400 text-xs font-medium mb-1.5">Телефон</label>
           {/* Без overflow-hidden: иначе обрезается список стран */}
           <div className="rounded-xl relative" style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e' }}>
-            <PhoneField value={phone} onChange={setPhone} />
+            <PhoneField value={phone} onChange={setPhone} inputId="appointment-phone" inputLabel="Телефон" />
           </div>
-        </Field>
+        </div>
         {phone && !phoneValid && <p className="text-gray-500 text-xs -mt-2">Проверьте номер телефона</p>}
         {clientInfo && (
           <p className="text-xs -mt-2">
@@ -374,8 +399,6 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
             </Select>
           </Field>
         )}
-
-        <ErrorText>{error}</ErrorText>
       </form>
     </Modal>
   )
