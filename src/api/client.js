@@ -1,7 +1,9 @@
 import axios from 'axios'
 
+// В продакшене (Vercel) запросы идут на /api того же домена,
+// а vercel.json проксирует их на сервер бэкенда
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api')
 })
 
 // Автоматически добавляем токен если он есть
