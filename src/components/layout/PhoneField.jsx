@@ -13,21 +13,37 @@ const COUNTRIES = [
   { code: 'TR', dial: '+90', flag: '🇹🇷', name: 'Турция' },
 ]
 
+// Разбираем уже сохранённый номер (+37369123456) на код страны и локальную часть
+function splitPhone(value) {
+  const country = value
+    ? [...COUNTRIES].sort((a, b) => b.dial.length - a.dial.length).find(c => value.startsWith(c.dial))
+    : null
+  return country
+    ? { country, local: value.slice(country.dial.length) }
+    : { country: COUNTRIES[0], local: '' }
+}
+
+// Пока номер не введён, наружу отдаём пустую строку, а не один код страны
+function joinPhone(country, local) {
+  return local ? country.dial + local : ''
+}
+
 export default function PhoneField({ value, onChange }) {
-  const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0])
+  const [initial] = useState(() => splitPhone(value))
+  const [selectedCountry, setSelectedCountry] = useState(initial.country)
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [localNumber, setLocalNumber] = useState('')
+  const [localNumber, setLocalNumber] = useState(initial.local)
 
   function handleCountrySelect(country) {
     setSelectedCountry(country)
     setDropdownOpen(false)
-    onChange(country.dial + localNumber)
+    onChange(joinPhone(country, localNumber))
   }
 
   function handleNumberChange(e) {
     const num = e.target.value.replace(/[^0-9]/g, '')
     setLocalNumber(num)
-    onChange(selectedCountry.dial + num)
+    onChange(joinPhone(selectedCountry, num))
   }
 
   return (

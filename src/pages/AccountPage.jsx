@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { fetchMyAppointments } from '../api/profile'
+import { fetchMyAppointments, cancelAppointment } from '../api/profile'
+import { toDateString } from '../utils/format'
 import Spinner from '../components/layout/Spinner'
 
 function IconBack() {
@@ -31,16 +32,42 @@ const STATUS_LABELS = {
 
 export default function AccountPage() {
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { isLoggedIn, logout } = useAuth()
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [cancellingId, setCancellingId] = useState(null)
+  const [cancelError, setCancelError] = useState(null)
+
+  function load() {
+    return fetchMyAppointments()
+      .then(data => { setAppointments(data); setLoading(false) })
+      .catch(err => { setError(err.message || 'Не удалось загрузить записи'); setLoading(false) })
+  }
 
   useEffect(() => {
-    fetchMyAppointments()
-      .then(data => { setAppointments(data); setLoading(false) })
-      .catch(() => { setError('Не удалось загрузить записи'); setLoading(false) })
+    if (isLoggedIn) load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Отменить можно только будущую активную запись
+  function canCancel(a) {
+    return ['pending', 'confirmed'].includes(a.status) && a.date >= toDateString(new Date())
+  }
+
+  async function handleCancel(a) {
+    if (!window.confirm('Отменить запись?')) return
+    setCancelError(null)
+    setCancellingId(a.id)
+    try {
+      await cancelAppointment(a.id)
+      setAppointments(list => list.map(x => x.id === a.id ? { ...x, status: 'cancelled' } : x))
+    } catch (err) {
+      setCancelError(err.message || 'Не удалось отменить запись')
+    } finally {
+      setCancellingId(null)
+    }
+  }
 
   function handleLogout() {
     logout()
@@ -56,6 +83,11 @@ export default function AccountPage() {
 
   function formatTime(timeStr) {
     return timeStr?.slice(0, 5) || ''
+  }
+
+  // Не вошли или сессия истекла — на страницу входа
+  if (!isLoggedIn) {
+    return <Navigate to="/profile" replace />
   }
 
   return (
@@ -99,9 +131,7 @@ export default function AccountPage() {
               onClick={() => {
                 setError(null)
                 setLoading(true)
-                fetchMyAppointments()
-                  .then(data => { setAppointments(data); setLoading(false) })
-                  .catch(() => { setError('Не удалось загрузить записи'); setLoading(false) })
+                load()
               }}
               className="px-6 py-3 rounded-2xl text-white text-sm font-medium active:scale-95"
               style={{ backgroundColor: '#242424' }}
@@ -127,6 +157,9 @@ export default function AccountPage() {
 
         {!loading && !error && appointments.length > 0 && (
           <div className="space-y-3">
+            {cancelError && (
+              <p className="text-red-400 text-sm text-center">{cancelError}</p>
+            )}
             {appointments.map(a => {
               const status = STATUS_LABELS[a.status] || { label: a.status, color: '#9ca3af' }
               return (
@@ -146,6 +179,16 @@ export default function AccountPage() {
                     <span className="text-gray-600 text-xs">·</span>
                     <span className="text-gray-400 text-xs">{formatTime(a.start_time)}</span>
                   </div>
+                  {canCancel(a) && (
+                    <button
+                      onClick={() => handleCancel(a)}
+                      disabled={cancellingId === a.id}
+                      className="mt-4 w-full py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95"
+                      style={{ backgroundColor: '#2e2e2e', color: '#f87171', opacity: cancellingId === a.id ? 0.5 : 1 }}
+                    >
+                      {cancellingId === a.id ? 'Отменяем...' : 'Отменить запись'}
+                    </button>
+                  )}
                 </div>
               )
             })}

@@ -3,14 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
 import { fetchServices } from '../api/services'
 import Spinner from '../components/layout/Spinner'
-
-function IconBack() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 18l-6-6 6-6"/>
-    </svg>
-  )
-}
+import SalonHeader from '../components/layout/SalonHeader'
+import { formatDuration, formatPrice } from '../utils/format'
 
 function IconSearch() {
   return (
@@ -31,37 +25,49 @@ function IconCheck() {
 
 export default function ServicesPage() {
   const navigate = useNavigate()
-  const { services, setServices, getNextRoute } = useBooking()
+  const { master, service, setService, date, time, setDate, setTime, getNextRoute } = useBooking()
   const [allServices, setAllServices] = useState([])
   const [activeCategory, setActiveCategory] = useState('Все')
   const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState(services.map(s => s.id))
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    fetchServices()
+  // Если мастер уже выбран — показываем только его услуги,
+  // если сначала выбрали время — только услуги, на которые есть свободный мастер
+  const masterId = master?.id
+  const filteredByTime = !masterId && date && time
+
+  function load() {
+    return fetchServices({ masterId, date, time })
       .then(data => { setAllServices(data); setLoading(false) })
-      .catch(() => { setError('Не удалось загрузить услуги'); setLoading(false) })
+      .catch(err => { setError(err.message || 'Не удалось загрузить услуги'); setLoading(false) })
+  }
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function retry() {
     setError(null)
     setLoading(true)
-    fetchServices()
-      .then(data => { setAllServices(data); setLoading(false) })
-      .catch(() => { setError('Не удалось загрузить услуги'); setLoading(false) })
+    load()
   }
 
   const categories = ['Все', ...new Set(allServices.map(s => s.category_name))]
 
-  function toggleService(service) {
-    const exists = selected.includes(service.id)
-    const newSelected = exists
-      ? selected.filter(id => id !== service.id)
-      : [...selected, service.id]
-    setSelected(newSelected)
-    setServices(allServices.filter(s => newSelected.includes(s.id)))
+  // Бэкенд хранит одну услугу на запись, поэтому выбор одиночный
+  function selectService(s) {
+    if (service?.id === s.id) {
+      setService(null)
+      return
+    }
+    setService(s)
+    // Время подбиралось под другую услугу — его нужно выбрать заново
+    if (service && !filteredByTime) {
+      setDate(null)
+      setTime(null)
+    }
   }
 
   const filtered = allServices.filter(s => {
@@ -72,39 +78,17 @@ export default function ServicesPage() {
 
   const visibleCategories = [...new Set(filtered.map(s => s.category_name))]
 
-  function formatDuration(minutes) {
-    const h = Math.floor(minutes / 60)
-    const m = minutes % 60
-    if (h && m) return `${h} ч ${m} мин`
-    if (h) return `${h} ч`
-    return `${m} мин`
-  }
-
-  const totalPrice = allServices.filter(s => selected.includes(s.id)).reduce((sum, s) => sum + s.price, 0)
-  const totalDuration = allServices.filter(s => selected.includes(s.id)).reduce((sum, s) => sum + (s.duration || 0), 0)
-
   return (
     <div className="min-h-screen pb-32" style={{ backgroundColor: '#1a1a1a' }}>
 
-      {/* Шапка */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
-        <button
-          onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-          style={{ backgroundColor: '#242424' }}
-        >
-          <IconBack />
-        </button>
-        <div className="flex-1">
-          <div className="text-white text-sm font-semibold">Название салона</div>
-          <div className="text-gray-500 text-xs">ул. Пушкина, 1</div>
-        </div>
-      </div>
+      <SalonHeader />
 
       {/* Заголовок */}
       <div className="px-6 pt-6 pb-4">
         <h2 className="text-white text-2xl font-bold tracking-tight">Услуги</h2>
-        <p className="text-gray-500 text-sm mt-1">Можно выбрать несколько</p>
+        <p className="text-gray-500 text-sm mt-1">
+          {masterId ? `Услуги мастера ${master.name}` : filteredByTime ? 'Доступные в выбранное время' : 'Выберите услугу'}
+        </p>
       </div>
 
       {loading && <Spinner text="Загружаем услуги..." />}
@@ -122,7 +106,14 @@ export default function ServicesPage() {
         </div>
       )}
 
-      {!loading && !error && (
+      {!loading && !error && allServices.length === 0 && (
+        <div className="text-center py-12 px-6">
+          <p className="text-white text-sm font-medium mb-1">Нет доступных услуг</p>
+          <p className="text-gray-500 text-sm">Попробуйте выбрать другое время или мастера</p>
+        </div>
+      )}
+
+      {!loading && !error && allServices.length > 0 && (
         <>
           {/* Фильтр категорий */}
           <div className="px-6 flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide">
@@ -161,12 +152,12 @@ export default function ServicesPage() {
               <div key={cat} className="mb-6">
                 <h3 className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">{cat}</h3>
                 <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#242424' }}>
-                  {filtered.filter(s => s.category_name === cat).map((service, idx, arr) => {
-                    const isSelected = selected.includes(service.id)
+                  {filtered.filter(s => s.category_name === cat).map((item, idx, arr) => {
+                    const isSelected = service?.id === item.id
                     return (
                       <button
-                        key={service.id}
-                        onClick={() => toggleService(service)}
+                        key={item.id}
+                        onClick={() => selectService(item)}
                         className="w-full flex items-center justify-between px-4 py-4 transition-all active:scale-95"
                         style={{
                           borderBottom: idx < arr.length - 1 ? '1px solid #2e2e2e' : 'none',
@@ -174,13 +165,13 @@ export default function ServicesPage() {
                         }}
                       >
                         <div className="text-left flex-1">
-                          <div className="text-white text-sm font-medium">{service.name}</div>
+                          <div className="text-white text-sm font-medium">{item.name}</div>
                           <div className="text-gray-500 text-xs mt-0.5">
-                            {formatDuration(service.duration)} · {service.price} L
+                            {formatDuration(item.duration)} · {formatPrice(item.price)}
                           </div>
                         </div>
                         <div
-                          className="w-5 h-5 rounded-md flex items-center justify-center ml-4 flex-shrink-0 transition-all"
+                          className="w-5 h-5 rounded-full flex items-center justify-center ml-4 flex-shrink-0 transition-all"
                           style={{
                             backgroundColor: isSelected ? '#f472b6' : 'transparent',
                             border: isSelected ? 'none' : '2px solid #374151'
@@ -199,7 +190,7 @@ export default function ServicesPage() {
       )}
 
       {/* Кнопка далее */}
-      {selected.length > 0 && (
+      {service && (
         <div className="fixed bottom-0 left-0 right-0 p-4" style={{ backgroundColor: '#1a1a1a' }}>
           <button
             onClick={() => navigate(getNextRoute('services'))}
@@ -208,7 +199,7 @@ export default function ServicesPage() {
           >
             <div className="text-sm font-semibold">Далее</div>
             <div className="text-xs opacity-75 mt-0.5">
-              {selected.length} услуг · {totalDuration} мин · {totalPrice} L
+              {service.name} · {formatDuration(service.duration)} · {formatPrice(service.price)}
             </div>
           </button>
         </div>

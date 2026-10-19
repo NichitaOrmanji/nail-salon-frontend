@@ -1,7 +1,9 @@
 import axios from 'axios'
 
+// В продакшене (Vercel) запросы идут на /api того же домена,
+// а vercel.json проксирует их на сервер бэкенда
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api')
 })
 
 // Автоматически добавляем токен если он есть
@@ -13,6 +15,19 @@ api.interceptors.request.use(config => {
   return config
 })
 
+// Достаём текст ошибки из ответа Django/DRF:
+// { error: '...' }, { detail: '...' }, { non_field_errors: ['...'] }, { field: ['...'] }
+function extractMessage(data) {
+  if (!data || typeof data !== 'object') return null
+  if (typeof data.error === 'string') return data.error
+  if (typeof data.detail === 'string') return data.detail
+  for (const value of Object.values(data)) {
+    if (Array.isArray(value) && typeof value[0] === 'string') return value[0]
+    if (typeof value === 'string') return value
+  }
+  return null
+}
+
 // Перехватчик ошибок
 api.interceptors.response.use(
   response => response,
@@ -20,24 +35,34 @@ api.interceptors.response.use(
     if (!error.response) {
       return Promise.reject(new Error('Нет соединения с сервером. Проверьте интернет.'))
     }
-    const status = error.response.status
-    if (status === 400) {
-      return Promise.reject(new Error('Неверные данные. Проверьте заполненные поля.'))
-    }
+    const { status, data } = error.response
+    const config = error.config
+
     if (status === 401) {
-      // Токен устарел — очищаем и отправляем на главную
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
-      window.location.href = '/'
+      // Токен устарел — выходим из аккаунта и повторяем запрос без токена
+      // (запись и просмотр услуг доступны и без входа)
+      if (config.headers?.Authorization && !config._retried) {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        window.dispatchEvent(new Event('auth:logout'))
+        config._retried = true
+        delete config.headers.Authorization
+        return api(config)
+      }
       return Promise.reject(new Error('Сессия истекла. Войдите снова.'))
     }
+
+    const message = extractMessage(data)
+    if (status === 400) {
+      return Promise.reject(new Error(message || 'Неверные данные. Проверьте заполненные поля.'))
+    }
     if (status === 404) {
-      return Promise.reject(new Error('Данные не найдены.'))
+      return Promise.reject(new Error(message || 'Данные не найдены.'))
     }
     if (status >= 500) {
       return Promise.reject(new Error('Ошибка сервера. Попробуйте позже.'))
     }
-    return Promise.reject(new Error('Что-то пошло не так. Попробуйте ещё раз.'))
+    return Promise.reject(new Error(message || 'Что-то пошло не так. Попробуйте ещё раз.'))
   }
 )
 
