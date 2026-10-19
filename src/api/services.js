@@ -1,4 +1,4 @@
-import api, { SLUG } from './client'
+import api, { SLUG, expectArray } from './client'
 
 // masterId — услуги конкретного мастера;
 // date + time — услуги, на которые есть свободный мастер в это время
@@ -11,5 +11,5 @@ export async function fetchServices({ masterId, date, time } = {}) {
     params.time = time
   }
   const response = await api.get(`/companies/${SLUG}/services/`, { params })
-  return response.data
+  return expectArray(response.data)
 }

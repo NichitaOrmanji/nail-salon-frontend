@@ -28,9 +28,28 @@ function extractMessage(data) {
   return null
 }
 
+// Ответ API — всегда JSON. HTML приходит, если адрес API или прокси
+// настроены неверно и вместо бэкенда ответил сам фронтенд (index.html)
+function checkJson(response) {
+  const type = response.headers?.['content-type'] || ''
+  if (typeof response.data === 'string' && type.includes('text/html')) {
+    const url = `${response.config.baseURL || ''}${response.config.url || ''}`
+    return Promise.reject(new Error(`API вернул HTML вместо данных (${url}). Проверьте адрес API.`))
+  }
+  return response
+}
+
+// Списки с бэкенда должны быть массивами — иначе страница упадёт на .map()
+export function expectArray(data) {
+  if (!Array.isArray(data)) {
+    throw new Error('Сервер вернул данные в неожиданном формате.')
+  }
+  return data
+}
+
 // Перехватчик ошибок
 api.interceptors.response.use(
-  response => response,
+  checkJson,
   error => {
     if (!error.response) {
       return Promise.reject(new Error('Нет соединения с сервером. Проверьте интернет.'))

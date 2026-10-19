@@ -1,9 +1,9 @@
-import api from './client'
+import api, { expectArray } from './client'
 
 // История записей залогиненного пользователя
 export async function fetchMyAppointments() {
   const response = await api.get('/appointments/my/')
-  return response.data
+  return expectArray(response.data)
 }
 
 export async function cancelAppointment(id) {
