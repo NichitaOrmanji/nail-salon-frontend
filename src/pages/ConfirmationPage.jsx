@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import { useBooking } from '../context/BookingContext'
 import { createAppointment } from '../api/appointments'
+import { fetchMe } from '../api/auth'
+import { useAuth } from '../context/AuthContext'
 import { fetchSlotsByMaster } from '../api/slots'
 import SalonHeader from '../components/layout/SalonHeader'
 import PhoneField from '../components/layout/PhoneField'
@@ -29,6 +31,7 @@ async function resolveMasterId({ master, service, date, time }) {
 export default function ConfirmationPage() {
   const navigate = useNavigate()
   const { master, service, date, time, reset, getNextRoute } = useBooking()
+  const { isLoggedIn } = useAuth()
 
   // Данные клиента запоминаем, чтобы не вводить их при каждой записи
   const [name, setName] = useState(() => localStorage.getItem('client_name') || '')
@@ -38,6 +41,21 @@ export default function ConfirmationPage() {
   const [sent, setSent] = useState(false)
   const [submitError, setSubmitError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+
+  // Залогиненному клиенту подставляем имя из профиля, если оно ещё не известно
+  useEffect(() => {
+    if (!isLoggedIn || localStorage.getItem('client_name')) return
+    let cancelled = false
+    fetchMe()
+      .then(me => {
+        const fullName = [me?.name, me?.surname].filter(Boolean).join(' ')
+        if (cancelled || !fullName) return
+        localStorage.setItem('client_name', fullName)
+        setName(current => current || fullName)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [isLoggedIn])
 
   const phoneValid = phone && isValidPhoneNumber(phone)
   const canSubmit = name.trim() && phoneValid

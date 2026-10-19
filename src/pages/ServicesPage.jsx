@@ -39,7 +39,11 @@ export default function ServicesPage() {
 
   function load() {
     return fetchServices({ masterId, date, time })
-      .then(data => { setAllServices(data); setLoading(false) })
+      // Услуга без категории (категорию удалили в панели салона) — в отдельной группе
+      .then(data => {
+        setAllServices(data.map(s => ({ ...s, category_name: s.category_name || 'Без категории' })))
+        setLoading(false)
+      })
       .catch(err => { setError(err.message || 'Не удалось загрузить услуги'); setLoading(false) })
   }
 
