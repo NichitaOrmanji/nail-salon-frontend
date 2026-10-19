@@ -1,0 +1,659 @@
+From bc367628855ad29b51929b3b178a14c456d87033 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Mon, 19 Oct 2026 15:33:14 +0000
+Subject: [PATCH 3/5] =?UTF-8?q?fix:=20=D0=BF=D1=80=D0=BE=D0=B2=D0=B5=D1=80?=
+ =?UTF-8?q?=D0=BA=D0=B0=20=D0=B7=D0=B0=D0=BF=D0=B8=D1=81=D0=B8=20=D0=B8=20?=
+ =?UTF-8?q?=D0=B5=D0=B4=D0=B8=D0=BD=D1=8B=D0=B9=20=D1=80=D0=B0=D1=81=D1=87?=
+ =?UTF-8?q?=D1=91=D1=82=20=D1=81=D0=B2=D0=BE=D0=B1=D0=BE=D0=B4=D0=BD=D0=BE?=
+ =?UTF-8?q?=D0=B3=D0=BE=20=D0=B2=D1=80=D0=B5=D0=BC=D0=B5=D0=BD=D0=B8?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- расчёт свободного времени вынесен в bookings/slots.py вместо трёх копий;
+  прошедшее время сегодняшнего дня больше не предлагается
+- при создании записи проверяется, что услуга и мастер из этого салона
+  и активны, мастер делает услугу, а время свободно и входит в график —
+  раньше можно было записаться на 03:00 или на прошедшую дату
+- без мастера («любой специалист») назначается первый свободный
+- создание записи под select_for_update мастера: два одновременных
+  запроса не займут одно время
+- телефон клиента в записи нормализуется в E.164
+- списки мастеров и услуг: только этот салон и только активные
+  (раньше /masters/ возвращал мастеров всех салонов)
+- неверная или пустая дата в /points/, /slots/, /services/ даёт 400, а не 500
+- добавлены тесты (bookings/tests.py)
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01WDmp5pkZbZV6bSq2pwkwiX
+---
+ bookings/auth_views.py  |  12 +--
+ bookings/phone.py       |  13 +++
+ bookings/serializers.py |  50 ++++++----
+ bookings/slots.py       |  46 +++++++++
+ bookings/tests.py       | 150 +++++++++++++++++++++++++++++-
+ bookings/views.py       | 200 +++++++++++++---------------------------
+ 6 files changed, 305 insertions(+), 166 deletions(-)
+ create mode 100644 bookings/phone.py
+ create mode 100644 bookings/slots.py
+
+diff --git a/bookings/auth_views.py b/bookings/auth_views.py
+index dcac960..ca31e88 100644
+--- a/bookings/auth_views.py
++++ b/bookings/auth_views.py
+@@ -1,11 +1,10 @@
+ from django.contrib.auth.models import User
+-from phonenumbers.phonenumberutil import NumberParseException
+ from rest_framework import status
+ from rest_framework.response import Response
+ from rest_framework.views import APIView
+ from rest_framework_simplejwt.tokens import RefreshToken
+ from .models import ClientProfile, Appointment
+-import phonenumbers
++from .phone import normalize_phone
+ from rest_framework.permissions import IsAuthenticated
+ 
+ def get_token_for_user(user):
+@@ -15,15 +14,6 @@ def get_token_for_user(user):
+         'access': str(refresh.access_token)
+     }
+ 
+-def normalize_phone(phone):
+-    try:
+-        parsed = phonenumbers.parse(phone, None)
+-        if not phonenumbers.is_valid_number(parsed):
+-            return None
+-        return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+-    except NumberParseException:
+-        return None
+-
+ class RegisterView(APIView):
+     def post(self, request):
+         phone = request.data.get('phone')
+diff --git a/bookings/phone.py b/bookings/phone.py
+new file mode 100644
+index 0000000..a75255b
+--- /dev/null
++++ b/bookings/phone.py
+@@ -0,0 +1,13 @@
++import phonenumbers
++from phonenumbers.phonenumberutil import NumberParseException
++
++
++def normalize_phone(phone):
++    """Номер в формате E.164 (+37369123456) или None, если номер неверный."""
++    try:
++        parsed = phonenumbers.parse(phone, None)
++        if not phonenumbers.is_valid_number(parsed):
++            return None
++        return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
++    except NumberParseException:
++        return None
+diff --git a/bookings/serializers.py b/bookings/serializers.py
+index 50f4f16..c71ee31 100644
+--- a/bookings/serializers.py
++++ b/bookings/serializers.py
+@@ -1,7 +1,8 @@
+ from rest_framework import serializers
+ from .models import Company, Service, ServiceCategory, Master, Appointment, Review
+-from datetime import datetime, timedelta
+ from django.db.models import Avg
++from .phone import normalize_phone
++from .slots import get_free_slots
+ 
+ class MasterSerializer(serializers.ModelSerializer):
+     reviews_count = serializers.SerializerMethodField()
+@@ -33,31 +34,46 @@ class CompanySerializer(serializers.ModelSerializer):
+         fields = ['id', 'name', 'slug', 'address', 'phone', 'logo', 'main_photo', 'latitude', 'longitude', 'description']
+ 
+ class AppointmentCreateSerializer(serializers.ModelSerializer):
++    # master не обязателен: без него назначается первый свободный мастер услуги
++    master = serializers.PrimaryKeyRelatedField(queryset=Master.objects.all(), required=False, allow_null=True)
++    service = serializers.PrimaryKeyRelatedField(queryset=Service.objects.all())
++
+     class Meta:
+         model = Appointment
+         fields = ['master', 'service', 'client_name', 'client_phone', 'client_email', 'date', 'start_time', 'notes']
+ 
++    def validate_client_phone(self, value):
++        phone = normalize_phone(value)
++        if not phone:
++            raise serializers.ValidationError('Неверный формат номера телефона')
++        return phone
++
+     def validate(self, data):
+-        master = data['master']
++        company = self.context['company']
++        service = data['service']
++        master = data.get('master')
+         date = data['date']
+         start_time = data['start_time']
+-        service = data['service']
+-
+-        start_dt = datetime.combine(date, start_time)
+-        end_dt = start_dt + timedelta(minutes=service.duration)
+-
+-        conflict = Appointment.objects.filter(
+-            master=master,
+-            date=date,
+-            status__in=['pending', 'confirmed'],
+-            start_time__lt=end_dt.time(),
+-            end_time__gt=start_dt.time()
+-        ).exists()
+ 
+-        if conflict:
+-            raise serializers.ValidationError(
+-                'Окошко уже занято.'
++        if service.company_id != company.id or not service.is_active:
++            raise serializers.ValidationError({'service': 'Услуга не найдена.'})
++
++        if master:
++            if master.company_id != company.id or not master.is_active:
++                raise serializers.ValidationError({'master': 'Мастер не найден.'})
++            if not master.services.filter(id=service.id).exists():
++                raise serializers.ValidationError('Мастер не оказывает эту услугу.')
++            if start_time not in get_free_slots(master, date, service.duration):
++                raise serializers.ValidationError('Это время недоступно. Выберите другое.')
++        else:
++            candidates = company.masters.filter(services=service, is_active=True)
++            master = next(
++                (m for m in candidates if start_time in get_free_slots(m, date, service.duration)),
++                None
+             )
++            if not master:
++                raise serializers.ValidationError('На это время нет свободных мастеров.')
++            data['master'] = master
+ 
+         return data
+ 
+diff --git a/bookings/slots.py b/bookings/slots.py
+new file mode 100644
+index 0000000..f11020b
+--- /dev/null
++++ b/bookings/slots.py
+@@ -0,0 +1,46 @@
++from datetime import datetime, timedelta
++from django.utils import timezone
++from .models import Appointment, MasterSchedule
++
++SLOT_STEP = timedelta(minutes=30)
++ACTIVE_STATUSES = ['pending', 'confirmed']
++
++
++def get_free_slots(master, date, duration_minutes):
++    """Свободное время начала записи (datetime.time) у мастера на дату.
++
++    Учитывает график мастера, уже занятые записи и то, что прошедшее
++    время сегодняшнего дня (по TIME_ZONE) записать нельзя.
++    """
++    today = timezone.localdate()
++    if date < today:
++        return []
++
++    schedule = MasterSchedule.objects.filter(
++        master=master, day_of_week=date.weekday(), is_working=True
++    ).first()
++    if not schedule:
++        return []
++
++    busy = [
++        (datetime.combine(date, start), datetime.combine(date, end))
++        for start, end in Appointment.objects.filter(
++            master=master, date=date, status__in=ACTIVE_STATUSES
++        ).values_list('start_time', 'end_time')
++    ]
++    now = timezone.localtime().replace(tzinfo=None) if date == today else None
++
++    duration = timedelta(minutes=duration_minutes)
++    current = datetime.combine(date, schedule.start_time)
++    end = datetime.combine(date, schedule.end_time)
++
++    free_slots = []
++    while current + duration <= end:
++        slot_end = current + duration
++        is_past = now is not None and current <= now
++        is_busy = any(busy_start < slot_end and busy_end > current for busy_start, busy_end in busy)
++        if not is_past and not is_busy:
++            free_slots.append(current.time())
++        current += SLOT_STEP
++
++    return free_slots
+diff --git a/bookings/tests.py b/bookings/tests.py
+index 7ce503c..ccc4423 100644
+--- a/bookings/tests.py
++++ b/bookings/tests.py
+@@ -1,3 +1,151 @@
++from datetime import date, datetime, time, timedelta
++from unittest import mock
++
+ from django.test import TestCase
++from django.utils import timezone
++from rest_framework.test import APIClient
++
++from .models import Company, Master, Service, Appointment, MasterSchedule
++from .slots import get_free_slots
++
++
++def make_company(slug='salon'):
++    company = Company.objects.create(name=slug, slug=slug)
++    service = Service.objects.create(company=company, name='Маникюр', duration=60, price=300)
++    master = Master.objects.create(company=company, name='Анна')
++    master.services.add(service)
++    for day in range(7):
++        MasterSchedule.objects.create(master=master, day_of_week=day, start_time=time(9), end_time=time(12))
++    return company, service, master
++
++
++class BookingTestCase(TestCase):
++    def setUp(self):
++        self.client = APIClient()
++        self.company, self.service, self.master = make_company()
++        self.day = timezone.localdate() + timedelta(days=7)
++
++    def book(self, **overrides):
++        payload = {
++            'master': self.master.id,
++            'service': self.service.id,
++            'client_name': 'Ирина',
++            'client_phone': '+37369123456',
++            'date': self.day.isoformat(),
++            'start_time': '10:00',
++        }
++        payload.update(overrides)
++        payload = {k: v for k, v in payload.items() if v is not None}
++        return self.client.post(f'/api/companies/{self.company.slug}/appointments/', payload, format='json')
++
++
++class FreeSlotsTests(BookingTestCase):
++    def test_slots_follow_schedule_and_duration(self):
++        slots = get_free_slots(self.master, self.day, 60)
++        self.assertEqual(slots, [time(9), time(9, 30), time(10), time(10, 30), time(11)])
++
++    def test_busy_time_is_excluded(self):
++        Appointment.objects.create(
++            company=self.company, master=self.master, service=self.service, client_name='x',
++            client_phone='x', date=self.day, start_time=time(10), end_time=time(11)
++        )
++        self.assertEqual(get_free_slots(self.master, self.day, 60), [time(9), time(11)])
++
++    def test_cancelled_appointment_frees_time(self):
++        Appointment.objects.create(
++            company=self.company, master=self.master, service=self.service, client_name='x',
++            client_phone='x', date=self.day, start_time=time(10), end_time=time(11), status='cancelled'
++        )
++        self.assertIn(time(10), get_free_slots(self.master, self.day, 60))
++
++    def test_past_date_has_no_slots(self):
++        self.assertEqual(get_free_slots(self.master, timezone.localdate() - timedelta(days=1), 60), [])
++
++    def test_past_time_today_is_excluded(self):
++        today = date(2030, 1, 7)
++        now = timezone.make_aware(datetime(2030, 1, 7, 10, 15))
++        with mock.patch('bookings.slots.timezone.localdate', return_value=today), \
++                mock.patch('bookings.slots.timezone.localtime', return_value=now):
++            self.assertEqual(get_free_slots(self.master, today, 60), [time(10, 30), time(11)])
++
++    def test_day_off_has_no_slots(self):
++        MasterSchedule.objects.filter(master=self.master, day_of_week=self.day.weekday()).update(is_working=False)
++        self.assertEqual(get_free_slots(self.master, self.day, 60), [])
++
++
++class AppointmentCreateTests(BookingTestCase):
++    def test_creates_appointment_with_end_time(self):
++        response = self.book()
++        self.assertEqual(response.status_code, 201, response.data)
++        appointment = Appointment.objects.get()
++        self.assertEqual(appointment.end_time, time(11))
++        self.assertEqual(appointment.client_phone, '+37369123456')
++
++    def test_rejects_taken_time(self):
++        self.assertEqual(self.book().status_code, 201)
++        response = self.book(start_time='10:30')
++        self.assertEqual(response.status_code, 400)
++        self.assertEqual(Appointment.objects.count(), 1)
++
++    def test_rejects_time_outside_schedule(self):
++        self.assertEqual(self.book(start_time='03:00').status_code, 400)
++        self.assertEqual(self.book(start_time='11:30').status_code, 400)  # 11:30 + 60 мин > 12:00
++
++    def test_rejects_past_date(self):
++        response = self.book(date=(timezone.localdate() - timedelta(days=1)).isoformat())
++        self.assertEqual(response.status_code, 400)
++
++    def test_rejects_master_from_other_company(self):
++        _, _, other_master = make_company('other')
++        other_master.services.add(self.service)
++        self.assertEqual(self.book(master=other_master.id).status_code, 400)
++
++    def test_rejects_master_without_service(self):
++        other_service = Service.objects.create(company=self.company, name='Педикюр', duration=60, price=400)
++        self.assertEqual(self.book(service=other_service.id).status_code, 400)
++
++    def test_rejects_invalid_phone(self):
++        self.assertEqual(self.book(client_phone='123').status_code, 400)
++
++    def test_any_master_is_assigned_to_free_one(self):
++        second = Master.objects.create(company=self.company, name='Мария')
++        second.services.add(self.service)
++        MasterSchedule.objects.create(master=second, day_of_week=self.day.weekday(), start_time=time(9), end_time=time(12))
++        self.assertEqual(self.book().status_code, 201)
++
++        response = self.book(master=None)
++        self.assertEqual(response.status_code, 201, response.data)
++        self.assertEqual(Appointment.objects.latest('id').master, second)
++
++        self.assertEqual(self.book(master=None).status_code, 400)  # оба заняты
++
++
++class ListViewsTests(BookingTestCase):
++    def test_masters_only_from_company_and_active(self):
++        make_company('other')
++        Master.objects.create(company=self.company, name='Уволена', is_active=False)
++        response = self.client.get(f'/api/companies/{self.company.slug}/masters/')
++        self.assertEqual([m['name'] for m in response.data], ['Анна'])
++
++    def test_inactive_services_hidden(self):
++        Service.objects.create(company=self.company, name='Архив', duration=30, price=1, is_active=False)
++        response = self.client.get(f'/api/companies/{self.company.slug}/services/')
++        self.assertEqual([s['name'] for s in response.data], ['Маникюр'])
++
++    def test_slots_endpoint(self):
++        response = self.client.get(
++            f'/api/companies/{self.company.slug}/slots/',
++            {'master': self.master.id, 'service': self.service.id, 'date': self.day.isoformat()}
++        )
++        self.assertEqual(response.data['slots'], ['09:00', '09:30', '10:00', '10:30', '11:00'])
++
++    def test_points_requires_valid_date(self):
++        self.assertEqual(self.client.get(f'/api/companies/{self.company.slug}/points/').status_code, 400)
++        response = self.client.get(f'/api/companies/{self.company.slug}/points/', {'date': self.day.isoformat()})
++        self.assertEqual(response.data, ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30'])
+ 
+-# Create your tests here.
++    def test_services_by_time(self):
++        response = self.client.get(
++            f'/api/companies/{self.company.slug}/services/', {'date': self.day.isoformat(), 'time': '11:30'}
++        )
++        self.assertEqual(response.data, [])  # 60 минут после 11:30 не помещаются
+diff --git a/bookings/views.py b/bookings/views.py
+index b0b49f0..695479c 100644
+--- a/bookings/views.py
++++ b/bookings/views.py
+@@ -1,58 +1,30 @@
+ from rest_framework import generics, status
++from rest_framework.exceptions import ValidationError
+ from rest_framework.response import Response
+ from rest_framework.views import APIView
++from django.db import transaction
+ from django.shortcuts import get_object_or_404
+-from .models import Company, Master, Appointment, Service, MasterSchedule, Review
++from .models import Company, Master, Service, Review
+ from .serializers import MasterSerializer, ServiceSerializer, AppointmentCreateSerializer, CompanySerializer, ReviewSerializer
++from .slots import get_free_slots
+ from datetime import datetime, timedelta
+ from django.db.models import Avg
+ 
+ 
+-
+-def get_free_slots(date, master, duration_time):
+-
+-
++def parse_date(value):
+     try:
+-        schedule = MasterSchedule.objects.get(master=master, day_of_week=date.weekday(), is_working=True)
+-    except MasterSchedule.DoesNotExist:
+-        return []
+-
+-    duration = timedelta(minutes=duration_time)
+-
+-    busy = Appointment.objects.filter(
+-        master=master,
+-        date=date,
+-        status__in=['pending', 'confirmed']
+-    ).values_list('start_time', 'end_time')
+-
+-    slots = []
+-    current = datetime.combine(date, schedule.start_time)
+-    end = datetime.combine(date, schedule.end_time)
+-    while duration + current <= end:
+-        slots.append(current.time())
+-        current += timedelta(minutes=30)
+-
+-    free_slots = []
+-    for slot in slots:
+-        slot_start = datetime.combine(date, slot)
+-        slot_end = slot_start + duration
+-
+-        is_busy = any(datetime.combine(date, busy_start) < slot_end and datetime.combine(date, busy_end) > slot_start
+-                      for busy_start, busy_end in busy)
+-
+-        if not is_busy:
+-            free_slots.append(slot)
+-
+-    return free_slots
++        return datetime.strptime(value or '', '%Y-%m-%d').date()
++    except ValueError:
++        return None
+ 
+ 
+ class MasterListView(APIView):
+     def get(self, request, slug):
+         company = get_object_or_404(Company, slug=slug)
+-        masters = Master.objects.all()
++        masters = company.masters.filter(is_active=True)
+         service_id = request.query_params.get('service')
+         if service_id:
+-            service = get_object_or_404(Service, company=company, id=service_id)
++            service = get_object_or_404(Service, company=company, id=service_id, is_active=True)
+             masters = masters.filter(services=service)
+ 
+         serializer = MasterSerializer(masters, many=True)
+@@ -61,24 +33,28 @@ class MasterListView(APIView):
+ class ServiceListView(APIView):
+     def get(self, request, slug):
+         company = get_object_or_404(Company, slug=slug)
+-        services = company.services.all()
++        services = company.services.filter(is_active=True)
+         master_id = request.query_params.get('master_id')
+         date = request.query_params.get("date")
+         time = request.query_params.get("time")
+ 
+         if master_id:
+-            master = get_object_or_404(Master, company=company, id=master_id)
++            master = get_object_or_404(Master, company=company, id=master_id, is_active=True)
+             services = services.filter(masters=master)
+ 
+         elif date and time:
+-            date = datetime.strptime(date, "%Y-%m-%d").date()
+-            targeted_time = datetime.strptime(time, '%H:%M').time()
++            date = parse_date(date)
++            try:
++                targeted_time = datetime.strptime(time, '%H:%M').time()
++            except ValueError:
++                targeted_time = None
++            if not date or not targeted_time:
++                return Response({"error": "Format: date=YYYY-MM-DD, time=HH:MM"}, status=status.HTTP_400_BAD_REQUEST)
+ 
+             fitting_ids = []
+             for service in services:
+-                for master in company.masters.filter(services=service):
+-                    free = get_free_slots(date, master, service.duration)
+-                    if targeted_time in free:
++                for master in company.masters.filter(services=service, is_active=True):
++                    if targeted_time in get_free_slots(master, date, service.duration):
+                         fitting_ids.append(service.id)
+                         break
+             services = services.filter(id__in=fitting_ids)
+@@ -91,65 +67,54 @@ class ServiceListView(APIView):
+ class AppointmentCreateView(generics.CreateAPIView):
+     serializer_class = AppointmentCreateSerializer
+ 
+-    def perform_create(self, serializer):
+-        company = get_object_or_404(Company, slug=self.kwargs['slug'])
++    def get_company(self):
++        if not hasattr(self, '_company'):
++            self._company = get_object_or_404(Company, slug=self.kwargs['slug'])
++        return self._company
+ 
+-        service = serializer.validated_data['service']
+-        start_time = serializer.validated_data['start_time']
+-        date = serializer.validated_data['date']
++    def get_serializer_context(self):
++        context = super().get_serializer_context()
++        context['company'] = self.get_company()
++        return context
+ 
+-        start_dt = datetime.combine(date, start_time)
+-        end_dt = start_dt + timedelta(minutes=service.duration)
++    def perform_create(self, serializer):
++        data = serializer.validated_data
++        service = data['service']
+ 
+-        client = self.request.user if self.request.user.is_authenticated else None
++        # Блокируем мастера, чтобы два одновременных запроса не заняли одно время
++        with transaction.atomic():
++            master = Master.objects.select_for_update().get(pk=data['master'].pk)
++            if data['start_time'] not in get_free_slots(master, data['date'], service.duration):
++                raise ValidationError({'non_field_errors': ['Это время уже заняли. Выберите другое.']})
+ 
+-        serializer.save(company=company, status='pending', end_time=end_dt.time(), client=client)
++            end_dt = datetime.combine(data['date'], data['start_time']) + timedelta(minutes=service.duration)
++            client = self.request.user if self.request.user.is_authenticated else None
++
++            serializer.save(
++                company=self.get_company(),
++                master=master,
++                status='pending',
++                end_time=end_dt.time(),
++                client=client
++            )
+ 
+ 
+ 
+ class SelectData(APIView):
++    """Свободное время салона без привязки к услуге (окна по 30 минут)."""
++
+     def get(self, request, slug):
+-        all_free_points = set()
+         company = get_object_or_404(Company, slug=slug)
+-        masters = Master.objects.filter(company=company)
+-        date = request.query_params.get('date')
+-        try:
+-            date = datetime.strptime(date, '%Y-%m-%d').date()
+-        except ValueError:
++        date = parse_date(request.query_params.get('date'))
++        if not date:
+             return Response({"error": "Date format: YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
+-        duration = timedelta(minutes=30)
+ 
+-        for master in masters.prefetch_related("appointments").all():
+-            try:
+-                schedule = MasterSchedule.objects.get(master=master, day_of_week=date.weekday(), is_working=True)
+-            except MasterSchedule.DoesNotExist:
+-                continue
+-
+-            busy = Appointment.objects.filter(
+-                master=master,
+-                date=date,
+-                status__in=['pending', 'confirmed']
+-            ).values_list('start_time', 'end_time')
+-
+-            slots = []
+-            current = datetime.combine(date, schedule.start_time)
+-            end = datetime.combine(date, schedule.end_time)
+-            while duration + current <= end:
+-                slots.append(current.time())
+-                current += timedelta(minutes=30)
+-
+-            for slot in slots:
+-                slot_start = datetime.combine(date, slot)
+-                slot_end = slot_start + duration
+-
+-                is_busy = any(datetime.combine(date, busy_start) < slot_end and datetime.combine(date, busy_end) > slot_start
+-                              for busy_start, busy_end in busy)
+-
+-                if not is_busy:
+-                    all_free_points.add(slot.strftime('%H:%M'))
++        all_free_points = set()
++        for master in company.masters.filter(is_active=True):
++            for slot in get_free_slots(master, date, 30):
++                all_free_points.add(slot.strftime('%H:%M'))
+ 
+-        free_points = sorted(all_free_points)
+-        return Response(free_points)
++        return Response(sorted(all_free_points))
+ 
+ class SlotListView(APIView):
+     def get(self, request, slug):
+@@ -162,53 +127,14 @@ class SlotListView(APIView):
+         if not all([master_id, service_id, date_str]):
+             return Response({'error': 'Specify master, service and date'}, status=status.HTTP_400_BAD_REQUEST)
+ 
++        master = get_object_or_404(Master, id=master_id, company=company, is_active=True)
++        service = get_object_or_404(Service, id=service_id, company=company, is_active=True)
+ 
+-        master = get_object_or_404(Master, id=master_id, company=company)
+-        service = get_object_or_404(Service, id=service_id, company=company)
+-
+-        try:
+-            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+-        except ValueError:
++        date = parse_date(date_str)
++        if not date:
+             return Response({"error": "Date format: YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
+ 
+-
+-        day_of_week = date.weekday()
+-
+-        try:
+-            schedule = MasterSchedule.objects.get(master=master, day_of_week=day_of_week, is_working=True)
+-        except MasterSchedule.DoesNotExist:
+-            return Response({'date': date_str, 'slots': []})
+-
+-        slots = []
+-        current = datetime.combine(date, schedule.start_time)
+-        end = datetime.combine(date, schedule.end_time)
+-        duration = timedelta(minutes=service.duration)
+-        while duration + current <= end:
+-            slots.append(current.time())
+-            current += timedelta(minutes=30)
+-
+-        busy = Appointment.objects.filter(
+-            master=master,
+-            date=date,
+-            status__in=['pending', 'confirmed']
+-        ).values_list('start_time', 'end_time')
+-
+-        free_slots = []
+-        for slot in slots:
+-            slot_start = datetime.combine(date, slot)
+-            slot_end = slot_start + duration
+-
+-            is_busy = False
+-            for busy_start, busy_end in busy:
+-                busy_start_dt = datetime.combine(date, busy_start)
+-                busy_end_dt = datetime.combine(date, busy_end)
+-
+-                if busy_end_dt > slot_start and slot_end > busy_start_dt:
+-                    is_busy = True
+-                    break
+-
+-            if not is_busy:
+-                free_slots.append(slot.strftime('%H:%M'))
++        free_slots = [slot.strftime('%H:%M') for slot in get_free_slots(master, date, service.duration)]
+ 
+         return Response({
+             'date': date_str,
+@@ -270,5 +196,5 @@ class MasterServices(generics.ListAPIView):
+ 
+     def get_queryset(self):
+         company = get_object_or_404(Company, slug=self.kwargs['slug'])
+-        master = get_object_or_404(Master, id=self.kwargs['master_id'], company=company)
+-        return master.services.all()
+\ No newline at end of file
++        master = get_object_or_404(Master, id=self.kwargs['master_id'], company=company, is_active=True)
++        return master.services.filter(is_active=True)
+\ No newline at end of file
+-- 
+2.43.0
+

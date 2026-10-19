@@ -1,0 +1,101 @@
+From ba8527aeb1ffa836f0abf44fe89916b54d068f82 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Mon, 19 Oct 2026 15:34:29 +0000
+Subject: [PATCH 5/5] =?UTF-8?q?chore:=20=D0=BF=D1=80=D0=BE=D0=B4=D0=B0?=
+ =?UTF-8?q?=D0=BA=D1=88=D0=B5=D0=BD-=D0=B7=D0=B0=D0=BF=D1=83=D1=81=D0=BA?=
+ =?UTF-8?q?=20=D1=87=D0=B5=D1=80=D0=B5=D0=B7=20gunicorn=20=D0=B8=20=D0=BF?=
+ =?UTF-8?q?=D0=BE=D0=BB=D0=BD=D0=BE=D1=86=D0=B5=D0=BD=D0=BD=D1=8B=D0=B9=20?=
+ =?UTF-8?q?=D0=B4=D0=B5=D0=BF=D0=BB=D0=BE=D0=B9?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- контейнер стартует через docker-entrypoint.sh: migrate, collectstatic,
+  gunicorn вместо dev-сервера runserver
+- деплой после git pull пересобирает и перезапускает контейнер web —
+  иначе gunicorn продолжит работать со старым кодом
+- Procfile: миграции на этапе release
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01WDmp5pkZbZV6bSq2pwkwiX
+---
+ .github/workflows/deploy.yml | 7 +++++--
+ Dockerfile                   | 4 +++-
+ Procfile                     | 3 ++-
+ docker-compose.yml           | 4 +++-
+ docker-entrypoint.sh         | 7 +++++++
+ 5 files changed, 20 insertions(+), 5 deletions(-)
+ create mode 100755 docker-entrypoint.sh
+
+diff --git a/.github/workflows/deploy.yml b/.github/workflows/deploy.yml
+index 98c9cf6..efc24b8 100644
+--- a/.github/workflows/deploy.yml
++++ b/.github/workflows/deploy.yml
+@@ -15,6 +15,9 @@ jobs:
+           username: ${{ secrets.SERVER_USER }}
+           key: ${{ secrets.SSH_PRIVATE_KEY }}
+           script: |
++            set -e
+             cd online-registration-site
+-            
+-            git pull origin main
+\ No newline at end of file
++            git pull origin main
++            # gunicorn не перезагружает код сам: пересобираем и перезапускаем контейнер
++            docker compose up -d --build web
++            docker image prune -f
+\ No newline at end of file
+diff --git a/Dockerfile b/Dockerfile
+index 45b3221..c5b22f7 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -6,4 +6,6 @@ COPY requirements.txt .
+ 
+ RUN pip install --no-cache-dir -r requirements.txt
+ 
+-COPY . .
+\ No newline at end of file
++COPY . .
++
++CMD ["sh", "docker-entrypoint.sh"]
+diff --git a/Procfile b/Procfile
+index 4bb3947..9aff279 100644
+--- a/Procfile
++++ b/Procfile
+@@ -1 +1,2 @@
+-web: gunicorn config.wsgi:application
+\ No newline at end of file
++release: python manage.py migrate --noinput
++web: gunicorn config.wsgi:application
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 95d2be4..598a3e3 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -13,8 +13,10 @@ services:
+ 
+   web:
+     build: .
++    depends_on:
++      - db
+     container_name: django_salon_tools
+-    command: python manage.py runserver 0.0.0.0:8000
++    # Миграции, collectstatic и gunicorn — в docker-entrypoint.sh
+     ports:
+       - "80:8000"
+     volumes:
+diff --git a/docker-entrypoint.sh b/docker-entrypoint.sh
+new file mode 100755
+index 0000000..f851b91
+--- /dev/null
++++ b/docker-entrypoint.sh
+@@ -0,0 +1,7 @@
++#!/bin/sh
++set -e
++
++python manage.py migrate --noinput
++python manage.py collectstatic --noinput
++
++exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers "${GUNICORN_WORKERS:-3}"
+-- 
+2.43.0
+

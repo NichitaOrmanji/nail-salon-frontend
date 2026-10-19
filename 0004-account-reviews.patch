@@ -1,0 +1,238 @@
+From 3a0c587eafaf8b9c33a564c6e16ac1ed566b3b22 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Mon, 19 Oct 2026 15:33:54 +0000
+Subject: [PATCH 4/5] =?UTF-8?q?fix:=20=C2=AB=D0=9C=D0=BE=D0=B8=20=D0=B7?=
+ =?UTF-8?q?=D0=B0=D0=BF=D0=B8=D1=81=D0=B8=C2=BB,=20=D0=BE=D1=82=D0=BC?=
+ =?UTF-8?q?=D0=B5=D0=BD=D0=B0=20=D0=B7=D0=B0=D0=BF=D0=B8=D1=81=D0=B8=20?=
+ =?UTF-8?q?=D0=B8=20=D0=BE=D1=82=D0=B7=D1=8B=D0=B2=D1=8B?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- /appointments/my/ не падает с 500, если мастер или услуга удалены;
+  в ответ добавлено end_time
+- отмена: исправлена опечатка 'cancellled' (отменённую запись можно было
+  «отменить» снова), прошедшую запись отменить нельзя
+- отзыв: оценка только 1–5, повторный отзыв даёт 400 вместо 200,
+  оставить отзыв можно только после визита к мастеру
+- Review.__str__ и имя автора отзыва не падают у пользователя без профиля
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01WDmp5pkZbZV6bSq2pwkwiX
+---
+ bookings/auth_views.py  | 19 ++++++++++---
+ bookings/models.py      |  2 +-
+ bookings/serializers.py | 11 +++++++-
+ bookings/tests.py       | 61 +++++++++++++++++++++++++++++++++++++++++
+ bookings/views.py       | 18 ++++++++++--
+ 5 files changed, 102 insertions(+), 9 deletions(-)
+
+diff --git a/bookings/auth_views.py b/bookings/auth_views.py
+index ca31e88..0ccb9dc 100644
+--- a/bookings/auth_views.py
++++ b/bookings/auth_views.py
+@@ -6,6 +6,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
+ from .models import ClientProfile, Appointment
+ from .phone import normalize_phone
+ from rest_framework.permissions import IsAuthenticated
++from django.utils import timezone
++from datetime import datetime
+ 
+ def get_token_for_user(user):
+     refresh = RefreshToken.for_user(user)
+@@ -90,17 +92,19 @@ class MyAppointmentView(APIView):
+     def get(self, request):
+         appointments = Appointment.objects.filter(
+             client=request.user
+-        ).order_by('-date', '-start_time')
++        ).select_related('master', 'service').order_by('-date', '-start_time')
+ 
+         data = []
+ 
++        # Мастер или услуга могли быть удалены (SET_NULL) — раньше это давало 500
+         for apt in appointments:
+             data.append({
+                 "id": apt.id,
+-                "master": apt.master.name,
+-                "service": apt.service.name,
++                "master": apt.master.name if apt.master else None,
++                "service": apt.service.name if apt.service else None,
+                 "date": apt.date,
+                 "start_time": apt.start_time,
++                "end_time": apt.end_time,
+                 "status": apt.status
+             })
+         return Response(data)
+@@ -120,12 +124,19 @@ class CancelAppointmentsView(APIView):
+                 status=status.HTTP_404_NOT_FOUND
+             )
+ 
+-        if appointment.status in ['cancellled', 'completed']:
++        if appointment.status in ['cancelled', 'completed']:
+             return Response(
+                 {'error': 'Эту запись нельзя отменить'},
+                 status=status.HTTP_400_BAD_REQUEST
+             )
+ 
++        starts_at = timezone.make_aware(datetime.combine(appointment.date, appointment.start_time))
++        if starts_at <= timezone.now():
++            return Response(
++                {'error': 'Прошедшую запись нельзя отменить'},
++                status=status.HTTP_400_BAD_REQUEST
++            )
++
+         appointment.status = 'cancelled'
+         appointment.save()
+ 
+diff --git a/bookings/models.py b/bookings/models.py
+index aab3e79..9184874 100644
+--- a/bookings/models.py
++++ b/bookings/models.py
+@@ -120,7 +120,7 @@ class Review(models.Model):
+     created_at = models.DateTimeField(auto_now_add=True)
+ 
+     def __str__(self):
+-        return f"{self.client.name} - {self.master.name} - {self.rating}"
++        return f"{self.client.username} - {self.master.name} - {self.rating}"
+ 
+ 
+ class AdminProfile(models.Model):
+diff --git a/bookings/serializers.py b/bookings/serializers.py
+index c71ee31..f91edcd 100644
+--- a/bookings/serializers.py
++++ b/bookings/serializers.py
+@@ -86,6 +86,15 @@ class ReviewSerializer(serializers.ModelSerializer):
+         fields = ['id', 'client_name', 'rating', 'comment', 'created_at']
+         read_only_fields = ['id', 'client_name', 'created_at']
+ 
++    def validate_rating(self, value):
++        if not 1 <= value <= 5:
++            raise serializers.ValidationError('Оценка должна быть от 1 до 5')
++        return value
++
+     def get_client_name(self, obj):
+-        return f"{obj.client.profile.name} {obj.client.profile.surname}"
++        # У пользователей, созданных не через регистрацию (например, админа), профиля нет
++        profile = getattr(obj.client, 'profile', None)
++        if not profile:
++            return obj.client.username
++        return f"{profile.name} {profile.surname}".strip()
+ 
+diff --git a/bookings/tests.py b/bookings/tests.py
+index ccc4423..54be1e8 100644
+--- a/bookings/tests.py
++++ b/bookings/tests.py
+@@ -1,6 +1,7 @@
+ from datetime import date, datetime, time, timedelta
+ from unittest import mock
+ 
++from django.contrib.auth.models import User
+ from django.test import TestCase
+ from django.utils import timezone
+ from rest_framework.test import APIClient
+@@ -149,3 +150,63 @@ class ListViewsTests(BookingTestCase):
+             f'/api/companies/{self.company.slug}/services/', {'date': self.day.isoformat(), 'time': '11:30'}
+         )
+         self.assertEqual(response.data, [])  # 60 минут после 11:30 не помещаются
++
++
++class ClientAccountTests(BookingTestCase):
++    def setUp(self):
++        super().setUp()
++        response = self.client.post('/api/auth/register/', {
++            'phone': '+37369123456', 'password': 'secret-pass-1', 'name': 'Ирина'
++        }, format='json')
++        self.assertEqual(response.status_code, 201, response.data)
++        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {response.data['access']}")
++
++    def make_appointment(self, day, status='pending', start=time(10)):
++        return Appointment.objects.create(
++            company=self.company, master=self.master, service=self.service, client_name='Ирина',
++            client_phone='+37369123456', date=day, start_time=start, end_time=time(11),
++            status=status, client=self.user()
++        )
++
++    def user(self):
++        return User.objects.get(username='+37369123456')
++
++    def test_my_appointments_survive_deleted_master(self):
++        appointment = self.make_appointment(self.day)
++        self.master.delete()
++        response = self.client.get('/api/appointments/my/')
++        self.assertEqual(response.status_code, 200)
++        self.assertIsNone(response.data[0]['master'])
++        self.assertEqual(response.data[0]['id'], appointment.id)
++
++    def test_cancel_future_appointment(self):
++        appointment = self.make_appointment(self.day)
++        response = self.client.post(f'/api/appointments/{appointment.id}/cancel/')
++        self.assertEqual(response.status_code, 200)
++        appointment.refresh_from_db()
++        self.assertEqual(appointment.status, 'cancelled')
++        # Повторная отмена
++        self.assertEqual(self.client.post(f'/api/appointments/{appointment.id}/cancel/').status_code, 400)
++
++    def test_cannot_cancel_past_appointment(self):
++        appointment = self.make_appointment(timezone.localdate() - timedelta(days=1))
++        self.assertEqual(self.client.post(f'/api/appointments/{appointment.id}/cancel/').status_code, 400)
++
++    def review(self, rating=5):
++        return self.client.post(
++            f'/api/companies/{self.company.slug}/master/{self.master.id}/reviews/',
++            {'rating': rating, 'comment': 'Супер'}, format='json'
++        )
++
++    def test_review_requires_visit(self):
++        self.assertEqual(self.review().status_code, 403)
++        self.make_appointment(self.day)  # будущая запись — ещё не визит
++        self.assertEqual(self.review().status_code, 403)
++
++    def test_review_after_visit(self):
++        self.make_appointment(timezone.localdate() - timedelta(days=1))
++        self.assertEqual(self.review(rating=6).status_code, 400)
++        response = self.review()
++        self.assertEqual(response.status_code, 201, response.data)
++        self.assertEqual(response.data['client_name'], 'Ирина')
++        self.assertEqual(self.review().status_code, 400)  # второй отзыв
+diff --git a/bookings/views.py b/bookings/views.py
+index 695479c..06c0a56 100644
+--- a/bookings/views.py
++++ b/bookings/views.py
+@@ -4,11 +4,12 @@ from rest_framework.response import Response
+ from rest_framework.views import APIView
+ from django.db import transaction
+ from django.shortcuts import get_object_or_404
+-from .models import Company, Master, Service, Review
++from .models import Company, Master, Service, Review, Appointment
+ from .serializers import MasterSerializer, ServiceSerializer, AppointmentCreateSerializer, CompanySerializer, ReviewSerializer
+ from .slots import get_free_slots
+ from datetime import datetime, timedelta
+-from django.db.models import Avg
++from django.db.models import Avg, Q
++from django.utils import timezone
+ 
+ 
+ def parse_date(value):
+@@ -181,7 +182,18 @@ class ReviewView(APIView):
+ 
+         if Review.objects.filter(master=master, client=request.user).exists():
+             return Response(
+-                {'error': 'Вы уже оставили отзыв на этого мастера'}
++                {'error': 'Вы уже оставили отзыв на этого мастера'},
++                status=status.HTTP_400_BAD_REQUEST
++            )
++
++        # Отзыв может оставить только клиент, который уже был у мастера
++        visited = Appointment.objects.filter(master=master, client=request.user).filter(
++            Q(status='completed') | Q(date__lt=timezone.localdate(), status__in=['pending', 'confirmed'])
++        ).exists()
++        if not visited:
++            return Response(
++                {'error': 'Отзыв можно оставить после визита к мастеру'},
++                status=status.HTTP_403_FORBIDDEN
+             )
+ 
+         serializer = ReviewSerializer(data=request.data)
+-- 
+2.43.0
+
