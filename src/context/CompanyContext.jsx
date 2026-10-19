@@ -21,6 +21,7 @@ export function CompanyProvider({ children }) {
   useEffect(() => {
     fetchCompany()
       .then(data => {
+        if (!data || typeof data !== 'object') return
         // Пустые поля с бэка не затирают запасные значения
         const filled = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== null && v !== ''))
         setCompany(c => ({ ...c, ...filled }))

@@ -1,4 +1,4 @@
-import api, { SLUG } from './client'
+import api, { SLUG, expectArray } from './client'
 import { fetchMasters } from './masters'
 
 // Свободное время конкретного мастера на конкретную услугу
@@ -10,7 +10,7 @@ export async function fetchSlots({ masterId, serviceId, date }) {
       date: date
     }
   })
-  return response.data.slots
+  return expectArray(response.data?.slots)
 }
 
 // Свободное время всех мастеров, которые делают услугу.
@@ -34,5 +34,5 @@ export async function fetchSlotsByMaster({ serviceId, date }) {
 // Свободное время салона без привязки к услуге (шаг 30 минут)
 export async function fetchFreePoints(date) {
   const response = await api.get(`/companies/${SLUG}/points/`, { params: { date } })
-  return response.data
+  return expectArray(response.data)
 }
