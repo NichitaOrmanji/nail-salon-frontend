@@ -11,3 +11,9 @@ export async function login(phone, password) {
   const response = await api.post('/auth/login/', { phone, password })
   return response.data // { access, refresh }
 }
+
+// Профиль залогиненного клиента: { phone, name, surname }
+export async function fetchMe() {
+  const response = await api.get('/auth/me/')
+  return response.data
+}

@@ -28,6 +28,7 @@ const STATUS_LABELS = {
   confirmed: { label: 'Подтверждена', color: '#34d399' },
   cancelled: { label: 'Отменена', color: '#f87171' },
   completed: { label: 'Завершена', color: '#9ca3af' },
+  no_show: { label: 'Не пришёл', color: '#f87171' },
 }
 
 export default function AccountPage() {

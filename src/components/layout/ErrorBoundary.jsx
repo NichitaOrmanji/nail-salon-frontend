@@ -1,6 +1,7 @@
 import { Component } from 'react'
 
-// Ловит ошибки рендера, чтобы вместо чёрного экрана показать сообщение
+// Ловит ошибки рендера, чтобы вместо чёрного экрана показать сообщение.
+// homePath/homeLabel — куда вернуться (панель салона передаёт свои)
 export default class ErrorBoundary extends Component {
   state = { error: null }
 
@@ -14,7 +15,7 @@ export default class ErrorBoundary extends Component {
 
   handleReset = () => {
     try { sessionStorage.removeItem('booking') } catch { /* недоступно */ }
-    window.location.href = '/'
+    window.location.href = this.props.homePath || '/'
   }
 
   render() {
@@ -30,7 +31,7 @@ export default class ErrorBoundary extends Component {
           className="px-10 py-4 rounded-2xl text-white font-semibold active:scale-95"
           style={{ backgroundColor: '#f472b6' }}
         >
-          На главную
+          {this.props.homeLabel || 'На главную'}
         </button>
       </div>
     )

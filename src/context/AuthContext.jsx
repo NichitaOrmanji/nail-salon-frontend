@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { login as apiLogin, register as apiRegister } from '../api/auth'
+import { login as apiLogin, register as apiRegister, fetchMe } from '../api/auth'
 
 const AuthContext = createContext(null)
 
@@ -24,6 +24,12 @@ export function AuthProvider({ children }) {
     saveTokens(await apiLogin(phone, password))
     localStorage.setItem('client_phone', phone)
     setIsLoggedIn(true)
+    // Имя для формы записи берём из профиля; если не вышло — не страшно
+    try {
+      const me = await fetchMe()
+      const name = [me?.name, me?.surname].filter(Boolean).join(' ')
+      if (name) localStorage.setItem('client_name', name)
+    } catch { /* без имени тоже можно войти */ }
   }
 
   // Регистрация
