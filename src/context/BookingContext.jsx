@@ -3,6 +3,8 @@ import { createContext, useContext, useState, useEffect } from 'react'
 const BookingContext = createContext(null)
 
 const STORAGE_KEY = 'booking'
+// Черновик данных клиента на шаге подтверждения (имя, телефон, комментарий)
+export const CONTACT_DRAFT_KEY = 'booking_contact'
 const EMPTY = { master: null, service: null, date: null, time: null }
 
 // Выбор сохраняется в sessionStorage, чтобы не терялся при обновлении страницы
@@ -29,7 +31,11 @@ export function BookingProvider({ children }) {
 
   function reset() {
     setState(EMPTY)
+    try { sessionStorage.removeItem(CONTACT_DRAFT_KEY) } catch { /* недоступно */ }
   }
+
+  // Клиент уже что-то выбрал — есть что сохранять при уходе на главную
+  const hasProgress = Boolean(service || master || date || time)
 
   // Логика — куда идти дальше после каждого шага.
   // master === null — мастер ещё не выбран; { id: null } — «Любой специалист»
@@ -47,6 +53,7 @@ export function BookingProvider({ children }) {
       date, setDate,
       time, setTime,
       reset,
+      hasProgress,
       getNextRoute
     }}>
       {children}

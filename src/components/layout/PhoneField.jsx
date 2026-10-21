@@ -29,7 +29,8 @@ function joinPhone(country, local) {
 }
 
 // inputId / inputLabel — необязательные id и aria-label поля номера (панель салона)
-export default function PhoneField({ value, onChange, inputId, inputLabel }) {
+// invalid — подсветить поле красным (неверный номер); onBlur — уход из поля номера
+export default function PhoneField({ value, onChange, inputId, inputLabel, invalid = false, onBlur }) {
   const [initial] = useState(() => splitPhone(value))
   const [selectedCountry, setSelectedCountry] = useState(initial.country)
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -60,7 +61,15 @@ export default function PhoneField({ value, onChange, inputId, inputLabel }) {
   }
 
   return (
-    <div className="flex items-center gap-2 px-4 py-4 relative" style={{ borderBottom: '1px solid #2e2e2e' }}>
+    <div
+      className="flex items-center gap-2 px-4 py-4 relative transition-colors"
+      style={{
+        borderBottom: '1px solid #2e2e2e',
+        // Рамка внутри строки, чтобы не сдвигать соседние поля
+        boxShadow: invalid ? 'inset 0 0 0 1.5px #f87171' : 'none',
+        backgroundColor: invalid ? 'rgba(248, 113, 113, 0.08)' : undefined
+      }}
+    >
 
       {/* Выбор страны */}
       <button
@@ -84,6 +93,8 @@ export default function PhoneField({ value, onChange, inputId, inputLabel }) {
         placeholder="___ __ ___"
         value={localNumber}
         onChange={handleNumberChange}
+        onBlur={onBlur}
+        aria-invalid={invalid || undefined}
         className="flex-1 bg-transparent text-white placeholder-gray-600 outline-none text-sm"
       />
 

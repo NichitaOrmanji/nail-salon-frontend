@@ -4,6 +4,7 @@ import { useBooking } from '../context/BookingContext'
 import { fetchServices } from '../api/services'
 import Spinner from '../components/layout/Spinner'
 import SalonHeader from '../components/layout/SalonHeader'
+import { PAGE_WIDTH } from '../components/layout/width'
 import { formatDuration, formatPrice } from '../utils/format'
 
 function IconSearch() {
@@ -195,7 +196,7 @@ export default function ServicesPage() {
 
       {/* Кнопка далее */}
       {service && (
-        <div className="fixed bottom-0 left-0 right-0 p-4" style={{ backgroundColor: '#1a1a1a' }}>
+        <div className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} p-4`} style={{ backgroundColor: '#1a1a1a' }}>
           <button
             onClick={() => navigate(getNextRoute('services'))}
             className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"

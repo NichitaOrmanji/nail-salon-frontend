@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { isValidPhoneNumber } from 'libphonenumber-js'
 import PhoneField from '../components/layout/PhoneField'
 
 function IconBack() {
@@ -31,9 +32,13 @@ export default function ProfilePage() {
   const [surname, setSurname] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [phoneTouched, setPhoneTouched] = useState(false)
 
   const isRegister = tab === 'register'
-  const canSubmit = phone.trim() && password.trim() && (!isRegister || name.trim())
+  const phoneValid = Boolean(phone) && isValidPhoneNumber(phone)
+  // Красным подсвечиваем после ухода из поля, чтобы не мешать, пока номер набирают
+  const phoneInvalid = Boolean(phone) && !phoneValid && phoneTouched
+  const canSubmit = phoneValid && password.trim() && (!isRegister || name.trim())
 
   async function handleSubmit() {
     if (!canSubmit) return
@@ -128,7 +133,12 @@ export default function ProfilePage() {
               />
             </>
           )}
-          <PhoneField value={phone} onChange={setPhone} />
+          <PhoneField
+            value={phone}
+            onChange={setPhone}
+            onBlur={() => setPhoneTouched(true)}
+            invalid={phoneInvalid}
+          />
           <div className="flex items-center gap-3 px-4 py-4">
             <span className="text-gray-500"><IconLock /></span>
             <input
@@ -140,6 +150,10 @@ export default function ProfilePage() {
             />
           </div>
         </div>
+
+        {phoneInvalid && (
+          <p className="text-xs -mt-2 mb-4 px-1" style={{ color: '#f87171' }}>Проверьте номер телефона</p>
+        )}
 
         {/* Ошибка */}
         {error && (

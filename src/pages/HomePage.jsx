@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
 import { useAuth } from '../context/AuthContext'
 import { useCompany } from '../context/CompanyContext'
+import { PAGE_WIDTH } from '../components/layout/width'
+import { formatDisplayDate } from '../utils/format'
 
 // ——— Иконки ———
 
@@ -124,7 +126,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
 
       {/* Панель */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl overflow-y-auto"
+        className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} z-50 rounded-t-3xl overflow-y-auto`}
         style={{ backgroundColor: '#1e1e1e', maxHeight: '85vh' }}
       >
         {/* Ручка + крестик */}
@@ -199,7 +201,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
         </div>
 
         {/* Кнопка Записаться */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 z-50" style={{ backgroundColor: '#1e1e1e' }}>
+        <div className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} p-4 z-50`} style={{ backgroundColor: '#1e1e1e' }}>
           <button
             onClick={onBook}
             className="w-full py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
@@ -217,7 +219,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const { reset } = useBooking()
+  const { reset, hasProgress, service, master, date, time, getNextRoute } = useBooking()
   const { isLoggedIn } = useAuth()
   const salon = useCompany()
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -257,7 +259,7 @@ export default function HomePage() {
     <div className="min-h-screen" style={{ backgroundColor: '#1a1a1a' }}>
 
       {/* Фото салона */}
-      <div className="relative h-52">
+      <div className="relative h-52 md:h-72">
         <img
           src={salon.main_photo}
           alt="Салон"
@@ -306,13 +308,32 @@ export default function HomePage() {
         {/* Заголовок секции */}
         <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-medium">Запись онлайн</p>
 
+        {/* Незавершённая запись, сохранённая при выходе на главную */}
+        {hasProgress && (
+          <button
+            onClick={() => navigate(getNextRoute('home'))}
+            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl mb-3 transition-all active:scale-95"
+            style={{ backgroundColor: '#2e1f28', border: '1px solid #f472b6' }}
+          >
+            <div className="text-left">
+              <div className="text-white text-base font-medium">Продолжить запись</div>
+              <div className="text-gray-400 text-sm mt-0.5">
+                {[service?.name, master && (master.id ? master.name : 'Любой специалист'),
+                  date && `${formatDisplayDate(date, { withYear: false })}${time ? ` в ${time}` : ''}`]
+                  .filter(Boolean).join(' · ')}
+              </div>
+            </div>
+            <span className="flex-shrink-0" style={{ color: '#f472b6' }}><IconChevronRight /></span>
+          </button>
+        )}
+
         {/* Кнопки навигации */}
-        <div className="space-y-3">
+        <div className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-3">
           {menuItems.map(item => (
             <button
               key={item.path}
               onClick={() => handleNavigate(item.path)}
-              className="w-full flex items-center justify-between px-5 py-5 rounded-2xl transition-all active:scale-95"
+              className="w-full h-full flex items-center justify-between px-5 py-5 rounded-2xl transition-all active:scale-95"
               style={{ backgroundColor: '#242424' }}
             >
               <div className="flex items-center gap-4">
