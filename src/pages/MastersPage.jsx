@@ -15,6 +15,13 @@ function IconUser() {
   )
 }
 
+// Фото мастера; если не загрузилось — значок вместо битой картинки
+function MasterPhoto({ src, name }) {
+  const [failed, setFailed] = useState(false)
+  if (!src || failed) return <IconUser />
+  return <img src={src} className="w-full h-full object-cover" alt={name} onError={() => setFailed(true)} />
+}
+
 function Stars({ count }) {
   return (
     <span>
@@ -131,10 +138,7 @@ export default function MastersPage() {
                     className="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0"
                     style={{ backgroundColor: '#242424', color: '#6b7280' }}
                   >
-                    {m.photo
-                      ? <img src={m.photo} className="w-full h-full object-cover" alt={m.name} />
-                      : <IconUser />
-                    }
+                    <MasterPhoto src={m.photo} name={m.name} />
                   </div>
 
                   {/* Инфо */}

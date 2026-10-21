@@ -92,45 +92,24 @@ function IconPin() {
   )
 }
 
-function IconStar({ filled }) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? '#f59e0b' : 'none'} stroke="#f59e0b" strokeWidth="2">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-    </svg>
-  )
-}
+// ——— Карта ———
 
-// ——— Отзывы о салоне ———
-// На бэкенде отзывы есть только у мастеров, поэтому пока статичные
-
-const REVIEWS = [
-  { name: 'Elena', date: '21 апреля 2026', rating: 5, text: '' },
-  { name: 'Марина Гуцул', date: '27 марта 2026', rating: 5, text: 'Это очень удобно!' },
-  { name: 'Валентина', date: '17 марта 2026', rating: 5, text: '' },
-  { name: 'Cristina', date: '27 января 2026', rating: 5, text: '' },
-  { name: 'Oxana', date: '6 января 2026', rating: 5, text: '' },
-  { name: 'Валерия', date: '5 декабря 2025', rating: 5, text: '' },
-]
-
-function Avatar({ name }) {
-  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-  return (
-    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-medium text-white"
-      style={{ backgroundColor: '#3a3a3a' }}>
-      {initials}
-    </div>
-  )
+// Координаты с бэка могут быть пустыми или неверными (широта 121) —
+// тогда ищем по адресу, а без адреса карту не показываем
+function mapQueryFor(salon) {
+  const lat = Number(salon.latitude)
+  const lng = Number(salon.longitude)
+  if (salon.latitude != null && salon.longitude != null && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+    return `${lat},${lng}`
+  }
+  return salon.address ? encodeURIComponent(salon.address) : null
 }
 
 // ——— Bottom Sheet ———
 
 function SalonInfoSheet({ open, onClose, onBook }) {
   const salon = useCompany()
-  const [showAllReviews, setShowAllReviews] = useState(false)
-  const mapUrl = salon.latitude && salon.longitude
-    ? `https://maps.google.com/maps?q=${salon.latitude},${salon.longitude}&z=15&output=embed`
-    : `https://maps.google.com/maps?q=${encodeURIComponent(salon.address)}&z=15&output=embed`
-  const visibleReviews = showAllReviews ? REVIEWS : REVIEWS.slice(0, 3)
+  const mapQuery = mapQueryFor(salon)
 
   if (!open) return null
 
@@ -171,10 +150,9 @@ function SalonInfoSheet({ open, onClose, onBook }) {
             </div>
             <div>
               <h2 className="text-white text-xl font-bold">{salon.name}</h2>
-              <div className="flex items-center gap-1 mt-1">
-                <IconStar filled />
-                <span className="text-gray-400 text-sm">{REVIEWS.length} отзывов</span>
-              </div>
+              {salon.description && (
+                <p className="text-gray-400 text-sm mt-1">{salon.description}</p>
+              )}
             </div>
           </div>
 
@@ -192,60 +170,30 @@ function SalonInfoSheet({ open, onClose, onBook }) {
           </div>
 
           {/* Карта */}
-          <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">Расположение</p>
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-gray-500"><IconPin /></span>
-            <span className="text-gray-300 text-sm">{salon.address}</span>
-          </div>
-          <div className="rounded-2xl overflow-hidden mb-6" style={{ height: '180px' }}>
-            <iframe
-              src={mapUrl}
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen=""
-              loading="lazy"
-              title="Карта"
-            />
-          </div>
-
-          {/* Отзывы */}
-          <p className="text-white text-lg font-bold mb-1">Отзывы</p>
-          <p className="text-gray-500 text-sm mb-4">{REVIEWS.length} отзывов</p>
-
-          <div className="rounded-2xl p-4 mb-4 text-center" style={{ backgroundColor: '#242424' }}>
-            <p className="text-gray-400 text-sm mb-2">Оцените и оставьте отзыв</p>
-            <div className="flex justify-center gap-1">
-              {[1,2,3,4,5].map(i => <IconStar key={i} filled={false} />)}
-            </div>
-          </div>
-
-          <div className="space-y-4 mb-4">
-            {visibleReviews.map((r, i) => (
-              <div key={i}>
-                <div className="flex items-center gap-3 mb-1">
-                  <Avatar name={r.name} />
-                  <div>
-                    <div className="text-white text-sm font-medium">{r.name}</div>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      {[1,2,3,4,5].map(s => <IconStar key={s} filled={s <= r.rating} />)}
-                      <span className="text-gray-500 text-xs ml-1">{r.date}</span>
-                    </div>
-                  </div>
-                </div>
-                {r.text && <p className="text-gray-400 text-sm mt-1 ml-13">{r.text}</p>}
+          {mapQuery && (
+            <>
+              <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">Расположение</p>
+              <div className="rounded-2xl overflow-hidden mb-3" style={{ height: '180px' }}>
+                <iframe
+                  src={`https://maps.google.com/maps?q=${mapQuery}&z=15&output=embed`}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  title="Карта"
+                />
               </div>
-            ))}
-          </div>
-
-          {!showAllReviews && REVIEWS.length > 3 && (
-            <button
-              onClick={() => setShowAllReviews(true)}
-              className="w-full py-3 rounded-2xl text-white text-sm font-medium mb-4 active:scale-95"
-              style={{ backgroundColor: '#242424' }}
-            >
-              Ещё отзывы
-            </button>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-block text-sm mb-6"
+                style={{ color: '#f472b6' }}
+              >
+                Открыть в Google Maps ↗
+              </a>
+            </>
           )}
 
         </div>
