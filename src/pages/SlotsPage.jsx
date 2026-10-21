@@ -4,6 +4,7 @@ import { useBooking } from '../context/BookingContext'
 import { fetchSlots, fetchSlotsByMaster, fetchFreePoints } from '../api/slots'
 import Spinner from '../components/layout/Spinner'
 import SalonHeader from '../components/layout/SalonHeader'
+import { PAGE_WIDTH } from '../components/layout/width'
 import { formatDisplayDate, toDateString } from '../utils/format'
 
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
@@ -216,7 +217,7 @@ export default function SlotsPage() {
                 <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">
                   Свободное время
                 </p>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
                   {slots.map(slot => (
                     <button
                       key={slot}
@@ -246,7 +247,7 @@ export default function SlotsPage() {
 
       {/* Кнопка далее */}
       {selectedSlot && (
-        <div className="fixed bottom-0 left-0 right-0 p-4" style={{ backgroundColor: '#1a1a1a' }}>
+        <div className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} p-4`} style={{ backgroundColor: '#1a1a1a' }}>
           <button
             onClick={() => navigate(getNextRoute('slots'))}
             className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"

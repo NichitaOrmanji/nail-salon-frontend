@@ -11,6 +11,7 @@ import ConfirmationPage from './pages/ConfirmationPage'
 import NotFoundPage from './pages/NotFoundPage'
 import ProfilePage from './pages/ProfilePage'
 import AccountPage from './pages/AccountPage'
+import { PAGE_WIDTH } from './components/layout/width'
 import ErrorBoundary from './components/layout/ErrorBoundary'
 import Spinner from './components/layout/Spinner'
 
@@ -24,7 +25,7 @@ function ClientApp() {
       <CompanyProvider>
         <BookingProvider>
           <div style={{ backgroundColor: '#111111' }} className="min-h-screen">
-            <div className="mx-auto w-full max-w-md min-h-screen relative" style={{ backgroundColor: '#1a1a1a' }}>
+            <div className={`mx-auto w-full ${PAGE_WIDTH} min-h-screen relative`} style={{ backgroundColor: '#1a1a1a' }}>
               <ErrorBoundary>
                 <Routes>
                   <Route path="/" element={<HomePage />} />

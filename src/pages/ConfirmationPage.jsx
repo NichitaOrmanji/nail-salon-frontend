@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { isValidPhoneNumber } from 'libphonenumber-js'
-import { useBooking } from '../context/BookingContext'
+import { useBooking, CONTACT_DRAFT_KEY } from '../context/BookingContext'
 import { createAppointment } from '../api/appointments'
 import { fetchMe } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
@@ -28,19 +28,37 @@ async function resolveMasterId({ master, service, date, time }) {
   return free[0]
 }
 
+function loadDraft() {
+  try {
+    return JSON.parse(sessionStorage.getItem(CONTACT_DRAFT_KEY)) || {}
+  } catch {
+    return {}
+  }
+}
+
 export default function ConfirmationPage() {
   const navigate = useNavigate()
   const { master, service, date, time, reset, getNextRoute } = useBooking()
   const { isLoggedIn } = useAuth()
 
   // Данные клиента запоминаем, чтобы не вводить их при каждой записи
-  const [name, setName] = useState(() => localStorage.getItem('client_name') || '')
-  const [phone, setPhone] = useState(() => localStorage.getItem('client_phone') || '')
-  const [email, setEmail] = useState('')
-  const [notes, setNotes] = useState('')
+  // Черновик формы (если клиент уходил на главную с сохранением) или данные прошлой записи
+  const [draft] = useState(loadDraft)
+  const [name, setName] = useState(() => draft.name ?? localStorage.getItem('client_name') ?? '')
+  const [phone, setPhone] = useState(() => draft.phone ?? localStorage.getItem('client_phone') ?? '')
+  const [email, setEmail] = useState(draft.email ?? '')
+  const [notes, setNotes] = useState(draft.notes ?? '')
+  const [phoneTouched, setPhoneTouched] = useState(false)
   const [sent, setSent] = useState(false)
   const [submitError, setSubmitError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+
+  // Сохраняем черновик, чтобы введённое не терялось при уходе на главную
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(CONTACT_DRAFT_KEY, JSON.stringify({ name, phone, email, notes }))
+    } catch { /* недоступно */ }
+  }, [name, phone, email, notes])
 
   // Залогиненному клиенту подставляем имя из профиля, если оно ещё не известно
   useEffect(() => {
@@ -58,6 +76,8 @@ export default function ConfirmationPage() {
   }, [isLoggedIn])
 
   const phoneValid = phone && isValidPhoneNumber(phone)
+  // Красным подсвечиваем после ухода из поля, чтобы не мешать, пока номер набирают
+  const phoneInvalid = Boolean(phone) && !phoneValid && phoneTouched
   const canSubmit = name.trim() && phoneValid
 
   async function handleSubmit() {
@@ -173,7 +193,12 @@ export default function ConfirmationPage() {
               className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none text-sm rounded-t-2xl"
               style={{ backgroundColor: '#242424', borderBottom: '1px solid #2e2e2e' }}
             />
-            <PhoneField value={phone} onChange={setPhone} />
+            <PhoneField
+              value={phone}
+              onChange={setPhone}
+              onBlur={() => setPhoneTouched(true)}
+              invalid={phoneInvalid}
+            />
             <input
               type="email"
               placeholder="Email (необязательно)"
@@ -193,7 +218,9 @@ export default function ConfirmationPage() {
 
           </div>
           {phone && !phoneValid && (
-            <p className="text-gray-500 text-xs mt-2 px-1">Проверьте номер телефона</p>
+            <p className="text-xs mt-2 px-1" style={{ color: phoneInvalid ? '#f87171' : '#6b7280' }}>
+              Проверьте номер телефона
+            </p>
           )}
         </div>
 
