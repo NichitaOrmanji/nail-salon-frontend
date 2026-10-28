@@ -2,12 +2,15 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { StaffAuthProvider } from './context/StaffAuthContext'
 import RequireStaff from './components/RequireStaff'
 import ManagerOnly from './components/ManagerOnly'
+import OwnerOnly from './components/OwnerOnly'
 import AdminLayout from './layout/AdminLayout'
 import LoginPage from './pages/LoginPage'
 import JournalPage from './pages/JournalPage'
 import ServicesPage from './pages/ServicesPage'
 import MastersPage from './pages/MastersPage'
 import SettingsPage from './pages/SettingsPage'
+import FinancePage from './pages/FinancePage'
+import MySalaryPage from './pages/MySalaryPage'
 
 // Панель салона: /admin-panel/*
 export default function AdminApp() {
@@ -21,6 +24,8 @@ export default function AdminApp() {
             <Route path="services" element={<ServicesPage />} />
             <Route path="masters" element={<MastersPage />} />
             <Route path="settings" element={<ManagerOnly><SettingsPage /></ManagerOnly>} />
+            <Route path="finance" element={<OwnerOnly><FinancePage /></OwnerOnly>} />
+            <Route path="salary" element={<MySalaryPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/admin-panel" replace />} />
         </Routes>

@@ -8,19 +8,26 @@ import ErrorBoundary from '../../components/layout/ErrorBoundary'
 import ChangePasswordModal from '../components/ChangePasswordModal'
 import TelegramModal from '../components/TelegramModal'
 import NewAppointmentsModal from '../components/NewAppointmentsModal'
-import { IconCalendar, IconScissors, IconUsers, IconSettings, IconMenu, IconClose } from '../components/Icons'
+import { IconCalendar, IconScissors, IconUsers, IconSettings, IconMenu, IconClose, IconWallet } from '../components/Icons'
 
-function menuItems(isManager) {
+function menuItems(me, isManager) {
+  // Финансы — только владельцу; «Моя зарплата» — сотруднику с профилем мастера
+  const salary = me.master_id && me.role !== 'owner'
+    ? [{ to: '/admin-panel/salary', label: 'Моя зарплата', icon: IconWallet }]
+    : []
   if (!isManager) {
     return [
       { to: '/admin-panel', label: 'Журнал', icon: IconCalendar, end: true },
       { to: '/admin-panel/masters', label: 'Мой график', icon: IconUsers },
+      ...salary,
     ]
   }
   return [
     { to: '/admin-panel', label: 'Журнал', icon: IconCalendar, end: true },
     { to: '/admin-panel/services', label: 'Услуги', icon: IconScissors },
     { to: '/admin-panel/masters', label: 'Мастера', icon: IconUsers },
+    ...(me.role === 'owner' ? [{ to: '/admin-panel/finance', label: 'Финансы', icon: IconWallet }] : []),
+    ...salary,
     { to: '/admin-panel/settings', label: 'Настройки', icon: IconSettings },
   ]
 }
@@ -35,7 +42,7 @@ function SidebarContent({ me, isManager, onNavigate, onTelegram, onChangePasswor
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 space-y-1">
-        {menuItems(isManager).map(item => (
+        {menuItems(me, isManager).map(item => (
           <NavLink
             key={item.to}
             to={item.to}
