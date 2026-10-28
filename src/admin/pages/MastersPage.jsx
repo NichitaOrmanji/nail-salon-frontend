@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useStaffAuth } from '../context/StaffAuthContext'
-import { fetchStaffMasters, createMaster, updateMaster, hideMaster } from '../api/masters'
+import { fetchStaffMasters, createMaster, updateMaster, hideMaster, uploadMasterPhoto, deleteMasterPhoto } from '../api/masters'
 import { fetchStaffServices } from '../api/services'
 import { notifyDataChanged } from '../utils/events'
 import { WEEKDAYS_SHORT } from '../utils/time'
 import Modal from '../components/Modal'
 import { Button, Checkbox, ErrorText, Field, PageHeader, TextArea, TextInput } from '../components/ui'
 import { Section, ScheduleSection, DaysOffSection, AccessSection } from '../components/masters/MasterSections'
+import PhotoField from '../components/PhotoField'
 import Spinner from '../../components/layout/Spinner'
 
 // Скрыть мастера; при будущих записях бэк отвечает 400 { count } — переспрашиваем
@@ -162,6 +163,16 @@ function MasterModal({ master, services, onClose, onChanged, onCreated }) {
         />
         {master && (
           <>
+            <Section title="Фото">
+              <PhotoField
+                hint="Показывается клиентам при выборе мастера. Сохраняется сразу."
+                url={master.photo}
+                shape="round"
+                maxSide={800}
+                onUpload={async file => { await uploadMasterPhoto(master.id, file); onChanged() }}
+                onRemove={async () => { await deleteMasterPhoto(master.id); onChanged() }}
+              />
+            </Section>
             <ScheduleSection key={`schedule-${master.id}`} master={master} onSaved={onChanged} />
             <DaysOffSection master={master} />
             <AccessSection key={`access-${master.id}`} master={master} onChanged={onChanged} />
@@ -246,6 +257,7 @@ export default function MastersPage() {
         style={{ backgroundColor: '#242424', opacity: m.is_active ? 1 : 0.55 }}
       >
         <div className="flex flex-wrap items-center gap-2">
+          {m.photo && <img src={m.photo} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />}
           <span className="text-white text-sm font-semibold break-words">{m.name}</span>
           {!m.is_active && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>скрыт</span>}
           {m.has_access && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#34d399' }}>доступ в панель</span>}
