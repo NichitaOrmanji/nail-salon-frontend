@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext'
 import { useCompany } from '../context/CompanyContext'
 import { PAGE_WIDTH } from '../components/layout/width'
 import { formatDisplayDate } from '../utils/format'
+import LanguageSwitch from '../components/LanguageSwitch'
+import { getLang, t } from '../i18n'
 
 // ——— Иконки ———
 
@@ -147,7 +149,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
           {/* Шапка */}
           <div className="flex items-center gap-4 mb-6">
             <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
-              <img src={salon.logo} alt="Лого" className="w-full h-full object-cover"
+              <img src={salon.logo} alt={t('Лого')} className="w-full h-full object-cover"
                 onError={e => { e.target.style.display = 'none' }} />
             </div>
             <div>
@@ -165,7 +167,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
           </div>
 
           {/* Контакты */}
-          <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">Контакты</p>
+          <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">{t('Контакты')}</p>
           <div className="flex items-center gap-3 mb-6">
             <span className="text-gray-500"><IconPhone /></span>
             <a href={`tel:${salon.phone}`} className="text-gray-300 text-sm">{salon.phone}</a>
@@ -174,7 +176,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
           {/* Карта */}
           {mapQuery && (
             <>
-              <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">Расположение</p>
+              <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">{t('Расположение')}</p>
               <div className="rounded-2xl overflow-hidden mb-3" style={{ height: '180px' }}>
                 <iframe
                   src={`https://maps.google.com/maps?q=${mapQuery}&z=15&output=embed`}
@@ -183,7 +185,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
                   style={{ border: 0 }}
                   allowFullScreen=""
                   loading="lazy"
-                  title="Карта"
+                  title={t('Карта')}
                 />
               </div>
               <a
@@ -193,7 +195,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
                 className="inline-block text-sm mb-6"
                 style={{ color: '#f472b6' }}
               >
-                Открыть в Google Maps ↗
+                {t('Открыть в Google Maps ↗')}
               </a>
             </>
           )}
@@ -207,7 +209,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
             className="w-full py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
             style={{ backgroundColor: '#f472b6' }}
           >
-            Записаться
+            {t('Записаться')}
           </button>
         </div>
       </div>
@@ -237,20 +239,20 @@ export default function HomePage() {
   const menuItems = [
     {
       icon: <IconMasters />,
-      label: 'Выбрать специалиста',
-      sub: 'Посмотреть мастеров и их работы',
+      label: t('Выбрать специалиста'),
+      sub: t('Посмотреть мастеров и их работы'),
       path: '/masters'
     },
     {
       icon: <IconCalendar />,
-      label: 'Выбрать дату и время',
-      sub: 'Найти удобный слот',
+      label: t('Выбрать дату и время'),
+      sub: t('Найти удобный слот'),
       path: '/slots'
     },
     {
       icon: <IconServices />,
-      label: 'Выбрать услуги',
-      sub: 'Маникюр, педикюр и другое',
+      label: t('Выбрать услуги'),
+      sub: t('Маникюр, педикюр и другое'),
       path: '/services'
     },
   ]
@@ -262,11 +264,12 @@ export default function HomePage() {
       <div className="relative h-52 md:h-72">
         <img
           src={salon.main_photo}
-          alt="Салон"
+          alt={t('Салон')}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 50%, #1a1a1a 100%)' }} />
 
+        <LanguageSwitch className="absolute top-4 left-4" />
         <button
           onClick={() => navigate(isLoggedIn ? '/account' : '/profile')}
           className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center"
@@ -287,7 +290,7 @@ export default function HomePage() {
         >
           <img
             src={salon.logo}
-            alt="Лого"
+            alt={t('Лого')}
             className="w-full h-full object-cover"
             onError={e => { e.target.style.display = 'none' }}
           />
@@ -306,7 +309,7 @@ export default function HomePage() {
         </button>
 
         {/* Заголовок секции */}
-        <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-medium">Запись онлайн</p>
+        <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-medium">{t('Запись онлайн')}</p>
 
         {/* Незавершённая запись, сохранённая при выходе на главную */}
         {hasProgress && (
@@ -316,10 +319,12 @@ export default function HomePage() {
             style={{ backgroundColor: '#2e1f28', border: '1px solid #f472b6' }}
           >
             <div className="text-left">
-              <div className="text-white text-base font-medium">Продолжить запись</div>
+              <div className="text-white text-base font-medium">{t('Продолжить запись')}</div>
               <div className="text-gray-400 text-sm mt-0.5">
-                {[service?.name, master && (master.id ? master.name : 'Любой специалист'),
-                  date && `${formatDisplayDate(date, { withYear: false })}${time ? ` в ${time}` : ''}`]
+                {[service?.name, master && (master.id ? master.name : t('Любой специалист')),
+                  date && (time
+                    ? t('{date} в {time}', { date: formatDisplayDate(date, { withYear: false, lang: getLang() }), time })
+                    : formatDisplayDate(date, { withYear: false, lang: getLang() }))]
                   .filter(Boolean).join(' · ')}
               </div>
             </div>
@@ -352,7 +357,7 @@ export default function HomePage() {
         </div>
 
         <div className="text-center mt-8">
-          <Link to="/privacy" className="text-gray-600 text-xs underline">Политика конфиденциальности</Link>
+          <Link to="/privacy" className="text-gray-600 text-xs underline">{t('Политика конфиденциальности')}</Link>
         </div>
 
       </div>

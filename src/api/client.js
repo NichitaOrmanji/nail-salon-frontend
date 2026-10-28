@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getLang, t } from '../i18n'
 
 // В продакшене (Vercel) запросы идут на /api того же домена,
 // а vercel.json проксирует их на сервер бэкенда
@@ -8,6 +9,8 @@ const api = axios.create({
 
 // Автоматически добавляем токен если он есть
 api.interceptors.request.use(config => {
+  // Язык сайта: на нём бэкенд отвечает ошибками и пишет в Telegram
+  config.headers['X-Lang'] = getLang()
   const token = localStorage.getItem('access_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -34,7 +37,7 @@ function checkJson(response) {
   const type = response.headers?.['content-type'] || ''
   if (typeof response.data === 'string' && type.includes('text/html')) {
     const url = `${response.config.baseURL || ''}${response.config.url || ''}`
-    return Promise.reject(new Error(`API вернул HTML вместо данных (${url}). Проверьте адрес API.`))
+    return Promise.reject(new Error(t('API вернул HTML вместо данных ({url}). Проверьте адрес API.', { url })))
   }
   return response
 }
@@ -42,7 +45,7 @@ function checkJson(response) {
 // Списки с бэкенда должны быть массивами — иначе страница упадёт на .map()
 export function expectArray(data) {
   if (!Array.isArray(data)) {
-    throw new Error('Сервер вернул данные в неожиданном формате.')
+    throw new Error(t('Сервер вернул данные в неожиданном формате.'))
   }
   return data
 }
@@ -52,7 +55,7 @@ api.interceptors.response.use(
   checkJson,
   error => {
     if (!error.response) {
-      return Promise.reject(new Error('Нет соединения с сервером. Проверьте интернет.'))
+      return Promise.reject(new Error(t('Нет соединения с сервером. Проверьте интернет.')))
     }
     const { status, data } = error.response
     const config = error.config
@@ -68,20 +71,20 @@ api.interceptors.response.use(
         delete config.headers.Authorization
         return api(config)
       }
-      return Promise.reject(new Error('Сессия истекла. Войдите снова.'))
+      return Promise.reject(new Error(t('Сессия истекла. Войдите снова.')))
     }
 
     const message = extractMessage(data)
     if (status === 400) {
-      return Promise.reject(new Error(message || 'Неверные данные. Проверьте заполненные поля.'))
+      return Promise.reject(new Error(message || t('Неверные данные. Проверьте заполненные поля.')))
     }
     if (status === 404) {
-      return Promise.reject(new Error(message || 'Данные не найдены.'))
+      return Promise.reject(new Error(message || t('Данные не найдены.')))
     }
     if (status >= 500) {
-      return Promise.reject(new Error('Ошибка сервера. Попробуйте позже.'))
+      return Promise.reject(new Error(t('Ошибка сервера. Попробуйте позже.')))
     }
-    return Promise.reject(new Error(message || 'Что-то пошло не так. Попробуйте ещё раз.'))
+    return Promise.reject(new Error(message || t('Что-то пошло не так. Попробуйте ещё раз.')))
   }
 )
 
