@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { Button, TextArea } from '../ui'
 import StatusBadge from '../StatusBadge'
 import { IconClose } from '../Icons'
@@ -156,6 +157,16 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
           {a.client_phone
             ? <a href={`tel:${a.client_phone}`} style={{ color: '#f472b6' }}>{a.client_phone}</a>
             : '—'}
+          {isManager && a.client_phone && (
+            <Link
+              to="/admin-panel/clients"
+              state={{ phone: a.client_phone }}
+              onClick={e => { if (notes !== baseNotes && !window.confirm(DISCARD_CONFIRM)) e.preventDefault() }}
+              className="ml-3 text-xs text-gray-400 underline"
+            >
+              Карточка клиента
+            </Link>
+          )}
         </Row>
         {a.client_email && <Row label="Email">{a.client_email}</Row>}
         <Row label="Услуга">

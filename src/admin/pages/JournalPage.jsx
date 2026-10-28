@@ -6,6 +6,7 @@ import { fetchStaffMasters, fetchDaysOff, addDayOff, removeDayOff } from '../api
 import { notifyDataChanged, useAutoRefresh } from '../utils/events'
 import { todayString, addDays, formatDayTitle, isValidDateString, parseDate } from '../utils/time'
 import { ACTIVE_STATUSES, KINDS } from '../utils/statuses'
+import { clearRebook, readRebook } from '../utils/rebook'
 import { buildColumns, buildRange, buildWeekColumns, weekStart, DISCARD_CONFIRM } from '../utils/journal'
 import JournalGrid from '../components/journal/JournalGrid'
 import AppointmentCard from '../components/journal/AppointmentCard'
@@ -97,6 +98,17 @@ export default function JournalPage() {
   useAutoRefresh(load)
 
   const current = data && data.key === dataKey ? data : null
+
+  // «Записать снова» из клиентской базы: форма с телефоном и именем клиента — один раз
+  const [rebook] = useState(readRebook)
+  const rebookDoneRef = useRef(false)
+  useEffect(() => {
+    if (!rebook || !current || !dateInUrl || rebookDoneRef.current) return
+    rebookDoneRef.current = true
+    clearRebook()
+    openForm({ initial: { phone: rebook.phone, name: rebook.name } })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rebook, current, dateInUrl])
 
   // Дата всегда в адресе; по умолчанию запись истории заменяется
   function setParams(next, { push = false, state = historyState } = {}) {

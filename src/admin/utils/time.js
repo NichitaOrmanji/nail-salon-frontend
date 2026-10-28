@@ -106,3 +106,10 @@ export function nowMinutes() {
 export function normalizeDecimal(value) {
   return String(value ?? '').trim().replace(',', '.')
 }
+
+// '2026-10-20' -> '20 окт'; другого года — '20 окт 2025' (клиентская база)
+export function clientDate(dateStr) {
+  const d = parseDate(dateStr)
+  const text = `${d.getDate()} ${MONTHS_GENITIVE[d.getMonth()].slice(0, 3)}`
+  return d.getFullYear() === parseDate(todayString()).getFullYear() ? text : `${text} ${d.getFullYear()}`
+}
