@@ -73,3 +73,13 @@ export function IconMoreVertical({ size }) {
 export function IconPlus({ size }) {
   return <Svg size={size}><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></Svg>
 }
+
+export function IconWallet({ size }) {
+  return (
+    <Svg size={size}>
+      <rect x="2" y="6" width="20" height="14" rx="2" />
+      <path d="M2 10h20" />
+      <path d="M16 15h2" />
+    </Svg>
+  )
+}

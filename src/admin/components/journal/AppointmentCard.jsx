@@ -3,6 +3,10 @@ import { Button, TextArea } from '../ui'
 import StatusBadge from '../StatusBadge'
 import { IconClose } from '../Icons'
 import { updateAppointment } from '../../api/appointments'
+import { cancelPayment } from '../../api/finance'
+import { useStaffAuth } from '../../context/StaffAuthContext'
+import { formatMoney, methodLabel } from '../../utils/money'
+import CheckoutModal from './CheckoutModal'
 import { notifyDataChanged } from '../../utils/events'
 import { formatShortDate, todayString } from '../../utils/time'
 import { ACTIVE_STATUSES } from '../../utils/statuses'
@@ -29,7 +33,10 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
   const [baseNotes, setBaseNotes] = useState(serverNotes)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
   const panelRef = useRef(null)
+  const { me } = useStaffAuth()
+  const isOwner = me?.role === 'owner'
 
   // Заметку изменили на сервере (форма, другой сотрудник): если своих правок нет — берём новую
   if (serverNotes !== baseNotes) {
@@ -40,7 +47,10 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
   const notesChanged = notes !== serverNotes
   const isActive = ACTIVE_STATUSES.includes(a.status)
   const canMarkVisit = isActive && a.date <= todayString()
-  const canRestore = a.status === 'cancelled' || a.status === 'no_show' || a.status === 'completed'
+  // Оплаченный визит заблокирован: менять его можно после отмены оплаты (владельцем)
+  const paid = !!a.payment
+  const canRestore = !paid && (a.status === 'cancelled' || a.status === 'no_show' || a.status === 'completed')
+  const canPay = isManager && !paid && (isActive || a.status === 'completed') && a.date <= todayString()
   const hasActions = isActive || canRestore || isManager
 
   // Журнал знает, есть ли несохранённая заметка (переспросить при переходе к другой записи)
@@ -88,6 +98,20 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
       window.removeEventListener('resize', update)
     }
   }, [topAnchorRef, hidden])
+
+  async function removePayment() {
+    if (!window.confirm('Отменить оплату? Сумма уйдёт из кассы и отчётов.')) return
+    setError(null)
+    setBusy(true)
+    try {
+      await cancelPayment(a.id)
+      notifyDataChanged()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function patch(data, confirmText) {
     if (confirmText && !window.confirm(confirmText)) return
@@ -145,6 +169,14 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
         <Row label="Дата и время">{formatShortDate(a.date)}, {a.start_time}–{a.end_time}</Row>
         <Row label="Длительность">{formatDuration(a.duration)}</Row>
         <Row label="Цена">{a.service ? formatPrice(a.service.price) : '—'}</Row>
+        <Row label="Оплата">
+          {paid ? (
+            <span style={{ color: '#34d399' }}>
+              {formatMoney(a.payment.amount)} · {methodLabel(a.payment.method)}
+              {Number(a.payment.discount) > 0 && <span className="text-gray-500"> (скидка {formatMoney(a.payment.discount)})</span>}
+            </span>
+          ) : <span className="text-gray-500">не оплачено</span>}
+        </Row>
         <Row label="Источник">{a.source === 'staff' ? 'Персонал' : 'Онлайн'}</Row>
         <Row label="Статус"><StatusBadge status={a.status} /></Row>
 
@@ -165,8 +197,14 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
       {(hasActions || error) && (
         <div className="flex-shrink-0 px-5 py-3 flex flex-wrap gap-2" style={{ borderTop: '1px solid #2e2e2e' }}>
           {error && <p role="alert" className="basis-full text-red-400 text-sm">{error}</p>}
+          {canPay && (
+            <Button variant="primary" disabled={busy} onClick={() => setCheckoutOpen(true)}>Оплата</Button>
+          )}
+          {paid && isOwner && (
+            <Button disabled={busy} onClick={removePayment}>Отменить оплату</Button>
+          )}
           {a.status === 'pending' && (
-            <Button variant="primary" disabled={busy} onClick={() => patch({ status: 'confirmed' })}>Подтвердить</Button>
+            <Button variant={canPay ? 'secondary' : 'primary'} disabled={busy} onClick={() => patch({ status: 'confirmed' })}>Подтвердить</Button>
           )}
           {canMarkVisit && (
             <>
@@ -188,10 +226,20 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
               Вернуть
             </Button>
           )}
-          {isManager && (
+          {isManager && !paid && (
             <Button disabled={busy} onClick={() => onEdit(a)}>Перенести/изменить</Button>
           )}
         </div>
+      )}
+      {checkoutOpen && (
+        <CheckoutModal
+          appointment={a}
+          onClose={() => setCheckoutOpen(false)}
+          onPaid={() => {
+            setCheckoutOpen(false)
+            notifyDataChanged()
+          }}
+        />
       )}
     </div>
   )
