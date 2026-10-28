@@ -1,4 +1,4 @@
-import { timeToMin, weekdayIndex } from './time'
+import { addDays, timeToMin, todayString, weekdayIndex } from './time'
 
 // Сетка журнала: 30 минут = 48px
 export const SLOT_MINUTES = 30
@@ -24,6 +24,41 @@ export function workInfo(master, date, dayOffMasterIds) {
   const end = timeToMin(day.end_time)
   if (start === null || end === null || end <= start) return { working: false }
   return { working: true, start, end }
+}
+
+// Понедельник недели, в которую входит дата
+export function weekStart(date) {
+  return addDays(date, -weekdayIndex(date))
+}
+
+export function weekDates(date) {
+  const start = weekStart(date)
+  return Array.from({ length: 7 }, (_, i) => addDays(start, i))
+}
+
+// Часы работы дня по всем мастерам вместе: от самого раннего начала до самого позднего конца
+function unionWork(masters, date, dayOffMasterIds) {
+  const days = masters.filter(m => m.is_active).map(m => workInfo(m, date, dayOffMasterIds)).filter(w => w.working)
+  if (!days.length) return { working: false }
+  return { working: true, start: Math.min(...days.map(w => w.start)), end: Math.max(...days.map(w => w.end)) }
+}
+
+// Колонки недели: 7 дней. master — фильтр (null — все мастера, записи которых стоят рядом)
+export function buildWeekColumns({ masters, date, master, dayOffs }) {
+  const today = todayString()
+  return weekDates(date).map(day => {
+    const offIds = new Set(dayOffs.filter(d => d.date === day).map(d => d.master))
+    return {
+      key: day,
+      date: day,
+      week: true,
+      isToday: day === today,
+      master,
+      hidden: false,
+      work: master ? workInfo(master, day, offIds) : unionWork(masters, day, offIds),
+      match: a => a.date === day && (master ? a.master?.id === master.id : true),
+    }
+  })
 }
 
 // Колонки дня: активные мастера ∪ скрытые мастера с записями ∪ «Без мастера»
@@ -53,7 +88,13 @@ export function buildColumns({ masters, appointments, date, dayOffMasterIds }) {
   if (appointments.some(a => !a.master)) {
     columns.push({ key: 'none', master: null, hidden: false, work: { working: false, neutral: true } })
   }
-  return columns
+  const isToday = date === todayString()
+  return columns.map(col => ({
+    ...col,
+    date,
+    isToday,
+    match: a => a.date === date && (col.master ? a.master?.id === col.master.id : !a.master),
+  }))
 }
 
 // Диапазон часов сетки, округлённый до часа
