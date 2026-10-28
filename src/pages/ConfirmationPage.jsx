@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { Link, useNavigate, Navigate } from 'react-router-dom'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import { useBooking, CONTACT_DRAFT_KEY } from '../context/BookingContext'
 import { createAppointment } from '../api/appointments'
@@ -48,6 +48,7 @@ export default function ConfirmationPage() {
   const [phone, setPhone] = useState(() => draft.phone ?? localStorage.getItem('client_phone') ?? '')
   const [email, setEmail] = useState(draft.email ?? '')
   const [notes, setNotes] = useState(draft.notes ?? '')
+  const [consent, setConsent] = useState(false)
   const [phoneTouched, setPhoneTouched] = useState(false)
   const [sent, setSent] = useState(false)
   // Ссылка на бота для подтверждения записи (null — бот не настроен)
@@ -80,7 +81,7 @@ export default function ConfirmationPage() {
   const phoneValid = phone && isValidPhoneNumber(phone)
   // Красным подсвечиваем после ухода из поля, чтобы не мешать, пока номер набирают
   const phoneInvalid = Boolean(phone) && !phoneValid && phoneTouched
-  const canSubmit = name.trim() && phoneValid
+  const canSubmit = name.trim() && phoneValid && consent
 
   async function handleSubmit() {
     if (!canSubmit || submitting) return
@@ -98,7 +99,8 @@ export default function ConfirmationPage() {
         client_email: email.trim(),
         date,
         start_time: time,
-        notes: notes.trim()
+        notes: notes.trim(),
+        consent: true
       })
       setTelegramUrl(created?.telegram_url || null)
       localStorage.setItem('client_name', name.trim())
@@ -252,6 +254,20 @@ export default function ConfirmationPage() {
             </p>
           )}
         </div>
+
+        {/* Согласие на обработку персональных данных (Закон РМ № 133/2011) */}
+        <label className="flex items-start gap-3 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={e => setConsent(e.target.checked)}
+            className="mt-0.5 w-5 h-5 flex-shrink-0 accent-pink-400"
+          />
+          <span className="text-gray-400 text-xs leading-relaxed">
+            Согласен(на) на обработку моих персональных данных для записи и напоминаний —{' '}
+            <Link to="/privacy" className="underline" style={{ color: '#f472b6' }}>политика конфиденциальности</Link>
+          </span>
+        </label>
 
         {/* Ошибка отправки */}
         {submitError && (

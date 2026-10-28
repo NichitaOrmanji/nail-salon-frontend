@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useCompany } from '../context/CompanyContext'
 import { fetchMyAppointments, cancelAppointment } from '../api/profile'
 import { toDateString } from '../utils/format'
 import Spinner from '../components/layout/Spinner'
@@ -34,6 +35,7 @@ const STATUS_LABELS = {
 export default function AccountPage() {
   const navigate = useNavigate()
   const { isLoggedIn, logout } = useAuth()
+  const company = useCompany()
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -51,9 +53,15 @@ export default function AccountPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Отменить можно только будущую активную запись
+  // Решает сервер (правило салона «не позже чем за N часов»); старый ответ без поля — по дате
   function canCancel(a) {
+    if (typeof a.can_cancel === 'boolean') return a.can_cancel
     return ['pending', 'confirmed'].includes(a.status) && a.date >= toDateString(new Date())
+  }
+
+  // Активная запись, которую уже поздно отменять онлайн
+  function tooLateToCancel(a) {
+    return ['pending', 'confirmed'].includes(a.status) && a.date >= toDateString(new Date()) && !canCancel(a)
   }
 
   async function handleCancel(a) {
@@ -180,6 +188,12 @@ export default function AccountPage() {
                     <span className="text-gray-600 text-xs">·</span>
                     <span className="text-gray-400 text-xs">{formatTime(a.start_time)}</span>
                   </div>
+                  {tooLateToCancel(a) && (
+                    <p className="mt-4 text-xs text-gray-500">
+                      Отменить онлайн можно не позже чем за {company.cancel_hours} ч до визита.{' '}
+                      {company.phone && <a href={`tel:${company.phone.replace(/\s/g, '')}`} style={{ color: '#f472b6' }}>Позвонить в салон</a>}
+                    </p>
+                  )}
                   {canCancel(a) && (
                     <button
                       onClick={() => handleCancel(a)}

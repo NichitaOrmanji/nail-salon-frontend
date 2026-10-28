@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import PhoneField from '../components/layout/PhoneField'
@@ -185,6 +185,10 @@ export default function ProfilePage() {
         >
           {loading ? 'Подождите...' : tab === 'login' ? 'Войти' : 'Зарегистрироваться'}
         </button>
+        <p className="text-gray-600 text-xs text-center mt-4">
+          Входя или регистрируясь, вы соглашаетесь с{' '}
+          <Link to="/privacy" className="underline">политикой конфиденциальности</Link>
+        </p>
 
       </div>
     </div>

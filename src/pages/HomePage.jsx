@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
 import { useAuth } from '../context/AuthContext'
 import { useCompany } from '../context/CompanyContext'
@@ -349,6 +349,10 @@ export default function HomePage() {
               <span className="text-gray-600 flex-shrink-0"><IconChevronRight /></span>
             </button>
           ))}
+        </div>
+
+        <div className="text-center mt-8">
+          <Link to="/privacy" className="text-gray-600 text-xs underline">Политика конфиденциальности</Link>
         </div>
 
       </div>
