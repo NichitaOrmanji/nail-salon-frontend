@@ -32,6 +32,18 @@ export function AuthProvider({ children }) {
     } catch { /* без имени тоже можно войти */ }
   }
 
+  // Вход по готовым токенам (через Telegram): телефон и имя — из профиля
+  async function loginWithTokens(tokens) {
+    saveTokens(tokens)
+    setIsLoggedIn(true)
+    try {
+      const me = await fetchMe()
+      if (me?.phone) localStorage.setItem('client_phone', me.phone)
+      const name = [me?.name, me?.surname].filter(Boolean).join(' ')
+      if (name) localStorage.setItem('client_name', name)
+    } catch { /* профиль подтянется позже */ }
+  }
+
   // Регистрация
   async function register({ phone, password, name, surname }) {
     saveTokens(await apiRegister({ phone, password, name, surname }))
@@ -48,7 +60,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, register, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, login, loginWithTokens, register, logout }}>
       {children}
     </AuthContext.Provider>
   )
