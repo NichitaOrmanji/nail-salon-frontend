@@ -1,7 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { timeToMin, minToTime, nowMinutes } from '../../utils/time'
-import { statusInfo } from '../../utils/statuses'
+import { timeToMin, minToTime, nowMinutes, formatWeekDay } from '../../utils/time'
+import { appointmentKind } from '../../utils/statuses'
 import { SLOT_MINUTES, SLOT_PX, PX_PER_MIN, MIN_BLOCK_PX, layoutBlocks } from '../../utils/journal'
 import { IconMoreVertical } from '../Icons'
 
@@ -40,7 +40,8 @@ function useNowMinutes(enabled) {
 }
 
 function columnHours(col) {
-  if (!col.master) return 'Записи без мастера'
+  if (!col.master && !col.week) return 'Записи без мастера'
+  if (!col.master && !col.work.working) return 'Никто не работает'
   if (col.work.dayOff) return 'Выходной (по дате)'
   if (!col.work.working) return 'Выходной'
   return `${minToTime(col.work.start)}–${minToTime(col.work.end)}`
@@ -107,8 +108,11 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
     >
       <div className="flex-1 min-w-0 py-1">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-white text-sm font-semibold truncate" style={{ opacity: col.hidden ? 0.6 : 1 }}>
-            {col.master ? col.master.name : 'Без мастера'}
+          <span
+            className="text-sm font-semibold truncate"
+            style={{ opacity: col.hidden ? 0.6 : 1, color: col.week && col.isToday ? '#f472b6' : '#ffffff' }}
+          >
+            {col.week ? formatWeekDay(col.date) : col.master ? col.master.name : 'Без мастера'}
           </span>
           {col.hidden && (
             <span className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>скрыт</span>
@@ -152,12 +156,12 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
   )
 }
 
-function AppointmentBlock({ appointment: a, range, lane, lanes, selected, onClick }) {
+function AppointmentBlock({ appointment: a, range, lane, lanes, selected, showMaster, onClick }) {
   const start = timeToMin(a.start_time) ?? range.start
   const end = Math.max(timeToMin(a.end_time) ?? start, start)
   const top = (start - range.start) * PX_PER_MIN
   const height = Math.max(MIN_BLOCK_PX, (end - start) * PX_PER_MIN)
-  const info = statusInfo(a.status)
+  const info = appointmentKind(a)
   const muted = a.status === 'cancelled'
   const width = 100 / lanes
 
@@ -180,7 +184,7 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, onClic
         opacity: muted ? 0.6 : 1,
         zIndex: selected ? 6 : 5,
       }}
-      title={`${a.start_time}–${a.end_time} ${a.client_name}${a.service ? ' · ' + a.service.name : ''}`}
+      title={`${a.start_time}–${a.end_time} ${a.client_name}${a.master ? ' · ' + a.master.name : ''}${a.service ? ' · ' + a.service.name : ''} — ${info.label}`}
     >
       {/* Время не переносится по символам, имя и услуга обрезаются многоточием */}
       <div className={`min-w-0 text-[11px] leading-tight text-white ${muted ? 'line-through' : ''}`}>
@@ -192,7 +196,8 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, onClic
           <>
             <div className="font-semibold whitespace-nowrap truncate">{a.start_time}–{a.end_time}</div>
             <div className="truncate">{a.client_name}</div>
-            {a.service && height >= 56 && <div className="truncate text-gray-300">{a.service.name}</div>}
+            {showMaster && a.master && height >= 44 && <div className="truncate text-gray-300">{a.master.name}</div>}
+            {a.service && height >= (showMaster ? 68 : 56) && <div className="truncate text-gray-300">{a.service.name}</div>}
           </>
         )}
       </div>
@@ -200,38 +205,39 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, onClic
   )
 }
 
-// Сетка дня: колонки мастеров × строки по 30 минут.
+// Сетка журнала: колонки (мастера дня или дни недели) × строки по 30 минут.
 // Прокручивается только она сама; шапка и колонка времени закреплены.
-export default function JournalGrid({ columns, appointments, range, isToday, dataKey, selectedId, canManage, onSelect, onEmptyClick, onToggleDayOff }) {
+export default function JournalGrid({ columns, appointments, range, dataKey, selectedId, canManage, showMaster, scrollToNow = true, minColumnWidth = COL_MIN_PX, onSelect, onEmptyClick, onToggleDayOff }) {
   const scrollRef = useRef(null)
   const scrolledFor = useRef(null)
+  const isToday = columns.some(col => col.isToday)
   const now = useNowMinutes(isToday)
   const totalPx = (range.end - range.start) * PX_PER_MIN
   const slots = []
   for (let m = range.start; m < range.end; m += SLOT_MINUTES) slots.push(m)
 
-  // При открытии дня: сегодня — к текущему времени, иначе — наверх
+  // При открытии: день «сегодня» — к текущему времени, иначе (и неделя) — к началу дня
   useEffect(() => {
     const el = scrollRef.current
     if (!el || scrolledFor.current === dataKey) return
     scrolledFor.current = dataKey
-    if (isToday) {
+    if (isToday && scrollToNow) {
       const current = nowMinutes()
       el.scrollTop = Math.max(0, (current - range.start) * PX_PER_MIN - el.clientHeight / 3)
     } else {
       el.scrollTop = 0
     }
-  }, [dataKey, isToday, range.start])
+  }, [dataKey, isToday, scrollToNow, range.start])
 
   // Раскладка пересекающихся записей; колонка шире, если дорожек много
   const layout = useMemo(() => {
     return columns.map(col => {
-      const colAppointments = appointments.filter(a => (col.master ? a.master?.id === col.master.id : !a.master))
+      const colAppointments = appointments.filter(col.match)
       const lanes = layoutBlocks(colAppointments)
       const maxLanes = Math.max(1, ...Object.values(lanes).map(l => l.lanes))
-      return { col, colAppointments, lanes, minWidth: Math.max(COL_MIN_PX, maxLanes * LANE_MIN_PX) }
+      return { col, colAppointments, lanes, minWidth: Math.max(minColumnWidth, maxLanes * LANE_MIN_PX) }
     })
-  }, [columns, appointments])
+  }, [columns, appointments, minColumnWidth])
 
   const nowVisible = isToday && now >= range.start && now <= range.end
   const nowTop = (now - range.start) * PX_PER_MIN
@@ -302,11 +308,12 @@ export default function JournalGrid({ columns, appointments, range, isToday, dat
                   lane={lanes[a.id]?.lane ?? 0}
                   lanes={lanes[a.id]?.lanes ?? 1}
                   selected={a.id === selectedId}
+                  showMaster={showMaster}
                   onClick={onSelect}
                 />
               ))}
 
-              {nowVisible && (
+              {nowVisible && col.isToday && (
                 <div className="absolute inset-x-0 pointer-events-none" style={{ top: nowTop, height: 2, backgroundColor: '#f472b6', zIndex: 7 }} />
               )}
             </div>

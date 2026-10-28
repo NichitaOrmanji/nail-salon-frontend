@@ -91,6 +91,12 @@ export function formatShortDate(dateStr) {
   return `${WEEKDAYS_SHORT[weekdayIndex(dateStr)]}, ${d.getDate()} ${MONTHS_GENITIVE[d.getMonth()]}`
 }
 
+// '2026-10-26' -> 'Пн, 26 окт' (заголовок дня в недельном журнале)
+export function formatWeekDay(dateStr) {
+  const d = parseDate(dateStr)
+  return `${WEEKDAYS_SHORT[weekdayIndex(dateStr)]}, ${d.getDate()} ${MONTHS_GENITIVE[d.getMonth()].slice(0, 3)}`
+}
+
 // Минуты от полуночи сейчас (по времени салона)
 export function nowMinutes() {
   return salonNow().minutes
