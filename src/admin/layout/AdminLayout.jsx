@@ -6,6 +6,7 @@ import { useAutoRefresh } from '../utils/events'
 import { ROLE_LABELS } from '../utils/statuses'
 import ErrorBoundary from '../../components/layout/ErrorBoundary'
 import ChangePasswordModal from '../components/ChangePasswordModal'
+import TelegramModal from '../components/TelegramModal'
 import NewAppointmentsModal from '../components/NewAppointmentsModal'
 import { IconCalendar, IconScissors, IconUsers, IconSettings, IconMenu, IconClose } from '../components/Icons'
 
@@ -25,7 +26,7 @@ function menuItems(isManager) {
 }
 
 // Содержимое меню: одно и то же для левой колонки и выезжающей панели
-function SidebarContent({ me, isManager, onNavigate, onChangePassword, onLogout }) {
+function SidebarContent({ me, isManager, onNavigate, onTelegram, onChangePassword, onLogout }) {
   return (
     <div className="flex flex-col h-full">
       <div className="px-5 pt-5 pb-4">
@@ -67,6 +68,13 @@ function SidebarContent({ me, isManager, onNavigate, onChangePassword, onLogout 
         </div>
         <button
           type="button"
+          onClick={onTelegram}
+          className="w-full text-left px-3 min-h-[44px] rounded-xl text-sm text-gray-300"
+        >
+          Уведомления в Telegram
+        </button>
+        <button
+          type="button"
           onClick={onChangePassword}
           className="w-full text-left px-3 min-h-[44px] rounded-xl text-sm text-gray-300"
         >
@@ -90,6 +98,7 @@ export default function AdminLayout() {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
+  const [telegramOpen, setTelegramOpen] = useState(false)
   const [newListOpen, setNewListOpen] = useState(false)
   const [pendingCount, setPendingCount] = useState(null)
 
@@ -118,6 +127,7 @@ export default function AdminLayout() {
     me,
     isManager,
     onNavigate: () => setMenuOpen(false),
+    onTelegram: () => { setMenuOpen(false); setTelegramOpen(true) },
     onChangePassword: () => { setMenuOpen(false); setPasswordOpen(true) },
     onLogout: logout,
   }
@@ -185,6 +195,7 @@ export default function AdminLayout() {
       </div>
 
       {passwordOpen && <ChangePasswordModal onClose={() => setPasswordOpen(false)} />}
+      {telegramOpen && <TelegramModal onClose={() => setTelegramOpen(false)} />}
       {newListOpen && <NewAppointmentsModal onClose={() => setNewListOpen(false)} />}
     </div>
   )
