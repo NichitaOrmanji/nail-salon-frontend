@@ -193,7 +193,7 @@ export default function JournalPage() {
   const columns = useMemo(() => {
     if (!current) return []
     if (view === 'week') {
-      return buildWeekColumns({ masters: current.masters, date, master: filterMaster, dayOffs: current.daysOff || [] })
+      return buildWeekColumns({ masters: current.masters, appointments: visibleAppointments, date, master: filterMaster, dayOffs: current.daysOff || [] })
     }
     return buildColumns({ masters: current.masters, appointments: visibleAppointments, date, dayOffMasterIds })
   }, [current, view, filterMaster, visibleAppointments, date, dayOffMasterIds])

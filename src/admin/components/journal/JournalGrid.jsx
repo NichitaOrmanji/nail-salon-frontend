@@ -9,6 +9,8 @@ const TIME_COL_PX = 56
 const COL_MIN_PX = 140
 // Ширина одной дорожки, когда записи в колонке пересекаются
 const LANE_MIN_PX = 96
+// Подколонка мастера в недельном виде «Все мастера»
+const MASTER_LANE_MIN_PX = 72
 // Блок ниже этого — одна строка «11:15 Имя»
 const COMPACT_BLOCK_PX = 30
 const MENU_WIDTH_PX = 240
@@ -121,6 +123,13 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
         <div className="text-xs truncate" style={{ color: col.work.working || !col.master ? '#9ca3af' : '#6b7280' }}>
           {columnHours(col)}
         </div>
+        {col.laneNames?.length > 1 && (
+          <div className="flex mt-1 -ml-1">
+            {col.laneNames.map((name, i) => (
+              <span key={i} className="flex-1 min-w-0 truncate text-[10px] text-gray-500 pl-1" title={name}>{name}</span>
+            ))}
+          </div>
+        )}
       </div>
       {showMenu && (
         <div className="flex-shrink-0">
@@ -194,7 +203,8 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, showMa
           </div>
         ) : (
           <>
-            <div className="font-semibold whitespace-nowrap truncate">{a.start_time}–{a.end_time}</div>
+            {/* В узкой подколонке — только начало (конец виден по высоте блока) */}
+            <div className="font-semibold whitespace-nowrap truncate">{lanes >= 3 ? a.start_time : `${a.start_time}–${a.end_time}`}</div>
             <div className="truncate">{a.client_name}</div>
             {showMaster && a.master && height >= 44 && <div className="truncate text-gray-300">{a.master.name}</div>}
             {a.service && height >= (showMaster ? 68 : 56) && <div className="truncate text-gray-300">{a.service.name}</div>}
@@ -233,6 +243,17 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
   const layout = useMemo(() => {
     return columns.map(col => {
       const colAppointments = appointments.filter(col.match)
+      if (col.laneIds?.length) {
+        // Постоянная подколонка мастера; пересечения внутри мастера делят его подколонку
+        const lanes = {}
+        col.laneIds.forEach((id, index) => {
+          const own = colAppointments.filter(a => (a.master?.id ?? 'none') === id)
+          for (const [aid, sub] of Object.entries(layoutBlocks(own))) {
+            lanes[aid] = { lane: index * sub.lanes + sub.lane, lanes: col.laneIds.length * sub.lanes, group: index }
+          }
+        })
+        return { col, colAppointments, lanes, minWidth: Math.max(minColumnWidth, col.laneIds.length * MASTER_LANE_MIN_PX) }
+      }
       const lanes = layoutBlocks(colAppointments)
       const maxLanes = Math.max(1, ...Object.values(lanes).map(l => l.lanes))
       return { col, colAppointments, lanes, minWidth: Math.max(minColumnWidth, maxLanes * LANE_MIN_PX) }

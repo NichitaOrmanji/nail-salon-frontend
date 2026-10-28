@@ -44,11 +44,21 @@ function unionWork(masters, date, dayOffMasterIds) {
 }
 
 // Колонки недели: 7 дней. master — фильтр (null — все мастера, записи которых стоят рядом)
-export function buildWeekColumns({ masters, date, master, dayOffs }) {
+export function buildWeekColumns({ masters, appointments = [], date, master, dayOffs }) {
   const today = todayString()
   return weekDates(date).map(day => {
     const offIds = new Set(dayOffs.filter(d => d.date === day).map(d => d.master))
+    // «Все мастера»: у каждого мастера в дне своя подколонка — работающие в этот день
+    // и те, у кого есть записи (порядок как в списке мастеров)
+    const withAppointments = new Set(appointments.filter(a => a.date === day).map(a => a.master?.id ?? 'none'))
+    const laneIds = master ? null : [
+      ...masters.filter(m => withAppointments.has(m.id) || (m.is_active && workInfo(m, day, offIds).working)).map(m => m.id),
+      ...(withAppointments.has('none') ? ['none'] : []),
+    ]
+    const names = new Map(masters.map(m => [m.id, m.name]))
     return {
+      laneIds,
+      laneNames: laneIds?.map(id => (id === 'none' ? 'Без мастера' : names.get(id) || '')),
       key: day,
       date: day,
       week: true,
