@@ -15,6 +15,7 @@ function toForm(company) {
     description: company.description || '',
     latitude: company.latitude === null || company.latitude === undefined ? '' : String(company.latitude),
     longitude: company.longitude === null || company.longitude === undefined ? '' : String(company.longitude),
+    cancel_hours: String(company.cancel_hours ?? 0),
   }
 }
 
@@ -76,7 +77,14 @@ export default function SettingsPage() {
       return
     }
 
+    const cancelHours = form.cancel_hours.trim() === '' ? 0 : Number(form.cancel_hours)
+    if (!Number.isInteger(cancelHours) || cancelHours < 0 || cancelHours > 168) {
+      setError('Срок отмены — целое число часов от 0 до 168')
+      return
+    }
+
     const body = {}
+    if (form.cancel_hours !== initial.cancel_hours) body.cancel_hours = cancelHours
     for (const field of FIELDS) {
       const value = field === 'name' ? form[field].trim() : form[field]
       if (value !== initial[field]) body[field] = value
@@ -136,6 +144,12 @@ export default function SettingsPage() {
             Координаты: правый клик по точке в Google Maps → нажмите на числа (скопируются широта и долгота).
             Можно вставить пару целиком в любое поле; запятая в числе заменится точкой.
           </p>
+          <Field
+            label="Клиент может отменить запись сам не позже чем за, часов"
+            hint="0 — до самого начала визита. Позже клиент видит «позвоните в салон»; персонал отменяет в журнале всегда."
+          >
+            <TextInput inputMode="numeric" value={form.cancel_hours} onChange={e => set('cancel_hours', e.target.value.replace(/\D/g, ''))} placeholder="0" />
+          </Field>
           <ErrorText>{error}</ErrorText>
           <div className="flex items-center justify-end gap-3">
             {done && <span className="text-xs" style={{ color: '#34d399' }}>Сохранено</span>}
