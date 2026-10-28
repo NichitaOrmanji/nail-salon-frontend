@@ -5,6 +5,7 @@ import { fetchMasters } from '../api/masters'
 import { fetchSlotsByMaster } from '../api/slots'
 import Spinner from '../components/layout/Spinner'
 import SalonHeader from '../components/layout/SalonHeader'
+import { t } from '../i18n'
 
 function IconUser() {
   return (
@@ -54,7 +55,7 @@ export default function MastersPage() {
   function load() {
     return loadMasters()
       .then(data => { setMasters(data); setLoading(false) })
-      .catch(err => { setError(err.message || 'Не удалось загрузить мастеров'); setLoading(false) })
+      .catch(err => { setError(err.message || t('Не удалось загрузить мастеров')); setLoading(false) })
   }
 
   useEffect(() => {
@@ -80,8 +81,8 @@ export default function MastersPage() {
   }
 
   const allMasters = masters.length === 0 ? [] : [
-    { id: null, name: 'Любой специалист', specialty: '' },
-    ...masters.map(m => ({ ...m, specialty: m.description || 'Мастер маникюра и педикюра' }))
+    { id: null, name: t('Любой специалист'), specialty: '' },
+    ...masters.map(m => ({ ...m, specialty: m.description || t('Мастер маникюра и педикюра') }))
   ]
 
   return (
@@ -91,14 +92,14 @@ export default function MastersPage() {
 
       {/* Заголовок */}
       <div className="px-6 pt-6 pb-4">
-        <h2 className="text-white text-2xl font-bold tracking-tight">Специалист</h2>
+        <h2 className="text-white text-2xl font-bold tracking-tight">{t('Специалист')}</h2>
         <p className="text-gray-500 text-sm mt-1">
-          {filteredByTime ? `Свободны в ${time}` : service ? `Делают «${service.name}»` : 'Выберите мастера или пропустите'}
+          {filteredByTime ? t('Свободны в {time}', { time }) : service ? t('Делают «{name}»', { name: service.name }) : t('Выберите мастера или пропустите')}
         </p>
       </div>
 
       {/* Состояния */}
-      {loading && <Spinner text="Загружаем мастеров..." />}
+      {loading && <Spinner text={t('Загружаем мастеров...')} />}
 
       {error && (
         <div className="flex flex-col items-center py-12 gap-4 px-6">
@@ -108,15 +109,15 @@ export default function MastersPage() {
             className="px-6 py-3 rounded-2xl text-white text-sm font-medium transition-all active:scale-95"
             style={{ backgroundColor: '#242424' }}
           >
-            Попробовать снова
+            {t('Попробовать снова')}
           </button>
         </div>
       )}
 
       {!loading && !error && masters.length === 0 && (
         <div className="text-center py-12 px-6">
-          <p className="text-white text-sm font-medium mb-1">Нет свободных мастеров</p>
-          <p className="text-gray-500 text-sm">Попробуйте другое время или услугу</p>
+          <p className="text-white text-sm font-medium mb-1">{t('Нет свободных мастеров')}</p>
+          <p className="text-gray-500 text-sm">{t('Попробуйте другое время или услугу')}</p>
         </div>
       )}
 
@@ -150,7 +151,7 @@ export default function MastersPage() {
                     {m.avg_rating && (
                       <div className="flex items-center gap-2 mt-1">
                         <Stars count={m.avg_rating} />
-                        <span className="text-gray-500 text-xs">{m.avg_rating} · {m.reviews_count} отзывов</span>
+                        <span className="text-gray-500 text-xs">{m.avg_rating} · {t('отзывов: {count}', { count: m.reviews_count })}</span>
                       </div>
                     )}
                   </div>

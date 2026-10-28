@@ -9,6 +9,7 @@ import { fetchSlotsByMaster } from '../api/slots'
 import SalonHeader from '../components/layout/SalonHeader'
 import PhoneField from '../components/layout/PhoneField'
 import { formatDisplayDate, formatDuration, formatPrice } from '../utils/format'
+import { getLang, t } from '../i18n'
 
 function IconSuccess() {
   return (
@@ -24,7 +25,7 @@ async function resolveMasterId({ master, service, date, time }) {
   if (master?.id) return master.id
   const byTime = await fetchSlotsByMaster({ serviceId: service.id, date })
   const free = byTime[time]
-  if (!free?.length) throw new Error('Это время уже занято. Выберите другое.')
+  if (!free?.length) throw new Error(t('Это время уже занято. Выберите другое.'))
   return free[0]
 }
 
@@ -108,7 +109,7 @@ export default function ConfirmationPage() {
       setSent(true)
       reset()
     } catch (err) {
-      setSubmitError(err.message || 'Не удалось создать запись. Попробуйте ещё раз.')
+      setSubmitError(err.message || t('Не удалось создать запись. Попробуйте ещё раз.'))
     } finally {
       setSubmitting(false)
     }
@@ -121,11 +122,11 @@ export default function ConfirmationPage() {
         <div className="mb-6" style={{ color: '#f472b6' }}>
           <IconSuccess />
         </div>
-        <h2 className="text-white text-2xl font-bold mb-2 tracking-tight">Вы записаны</h2>
+        <h2 className="text-white text-2xl font-bold mb-2 tracking-tight">{t('Вы записаны')}</h2>
         {telegramUrl ? (
           <>
             <p className="text-gray-500 text-sm text-center mb-8 max-w-xs">
-              Подтвердите запись в Telegram — там же пришлём напоминание за сутки и за час до визита.
+              {t('Подтвердите запись в Telegram — там же пришлём напоминание за сутки и за час до визита.')}
             </p>
             <a
               href={telegramUrl}
@@ -134,27 +135,27 @@ export default function ConfirmationPage() {
               className="w-full max-w-xs py-4 rounded-2xl text-white font-semibold text-center transition-all active:scale-95 mb-3"
               style={{ backgroundColor: '#229ED9' }}
             >
-              Подтвердить в Telegram
+              {t('Подтвердить в Telegram')}
             </a>
             <button
               onClick={() => navigate('/')}
               className="w-full max-w-xs py-4 rounded-2xl text-gray-300 font-semibold transition-all active:scale-95"
               style={{ backgroundColor: '#242424' }}
             >
-              На главную
+              {t('На главную')}
             </button>
           </>
         ) : (
           <>
             <p className="text-gray-500 text-sm text-center mb-10">
-              Ждём вас в салоне. Запись появится в личном кабинете.
+              {t('Ждём вас в салоне. Запись появится в личном кабинете.')}
             </p>
             <button
               onClick={() => navigate('/')}
               className="px-10 py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
               style={{ backgroundColor: '#f472b6' }}
             >
-              На главную
+              {t('На главную')}
             </button>
           </>
         )}
@@ -176,35 +177,35 @@ export default function ConfirmationPage() {
 
         {/* Заголовок */}
         <div>
-          <h2 className="text-white text-2xl font-bold tracking-tight">Подтверждение</h2>
-          <p className="text-gray-500 text-sm mt-1">Проверьте детали записи</p>
+          <h2 className="text-white text-2xl font-bold tracking-tight">{t('Подтверждение')}</h2>
+          <p className="text-gray-500 text-sm mt-1">{t('Проверьте детали записи')}</p>
         </div>
 
         {/* Карточка итога */}
         <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#242424' }}>
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
-            <span className="text-gray-500 text-sm">Специалист</span>
-            <span className="text-white text-sm font-medium">{master.id ? master.name : 'Любой свободный'}</span>
+            <span className="text-gray-500 text-sm">{t('Специалист')}</span>
+            <span className="text-white text-sm font-medium">{master.id ? master.name : t('Любой свободный')}</span>
           </div>
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
-            <span className="text-gray-500 text-sm">Услуга</span>
+            <span className="text-gray-500 text-sm">{t('Услуга')}</span>
             <span className="text-white text-sm font-medium text-right">{service.name}</span>
           </div>
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
-            <span className="text-gray-500 text-sm">Дата и время</span>
-            <span className="text-white text-sm font-medium">{formatDisplayDate(date)}, {time}</span>
+            <span className="text-gray-500 text-sm">{t('Дата и время')}</span>
+            <span className="text-white text-sm font-medium">{formatDisplayDate(date, { lang: getLang() })}, {time}</span>
           </div>
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
-            <span className="text-gray-500 text-sm">Длительность</span>
-            <span className="text-white text-sm font-medium">{formatDuration(service.duration)}</span>
+            <span className="text-gray-500 text-sm">{t('Длительность')}</span>
+            <span className="text-white text-sm font-medium">{formatDuration(service.duration, getLang())}</span>
           </div>
 
           <div className="flex justify-between items-center px-5 py-4">
-            <span className="text-gray-500 text-sm">Итого</span>
+            <span className="text-gray-500 text-sm">{t('Итого')}</span>
             <span className="text-white text-base font-bold">{formatPrice(service.price)}</span>
           </div>
 
@@ -212,13 +213,13 @@ export default function ConfirmationPage() {
 
         {/* Форма */}
         <div>
-          <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">Ваши данные</p>
+          <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">{t('Ваши данные')}</p>
           {/* Без overflow-hidden: иначе обрезается список стран в PhoneField */}
           <div className="rounded-2xl relative" style={{ backgroundColor: '#242424' }}>
 
             <input
               type="text"
-              placeholder="Имя"
+              placeholder={t('Имя')}
               value={name}
               onChange={e => setName(e.target.value)}
               className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none text-sm rounded-t-2xl"
@@ -232,14 +233,14 @@ export default function ConfirmationPage() {
             />
             <input
               type="email"
-              placeholder="Email (необязательно)"
+              placeholder={t('Email (необязательно)')}
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none text-sm"
               style={{ backgroundColor: '#242424', borderBottom: '1px solid #2e2e2e' }}
             />
             <textarea
-              placeholder="Комментарий (необязательно)"
+              placeholder={t('Комментарий (необязательно)')}
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={3}
@@ -250,7 +251,7 @@ export default function ConfirmationPage() {
           </div>
           {phone && !phoneValid && (
             <p className="text-xs mt-2 px-1" style={{ color: phoneInvalid ? '#f87171' : '#6b7280' }}>
-              Проверьте номер телефона
+              {t('Проверьте номер телефона')}
             </p>
           )}
         </div>
@@ -264,8 +265,8 @@ export default function ConfirmationPage() {
             className="mt-0.5 w-5 h-5 flex-shrink-0 accent-pink-400"
           />
           <span className="text-gray-400 text-xs leading-relaxed">
-            Согласен(на) на обработку моих персональных данных для записи и напоминаний —{' '}
-            <Link to="/privacy" className="underline" style={{ color: '#f472b6' }}>политика конфиденциальности</Link>
+            {t('Согласен(на) на обработку моих персональных данных для записи и напоминаний —')}{' '}
+            <Link to="/privacy" className="underline" style={{ color: '#f472b6' }}>{t('политика конфиденциальности')}</Link>
           </span>
         </label>
 
@@ -284,7 +285,7 @@ export default function ConfirmationPage() {
             opacity: canSubmit && !submitting ? 1 : 0.4
           }}
         >
-          {submitting ? 'Отправляем...' : 'Записаться'}
+          {submitting ? t('Отправляем...') : t('Записаться')}
         </button>
 
       </div>

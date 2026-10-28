@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { t } from '../../i18n'
 
 const COUNTRIES = [
   { code: 'MD', dial: '+373', flag: '🇲🇩', name: 'Молдова' },
@@ -120,7 +121,7 @@ export default function PhoneField({ value, onChange, inputId, inputLabel, inval
               type="button"
             >
               <span className="text-lg">{country.flag}</span>
-              <span className="text-white text-sm">{country.name}</span>
+              <span className="text-white text-sm">{t(country.name)}</span>
               <span className="text-gray-500 text-sm ml-auto">{country.dial}</span>
             </button>
           ))}

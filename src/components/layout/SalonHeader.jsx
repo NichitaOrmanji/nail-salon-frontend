@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCompany } from '../../context/CompanyContext'
 import { useBooking } from '../../context/BookingContext'
+import LanguageSwitch from '../LanguageSwitch'
+import { t } from '../../i18n'
 
 function IconBack() {
   return (
@@ -29,8 +31,8 @@ function LeaveDialog({ onSave, onDiscard, onCancel }) {
         style={{ backgroundColor: '#1e1e1e', border: '1px solid #2e2e2e' }}
         onClick={e => e.stopPropagation()}
       >
-        <h3 id="leave-title" className="text-white text-lg font-bold mb-2">Перейти на главную?</h3>
-        <p className="text-gray-400 text-sm mb-6">Сохранить выбранные данные записи, чтобы продолжить позже?</p>
+        <h3 id="leave-title" className="text-white text-lg font-bold mb-2">{t('Перейти на главную?')}</h3>
+        <p className="text-gray-400 text-sm mb-6">{t('Сохранить выбранные данные записи, чтобы продолжить позже?')}</p>
         <div className="space-y-2">
           <button
             onClick={onSave}
@@ -38,20 +40,20 @@ function LeaveDialog({ onSave, onDiscard, onCancel }) {
             className="w-full py-3.5 rounded-2xl text-white font-semibold transition-all active:scale-95"
             style={{ backgroundColor: '#f472b6' }}
           >
-            Сохранить и выйти
+            {t('Сохранить и выйти')}
           </button>
           <button
             onClick={onDiscard}
             className="w-full py-3.5 rounded-2xl font-medium transition-all active:scale-95"
             style={{ backgroundColor: '#2e2e2e', color: '#f87171' }}
           >
-            Не сохранять
+            {t('Не сохранять')}
           </button>
           <button
             onClick={onCancel}
             className="w-full py-3 rounded-2xl text-gray-400 text-sm transition-all active:scale-95"
           >
-            Остаться
+            {t('Остаться')}
           </button>
         </div>
       </div>
@@ -75,16 +77,17 @@ export default function SalonHeader() {
     <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
       <button
         onClick={() => navigate(-1)}
-        aria-label="Назад"
+        aria-label={t('Назад')}
         className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
         style={{ backgroundColor: '#242424' }}
       >
         <IconBack />
       </button>
-      <button onClick={goHome} className="flex-1 text-left active:opacity-70 transition-all" title="На главную">
+      <button onClick={goHome} className="flex-1 text-left active:opacity-70 transition-all" title={t('На главную')}>
         <div className="text-white text-sm font-semibold">{company.name}</div>
         <div className="text-gray-500 text-xs">{company.address}</div>
       </button>
+      <LanguageSwitch />
 
       {askLeave && (
         <LeaveDialog

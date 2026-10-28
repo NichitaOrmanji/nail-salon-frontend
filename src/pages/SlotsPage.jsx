@@ -6,7 +6,9 @@ import Spinner from '../components/layout/Spinner'
 import SalonHeader from '../components/layout/SalonHeader'
 import { PAGE_WIDTH } from '../components/layout/width'
 import { formatDisplayDate, toDateString } from '../utils/format'
+import { getLang, t } from '../i18n'
 
+// Переводятся при показе: константа модуля не знает о смене языка
 const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
 const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс']
 
@@ -87,7 +89,7 @@ export default function SlotsPage() {
       setSlots(dropPastSlots(data, dateStr))
     } catch (err) {
       setSlots([])
-      setSlotsError(err.message || 'Не удалось загрузить слоты')
+      setSlotsError(err.message || t('Не удалось загрузить слоты'))
     } finally {
       setLoading(false)
     }
@@ -98,7 +100,7 @@ export default function SlotsPage() {
     if (!date) return
     loadSlots({ master, service, date })
       .then(data => setSlots(dropPastSlots(data, date)))
-      .catch(err => setSlotsError(err.message || 'Не удалось загрузить слоты'))
+      .catch(err => setSlotsError(err.message || t('Не удалось загрузить слоты')))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -119,7 +121,7 @@ export default function SlotsPage() {
 
   const subtitle = service
     ? `${service.name}${master?.id ? ` · ${master.name}` : ''}`
-    : 'Выберите удобный день'
+    : t('Выберите удобный день')
 
   return (
     <div className="min-h-screen pb-32" style={{ backgroundColor: '#1a1a1a' }}>
@@ -128,7 +130,7 @@ export default function SlotsPage() {
 
       {/* Заголовок */}
       <div className="px-6 pt-6 pb-4">
-        <h2 className="text-white text-2xl font-bold tracking-tight">Дата и время</h2>
+        <h2 className="text-white text-2xl font-bold tracking-tight">{t('Дата и время')}</h2>
         <p className="text-gray-500 text-sm mt-1">{subtitle}</p>
       </div>
 
@@ -137,7 +139,7 @@ export default function SlotsPage() {
         {/* Навигация по месяцу */}
         <div className="flex items-center justify-between mb-6">
           <span className="text-white font-semibold text-base">
-            {MONTHS[month]} {year}
+            {t(MONTHS[month])} {year}
           </span>
           <div className="flex gap-2">
             <button
@@ -161,7 +163,7 @@ export default function SlotsPage() {
         {/* Дни недели */}
         <div className="grid grid-cols-7 mb-2">
           {DAYS.map(d => (
-            <div key={d} className="text-center text-gray-600 text-xs py-2 font-medium">{d}</div>
+            <div key={d} className="text-center text-gray-600 text-xs py-2 font-medium">{t(d)}</div>
           ))}
         </div>
 
@@ -197,7 +199,7 @@ export default function SlotsPage() {
         {selectedDate && (
           <div className="mt-8">
 
-            {loading && <Spinner text="Загружаем слоты..." />}
+            {loading && <Spinner text={t('Загружаем слоты...')} />}
 
             {!loading && slotsError && (
               <div className="flex flex-col items-center py-8 gap-4">
@@ -207,7 +209,7 @@ export default function SlotsPage() {
                   className="px-6 py-3 rounded-2xl text-white text-sm font-medium active:scale-95"
                   style={{ backgroundColor: '#242424' }}
                 >
-                  Попробовать снова
+                  {t('Попробовать снова')}
                 </button>
               </div>
             )}
@@ -215,7 +217,7 @@ export default function SlotsPage() {
             {!loading && !slotsError && slots.length > 0 && (
               <>
                 <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">
-                  Свободное время
+                  {t('Свободное время')}
                 </p>
                 <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
                   {slots.map(slot => (
@@ -237,8 +239,8 @@ export default function SlotsPage() {
 
             {!loading && !slotsError && slots.length === 0 && (
               <div className="text-center py-8">
-                <p className="text-white text-sm font-medium mb-1">Нет свободного времени</p>
-                <p className="text-gray-500 text-sm">Попробуйте другую дату</p>
+                <p className="text-white text-sm font-medium mb-1">{t('Нет свободного времени')}</p>
+                <p className="text-gray-500 text-sm">{t('Попробуйте другую дату')}</p>
               </div>
             )}
           </div>
@@ -253,8 +255,8 @@ export default function SlotsPage() {
             className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"
             style={{ backgroundColor: '#f472b6' }}
           >
-            <div className="text-sm font-semibold">Далее</div>
-            <div className="text-xs opacity-75 mt-0.5">{formatDisplayDate(selectedDate, { withYear: false })} в {selectedSlot}</div>
+            <div className="text-sm font-semibold">{t('Далее')}</div>
+            <div className="text-xs opacity-75 mt-0.5">{t('{date} в {time}', { date: formatDisplayDate(selectedDate, { withYear: false, lang: getLang() }), time: selectedSlot })}</div>
           </button>
         </div>
       )}

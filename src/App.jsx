@@ -15,19 +15,23 @@ import PrivacyPage from './pages/PrivacyPage'
 import { PAGE_WIDTH } from './components/layout/width'
 import ErrorBoundary from './components/layout/ErrorBoundary'
 import Spinner from './components/layout/Spinner'
+import { useLang } from './i18n'
 
 // Панель салона грузится отдельным чанком, чтобы клиентский бандл не рос
 const AdminApp = lazy(() => import('./admin/AdminApp'))
 
 // Клиентская часть: мобильная обёртка и провайдеры записи
 function ClientApp() {
+  // Смена языка перерисовывает страницы заново (тексты берутся при отрисовке);
+  // выбранная запись хранится в провайдерах выше и не теряется
+  const lang = useLang()
   return (
     <AuthProvider>
       <CompanyProvider>
         <BookingProvider>
           <div style={{ backgroundColor: '#111111' }} className="min-h-screen">
             <div className={`mx-auto w-full ${PAGE_WIDTH} min-h-screen relative`} style={{ backgroundColor: '#1a1a1a' }}>
-              <ErrorBoundary>
+              <ErrorBoundary key={lang}>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/masters" element={<MastersPage />} />
