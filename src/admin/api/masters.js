@@ -58,3 +58,16 @@ export async function setMasterAccess(masterId, username, password) {
 export async function revokeMasterAccess(masterId) {
   await staffApi.delete(`/masters/${masterId}/access/`)
 }
+
+// Фото мастера; ответ — мастер целиком
+export async function uploadMasterPhoto(masterId, file) {
+  const body = new FormData()
+  body.append('file', file)
+  const response = await staffApi.post(`/masters/${masterId}/photo/`, body)
+  return response.data
+}
+
+export async function deleteMasterPhoto(masterId) {
+  const response = await staffApi.delete(`/masters/${masterId}/photo/`)
+  return response.data
+}

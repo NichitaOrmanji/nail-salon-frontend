@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { fetchStaffCompany, updateStaffCompany } from '../api/company'
+import { deleteCompanyPhoto, fetchStaffCompany, updateStaffCompany, uploadCompanyPhoto } from '../api/company'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { normalizeDecimal } from '../utils/time'
 import { Button, ErrorText, Field, PageHeader, TextArea, TextInput } from '../components/ui'
+import PhotoField from '../components/PhotoField'
 import Spinner from '../../components/layout/Spinner'
 
 const FIELDS = ['name', 'address', 'phone', 'description']
@@ -34,12 +35,15 @@ export default function SettingsPage() {
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
+  // Фото сохраняются сразу при выборе файла, отдельно от формы
+  const [photos, setPhotos] = useState(null)
 
   useEffect(() => {
     fetchStaffCompany()
       .then(data => {
         setForm(toForm(data))
         setInitial(toForm(data))
+        setPhotos({ logo: data.logo, main_photo: data.main_photo })
       })
       .catch(err => setLoadError(err.message))
   }, [])
@@ -58,6 +62,11 @@ export default function SettingsPage() {
     e.preventDefault()
     setDone(false)
     setForm(f => ({ ...f, latitude: pair[1], longitude: pair[2] }))
+  }
+
+  async function changePhoto(kind, file) {
+    const saved = file ? await uploadCompanyPhoto(kind, file) : await deleteCompanyPhoto(kind)
+    setPhotos({ logo: saved.logo, main_photo: saved.main_photo })
   }
 
   async function handleSubmit(e) {
@@ -118,6 +127,29 @@ export default function SettingsPage() {
       <PageHeader title="Настройки" subtitle="Данные салона на сайте записи" />
       <ErrorText className="mb-3">{loadError}</ErrorText>
       {!form && !loadError && <Spinner />}
+      {photos && (
+        <section className="rounded-2xl p-4 mb-5 space-y-5" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+          <PhotoField
+            label="Главное фото салона"
+            hint="Шапка сайта записи. Лучше горизонтальное. Сохраняется сразу."
+            url={photos.main_photo}
+            shape="wide"
+            maxSide={1600}
+            onUpload={file => changePhoto('main-photo', file)}
+            onRemove={() => changePhoto('main-photo', null)}
+          />
+          <PhotoField
+            label="Логотип"
+            hint="Квадратный, PNG с прозрачным фоном тоже подойдёт."
+            url={photos.logo}
+            shape="round"
+            maxSide={600}
+            keepPng
+            onUpload={file => changePhoto('logo', file)}
+            onRemove={() => changePhoto('logo', null)}
+          />
+        </section>
+      )}
       {form && (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <Field label="Название">

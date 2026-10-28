@@ -276,6 +276,9 @@ staffApi.interceptors.response.use(
       const text = message && !/matches the given query/i.test(message) ? message : 'Данные не найдены.'
       return Promise.reject(apiError(text, status, data))
     }
+    if (status === 413) {
+      return Promise.reject(apiError('Файл слишком большой.', status, data))
+    }
     if (status === 429) {
       return Promise.reject(apiError(message || 'Слишком много попыток. Попробуйте позже.', status, data))
     }
