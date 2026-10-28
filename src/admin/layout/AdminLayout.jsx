@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { fetchPendingCount } from '../api/appointments'
 import { useAutoRefresh } from '../utils/events'
+import { useNewVersion } from '../utils/version'
 import { ROLE_LABELS } from '../utils/statuses'
 import ErrorBoundary from '../../components/layout/ErrorBoundary'
 import ChangePasswordModal from '../components/ChangePasswordModal'
@@ -104,6 +105,7 @@ export default function AdminLayout() {
   const { me, isManager, logout } = useStaffAuth()
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const outdated = useNewVersion()
   const [passwordOpen, setPasswordOpen] = useState(false)
   const [telegramOpen, setTelegramOpen] = useState(false)
   const [newListOpen, setNewListOpen] = useState(false)
@@ -166,6 +168,19 @@ export default function AdminLayout() {
       )}
 
       <div className="flex-1 min-w-0 flex flex-col">
+        {outdated && (
+          <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: '#3b2a12', borderBottom: '1px solid #f59e0b' }}>
+            <span className="flex-1 min-w-0 text-sm" style={{ color: '#fbbf24' }}>Вышла новая версия панели</span>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="min-h-[36px] px-4 rounded-xl text-sm font-medium"
+              style={{ backgroundColor: '#f59e0b', color: '#111111' }}
+            >
+              Обновить
+            </button>
+          </div>
+        )}
         {/* Шапка: название салона и бейдж новых записей */}
         <header
           className="flex items-center gap-2 px-3 md:px-5 h-14 flex-shrink-0"
