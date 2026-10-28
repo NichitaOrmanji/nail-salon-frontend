@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import PhoneField from '../components/layout/PhoneField'
+import TelegramLogin from '../components/TelegramLogin'
 
 function IconBack() {
   return (
@@ -23,7 +24,7 @@ function IconLock() {
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { login, register } = useAuth()
+  const { login, loginWithTokens, register } = useAuth()
 
   const [tab, setTab] = useState('login')
   const [phone, setPhone] = useState('')
@@ -85,6 +86,18 @@ export default function ProfilePage() {
             <img src="/SALON.logo.png" alt="Лого" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-white text-xl font-bold">JC nails</h1>
+        </div>
+
+        <TelegramLogin
+          onTokens={async tokens => {
+            await loginWithTokens(tokens)
+            navigate('/')
+          }}
+        />
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 h-px" style={{ backgroundColor: '#2e2e2e' }} />
+          <span className="text-gray-500 text-xs">или по номеру и паролю</span>
+          <div className="flex-1 h-px" style={{ backgroundColor: '#2e2e2e' }} />
         </div>
 
         {/* Табы */}
