@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://158-101-163-232.sslip.io/api/$1" },
+    { "source": "/api/(.*)", "destination": "https://api.timepoint.tech/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
