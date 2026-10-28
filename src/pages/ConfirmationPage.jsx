@@ -50,6 +50,8 @@ export default function ConfirmationPage() {
   const [notes, setNotes] = useState(draft.notes ?? '')
   const [phoneTouched, setPhoneTouched] = useState(false)
   const [sent, setSent] = useState(false)
+  // Ссылка на бота для подтверждения записи (null — бот не настроен)
+  const [telegramUrl, setTelegramUrl] = useState(null)
   const [submitError, setSubmitError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -88,7 +90,7 @@ export default function ConfirmationPage() {
     try {
       const masterId = await resolveMasterId({ master, service, date, time })
       // end_time бэкенд считает сам по длительности услуги
-      await createAppointment({
+      const created = await createAppointment({
         master: masterId,
         service: service.id,
         client_name: name.trim(),
@@ -98,6 +100,7 @@ export default function ConfirmationPage() {
         start_time: time,
         notes: notes.trim()
       })
+      setTelegramUrl(created?.telegram_url || null)
       localStorage.setItem('client_name', name.trim())
       localStorage.setItem('client_phone', phone)
       setSent(true)
@@ -117,16 +120,42 @@ export default function ConfirmationPage() {
           <IconSuccess />
         </div>
         <h2 className="text-white text-2xl font-bold mb-2 tracking-tight">Вы записаны</h2>
-        <p className="text-gray-500 text-sm text-center mb-10">
-          Ждём вас в салоне. Запись появится в личном кабинете.
-        </p>
-        <button
-          onClick={() => navigate('/')}
-          className="px-10 py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
-          style={{ backgroundColor: '#f472b6' }}
-        >
-          На главную
-        </button>
+        {telegramUrl ? (
+          <>
+            <p className="text-gray-500 text-sm text-center mb-8 max-w-xs">
+              Подтвердите запись в Telegram — там же пришлём напоминание за сутки и за час до визита.
+            </p>
+            <a
+              href={telegramUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full max-w-xs py-4 rounded-2xl text-white font-semibold text-center transition-all active:scale-95 mb-3"
+              style={{ backgroundColor: '#229ED9' }}
+            >
+              Подтвердить в Telegram
+            </a>
+            <button
+              onClick={() => navigate('/')}
+              className="w-full max-w-xs py-4 rounded-2xl text-gray-300 font-semibold transition-all active:scale-95"
+              style={{ backgroundColor: '#242424' }}
+            >
+              На главную
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-gray-500 text-sm text-center mb-10">
+              Ждём вас в салоне. Запись появится в личном кабинете.
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              className="px-10 py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
+              style={{ backgroundColor: '#f472b6' }}
+            >
+              На главную
+            </button>
+          </>
+        )}
       </div>
     )
   }
