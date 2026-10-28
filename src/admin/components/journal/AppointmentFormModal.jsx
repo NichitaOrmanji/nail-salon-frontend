@@ -19,7 +19,7 @@ function parseDuration(value) {
 }
 
 // Модалка создания (appointment не передан) или редактирования записи.
-// initial — { masterId, date, time } из клика по сетке.
+// initial — { masterId, date, time } из клика по сетке или { phone, name } («Записать снова»).
 export default function AppointmentFormModal({ appointment, initial, masters, me, isManager, onClose, onSaved }) {
   const isEdit = !!appointment
 
@@ -36,8 +36,8 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
       notes: appointment.notes || '',
     }
     : {
-      phone: '',
-      name: '',
+      phone: initial?.phone || '',
+      name: initial?.name || '',
       masterId: isManager
         ? (initial?.masterId ? String(initial.masterId) : '')
         : (me.master_id ? String(me.master_id) : ''),

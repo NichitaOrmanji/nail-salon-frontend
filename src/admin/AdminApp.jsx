@@ -11,6 +11,7 @@ import MastersPage from './pages/MastersPage'
 import SettingsPage from './pages/SettingsPage'
 import FinancePage from './pages/FinancePage'
 import MySalaryPage from './pages/MySalaryPage'
+import ClientsPage from './pages/ClientsPage'
 
 // Панель салона: /admin-panel/*
 export default function AdminApp() {
@@ -21,6 +22,7 @@ export default function AdminApp() {
           <Route path="login" element={<LoginPage />} />
           <Route element={<RequireStaff><AdminLayout /></RequireStaff>}>
             <Route index element={<JournalPage />} />
+            <Route path="clients" element={<ManagerOnly><ClientsPage /></ManagerOnly>} />
             <Route path="services" element={<ServicesPage />} />
             <Route path="masters" element={<MastersPage />} />
             <Route path="settings" element={<ManagerOnly><SettingsPage /></ManagerOnly>} />
