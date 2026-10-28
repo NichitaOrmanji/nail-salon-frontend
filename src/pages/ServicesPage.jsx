@@ -6,6 +6,7 @@ import Spinner from '../components/layout/Spinner'
 import SalonHeader from '../components/layout/SalonHeader'
 import { PAGE_WIDTH } from '../components/layout/width'
 import { formatDuration, formatPrice } from '../utils/format'
+import { getLang, t } from '../i18n'
 
 function IconSearch() {
   return (
@@ -28,7 +29,7 @@ export default function ServicesPage() {
   const navigate = useNavigate()
   const { master, service, setService, date, time, setDate, setTime, getNextRoute } = useBooking()
   const [allServices, setAllServices] = useState([])
-  const [activeCategory, setActiveCategory] = useState('Все')
+  const [activeCategory, setActiveCategory] = useState(t('Все'))
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -42,10 +43,10 @@ export default function ServicesPage() {
     return fetchServices({ masterId, date, time })
       // Услуга без категории (категорию удалили в панели салона) — в отдельной группе
       .then(data => {
-        setAllServices(data.map(s => ({ ...s, category_name: s.category_name || 'Без категории' })))
+        setAllServices(data.map(s => ({ ...s, category_name: s.category_name || t('Без категории') })))
         setLoading(false)
       })
-      .catch(err => { setError(err.message || 'Не удалось загрузить услуги'); setLoading(false) })
+      .catch(err => { setError(err.message || t('Не удалось загрузить услуги')); setLoading(false) })
   }
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function ServicesPage() {
     load()
   }
 
-  const categories = ['Все', ...new Set(allServices.map(s => s.category_name))]
+  const categories = [t('Все'), ...new Set(allServices.map(s => s.category_name))]
 
   // Бэкенд хранит одну услугу на запись, поэтому выбор одиночный
   function selectService(s) {
@@ -76,7 +77,7 @@ export default function ServicesPage() {
   }
 
   const filtered = allServices.filter(s => {
-    const matchCategory = activeCategory === 'Все' || s.category_name === activeCategory
+    const matchCategory = activeCategory === t('Все') || s.category_name === activeCategory
     const matchSearch = s.name.toLowerCase().includes(search.toLowerCase())
     return matchCategory && matchSearch
   })
@@ -90,13 +91,13 @@ export default function ServicesPage() {
 
       {/* Заголовок */}
       <div className="px-6 pt-6 pb-4">
-        <h2 className="text-white text-2xl font-bold tracking-tight">Услуги</h2>
+        <h2 className="text-white text-2xl font-bold tracking-tight">{t('Услуги')}</h2>
         <p className="text-gray-500 text-sm mt-1">
-          {masterId ? `Услуги мастера ${master.name}` : filteredByTime ? 'Доступные в выбранное время' : 'Выберите услугу'}
+          {masterId ? t('Услуги мастера {name}', { name: master.name }) : filteredByTime ? t('Доступные в выбранное время') : t('Выберите услугу')}
         </p>
       </div>
 
-      {loading && <Spinner text="Загружаем услуги..." />}
+      {loading && <Spinner text={t('Загружаем услуги...')} />}
 
       {error && (
         <div className="flex flex-col items-center py-12 gap-4 px-6">
@@ -106,15 +107,15 @@ export default function ServicesPage() {
             className="px-6 py-3 rounded-2xl text-white text-sm font-medium active:scale-95"
             style={{ backgroundColor: '#242424' }}
           >
-            Попробовать снова
+            {t('Попробовать снова')}
           </button>
         </div>
       )}
 
       {!loading && !error && allServices.length === 0 && (
         <div className="text-center py-12 px-6">
-          <p className="text-white text-sm font-medium mb-1">Нет доступных услуг</p>
-          <p className="text-gray-500 text-sm">Попробуйте выбрать другое время или мастера</p>
+          <p className="text-white text-sm font-medium mb-1">{t('Нет доступных услуг')}</p>
+          <p className="text-gray-500 text-sm">{t('Попробуйте выбрать другое время или мастера')}</p>
         </div>
       )}
 
@@ -143,7 +144,7 @@ export default function ServicesPage() {
               <span className="text-gray-500"><IconSearch /></span>
               <input
                 type="text"
-                placeholder="Найти услугу"
+                placeholder={t('Найти услугу')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="bg-transparent text-white placeholder-gray-600 outline-none w-full text-sm"
@@ -172,7 +173,7 @@ export default function ServicesPage() {
                         <div className="text-left flex-1">
                           <div className="text-white text-sm font-medium">{item.name}</div>
                           <div className="text-gray-500 text-xs mt-0.5">
-                            {formatDuration(item.duration)} · {formatPrice(item.price)}
+                            {formatDuration(item.duration, getLang())} · {formatPrice(item.price)}
                           </div>
                         </div>
                         <div
@@ -202,9 +203,9 @@ export default function ServicesPage() {
             className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"
             style={{ backgroundColor: '#f472b6' }}
           >
-            <div className="text-sm font-semibold">Далее</div>
+            <div className="text-sm font-semibold">{t('Далее')}</div>
             <div className="text-xs opacity-75 mt-0.5">
-              {service.name} · {formatDuration(service.duration)} · {formatPrice(service.price)}
+              {service.name} · {formatDuration(service.duration, getLang())} · {formatPrice(service.price)}
             </div>
           </button>
         </div>

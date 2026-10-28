@@ -5,6 +5,7 @@ import { useCompany } from '../context/CompanyContext'
 import { fetchMyAppointments, cancelAppointment } from '../api/profile'
 import { toDateString } from '../utils/format'
 import Spinner from '../components/layout/Spinner'
+import { t } from '../i18n'
 
 function IconBack() {
   return (
@@ -45,7 +46,7 @@ export default function AccountPage() {
   function load() {
     return fetchMyAppointments()
       .then(data => { setAppointments(data); setLoading(false) })
-      .catch(err => { setError(err.message || 'Не удалось загрузить записи'); setLoading(false) })
+      .catch(err => { setError(err.message || t('Не удалось загрузить записи')); setLoading(false) })
   }
 
   useEffect(() => {
@@ -65,14 +66,14 @@ export default function AccountPage() {
   }
 
   async function handleCancel(a) {
-    if (!window.confirm('Отменить запись?')) return
+    if (!window.confirm(t('Отменить запись?'))) return
     setCancelError(null)
     setCancellingId(a.id)
     try {
       await cancelAppointment(a.id)
       setAppointments(list => list.map(x => x.id === a.id ? { ...x, status: 'cancelled' } : x))
     } catch (err) {
-      setCancelError(err.message || 'Не удалось отменить запись')
+      setCancelError(err.message || t('Не удалось отменить запись'))
     } finally {
       setCancellingId(null)
     }
@@ -86,7 +87,7 @@ export default function AccountPage() {
   function formatDate(dateStr) {
     if (!dateStr) return ''
     const [year, month, day] = dateStr.split('-').map(Number)
-    const MONTHS = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек']
+    const MONTHS = [t('янв'),t('фев'),t('мар'),t('апр'),t('май'),t('июн'),t('июл'),t('авг'),t('сен'),t('окт'),t('ноя'),t('дек')]
     return `${day} ${MONTHS[month - 1]} ${year}`
   }
 
@@ -112,7 +113,7 @@ export default function AccountPage() {
           <IconBack />
         </button>
         <div className="flex-1">
-          <div className="text-white text-sm font-semibold">Личный кабинет</div>
+          <div className="text-white text-sm font-semibold">{t('Личный кабинет')}</div>
         </div>
         <button
           onClick={handleLogout}
@@ -127,11 +128,11 @@ export default function AccountPage() {
 
         {/* Заголовок */}
         <div className="mb-6">
-          <h2 className="text-white text-2xl font-bold tracking-tight">Мои записи</h2>
-          <p className="text-gray-500 text-sm mt-1">История ваших визитов</p>
+          <h2 className="text-white text-2xl font-bold tracking-tight">{t('Мои записи')}</h2>
+          <p className="text-gray-500 text-sm mt-1">{t('История ваших визитов')}</p>
         </div>
 
-        {loading && <Spinner text="Загружаем записи..." />}
+        {loading && <Spinner text={t('Загружаем записи...')} />}
 
         {error && (
           <div className="flex flex-col items-center py-12 gap-4">
@@ -145,21 +146,21 @@ export default function AccountPage() {
               className="px-6 py-3 rounded-2xl text-white text-sm font-medium active:scale-95"
               style={{ backgroundColor: '#242424' }}
             >
-              Попробовать снова
+              {t('Попробовать снова')}
             </button>
           </div>
         )}
 
         {!loading && !error && appointments.length === 0 && (
           <div className="flex flex-col items-center py-16 gap-4">
-            <p className="text-white text-sm font-medium">Записей пока нет</p>
-            <p className="text-gray-500 text-sm">Запишитесь на первый визит</p>
+            <p className="text-white text-sm font-medium">{t('Записей пока нет')}</p>
+            <p className="text-gray-500 text-sm">{t('Запишитесь на первый визит')}</p>
             <button
               onClick={() => navigate('/')}
               className="mt-2 px-8 py-4 rounded-2xl text-white font-semibold active:scale-95"
               style={{ backgroundColor: '#f472b6' }}
             >
-              Записаться
+              {t('Записаться')}
             </button>
           </div>
         )}
@@ -171,6 +172,7 @@ export default function AccountPage() {
             )}
             {appointments.map(a => {
               const status = STATUS_LABELS[a.status] || { label: a.status, color: '#9ca3af' }
+              const statusLabel = t(status.label)
               return (
                 <div key={a.id} className="rounded-2xl p-5" style={{ backgroundColor: '#242424' }}>
                   <div className="flex justify-between items-start mb-3">
@@ -180,7 +182,7 @@ export default function AccountPage() {
                     </div>
                     <span className="text-xs font-medium px-2 py-1 rounded-lg"
                       style={{ backgroundColor: '#2e2e2e', color: status.color }}>
-                      {status.label}
+                      {statusLabel}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -190,8 +192,8 @@ export default function AccountPage() {
                   </div>
                   {tooLateToCancel(a) && (
                     <p className="mt-4 text-xs text-gray-500">
-                      Отменить онлайн можно не позже чем за {company.cancel_hours} ч до визита.{' '}
-                      {company.phone && <a href={`tel:${company.phone.replace(/\s/g, '')}`} style={{ color: '#f472b6' }}>Позвонить в салон</a>}
+                      {t('Отменить онлайн можно не позже чем за {hours} ч до визита.', { hours: company.cancel_hours })}{' '}
+                      {company.phone && <a href={`tel:${company.phone.replace(/\s/g, '')}`} style={{ color: '#f472b6' }}>{t('Позвонить в салон')}</a>}
                     </p>
                   )}
                   {canCancel(a) && (
@@ -201,7 +203,7 @@ export default function AccountPage() {
                       className="mt-4 w-full py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95"
                       style={{ backgroundColor: '#2e2e2e', color: '#f87171', opacity: cancellingId === a.id ? 0.5 : 1 }}
                     >
-                      {cancellingId === a.id ? 'Отменяем...' : 'Отменить запись'}
+                      {cancellingId === a.id ? t('Отменяем...') : t('Отменить запись')}
                     </button>
                   )}
                 </div>

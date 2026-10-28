@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { t } from '../i18n'
 
 function IconHome() {
   return (
@@ -17,8 +18,8 @@ export default function NotFoundPage() {
 
       <div className="text-center mb-10">
         <p className="font-bold mb-4" style={{ fontSize: '80px', color: '#242424' }}>404</p>
-        <h1 className="text-white text-2xl font-bold mb-2 tracking-tight">Страница не найдена</h1>
-        <p className="text-gray-500 text-sm">Такой страницы не существует или она была удалена</p>
+        <h1 className="text-white text-2xl font-bold mb-2 tracking-tight">{t('Страница не найдена')}</h1>
+        <p className="text-gray-500 text-sm">{t('Такой страницы не существует или она была удалена')}</p>
       </div>
 
       <button
@@ -27,7 +28,7 @@ export default function NotFoundPage() {
         style={{ backgroundColor: '#f472b6' }}
       >
         <IconHome />
-        На главную
+        {t('На главную')}
       </button>
 
     </div>

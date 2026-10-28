@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import PhoneField from '../components/layout/PhoneField'
 import TelegramLogin from '../components/TelegramLogin'
+import { t } from '../i18n'
 
 function IconBack() {
   return (
@@ -54,7 +55,7 @@ export default function ProfilePage() {
       }
       navigate('/')
     } catch (err) {
-      setError(err.message || 'Ошибка. Проверьте данные.')
+      setError(err.message || t('Ошибка. Проверьте данные.'))
     } finally {
       setLoading(false)
     }
@@ -74,7 +75,7 @@ export default function ProfilePage() {
         </button>
         <div className="flex-1">
           <div className="text-white text-sm font-semibold">JC nails</div>
-          <div className="text-gray-500 text-xs">Личный кабинет</div>
+          <div className="text-gray-500 text-xs">{t('Личный кабинет')}</div>
         </div>
       </div>
 
@@ -83,7 +84,7 @@ export default function ProfilePage() {
         {/* Логотип */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-20 h-20 rounded-full overflow-hidden bg-white mb-4">
-            <img src="/SALON.logo.png" alt="Лого" className="w-full h-full object-cover" />
+            <img src="/SALON.logo.png" alt={t('Лого')} className="w-full h-full object-cover" />
           </div>
           <h1 className="text-white text-xl font-bold">JC nails</h1>
         </div>
@@ -96,7 +97,7 @@ export default function ProfilePage() {
         />
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 h-px" style={{ backgroundColor: '#2e2e2e' }} />
-          <span className="text-gray-500 text-xs">или по номеру и паролю</span>
+          <span className="text-gray-500 text-xs">{t('или по номеру и паролю')}</span>
           <div className="flex-1 h-px" style={{ backgroundColor: '#2e2e2e' }} />
         </div>
 
@@ -110,7 +111,7 @@ export default function ProfilePage() {
               color: tab === 'login' ? '#ffffff' : '#9ca3af'
             }}
           >
-            Войти
+            {t('Войти')}
           </button>
           <button
             onClick={() => { setTab('register'); setError(null) }}
@@ -120,7 +121,7 @@ export default function ProfilePage() {
               color: tab === 'register' ? '#ffffff' : '#9ca3af'
             }}
           >
-            Регистрация
+            {t('Регистрация')}
           </button>
         </div>
 
@@ -130,7 +131,7 @@ export default function ProfilePage() {
             <>
               <input
                 type="text"
-                placeholder="Имя"
+                placeholder={t('Имя')}
                 value={name}
                 onChange={e => setName(e.target.value)}
                 className="w-full px-4 py-4 bg-transparent text-white placeholder-gray-600 outline-none text-sm"
@@ -138,7 +139,7 @@ export default function ProfilePage() {
               />
               <input
                 type="text"
-                placeholder="Фамилия (необязательно)"
+                placeholder={t('Фамилия (необязательно)')}
                 value={surname}
                 onChange={e => setSurname(e.target.value)}
                 className="w-full px-4 py-4 bg-transparent text-white placeholder-gray-600 outline-none text-sm"
@@ -156,7 +157,7 @@ export default function ProfilePage() {
             <span className="text-gray-500"><IconLock /></span>
             <input
               type="password"
-              placeholder="Пароль"
+              placeholder={t('Пароль')}
               value={password}
               onChange={e => setPassword(e.target.value)}
               className="flex-1 bg-transparent text-white placeholder-gray-600 outline-none text-sm"
@@ -165,7 +166,7 @@ export default function ProfilePage() {
         </div>
 
         {phoneInvalid && (
-          <p className="text-xs -mt-2 mb-4 px-1" style={{ color: '#f87171' }}>Проверьте номер телефона</p>
+          <p className="text-xs -mt-2 mb-4 px-1" style={{ color: '#f87171' }}>{t('Проверьте номер телефона')}</p>
         )}
 
         {/* Ошибка */}
@@ -183,11 +184,11 @@ export default function ProfilePage() {
             opacity: canSubmit && !loading ? 1 : 0.4
           }}
         >
-          {loading ? 'Подождите...' : tab === 'login' ? 'Войти' : 'Зарегистрироваться'}
+          {loading ? t('Подождите...') : tab === 'login' ? t('Войти') : t('Зарегистрироваться')}
         </button>
         <p className="text-gray-600 text-xs text-center mt-4">
-          Входя или регистрируясь, вы соглашаетесь с{' '}
-          <Link to="/privacy" className="underline">политикой конфиденциальности</Link>
+          {t('Входя или регистрируясь, вы соглашаетесь с')}{' '}
+          <Link to="/privacy" className="underline">{t('политикой конфиденциальности')}</Link>
         </p>
 
       </div>
