@@ -50,6 +50,25 @@ export function expectArray(data) {
   return data
 }
 
+// Один общий запрос обновления токена на все параллельные 401
+let refreshing = null
+function refreshAccess() {
+  if (!refreshing) {
+    const refresh = localStorage.getItem('refresh_token')
+    refreshing = (refresh
+      ? axios.post(`${api.defaults.baseURL}/auth/refresh/`, { refresh }).then(response => {
+        const access = response.data?.access
+        if (!access) throw new Error('no access')
+        localStorage.setItem('access_token', access)
+        if (response.data.refresh) localStorage.setItem('refresh_token', response.data.refresh)
+        return access
+      })
+      : Promise.reject(new Error('no refresh')))
+      .finally(() => { refreshing = null })
+  }
+  return refreshing
+}
+
 // Перехватчик ошибок
 api.interceptors.response.use(
   checkJson,
@@ -61,8 +80,24 @@ api.interceptors.response.use(
     const config = error.config
 
     if (status === 401) {
-      // Токен устарел — выходим из аккаунта и повторяем запрос без токена
-      // (запись и просмотр услуг доступны и без входа)
+      // Токен входа живёт час: сначала один раз обновляем его по refresh-токену
+      if (config.headers?.Authorization && !config._refreshed && !config._retried) {
+        config._refreshed = true
+        return refreshAccess().then(access => {
+          config.headers.Authorization = `Bearer ${access}`
+          return api(config)
+        }, () => {
+          // Не вышло (refresh истёк) — выходим и повторяем запрос без токена
+          // (запись и просмотр услуг доступны и без входа)
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          window.dispatchEvent(new Event('auth:logout'))
+          config._retried = true
+          delete config.headers.Authorization
+          return api(config)
+        })
+      }
+      // Повтор с новым токеном снова получил 401 — выходим
       if (config.headers?.Authorization && !config._retried) {
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
