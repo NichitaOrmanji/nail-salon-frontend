@@ -178,6 +178,16 @@ export default {
   'США': 'SUA',
   'Турция': 'Turcia',
 
+  // Чёрный список
+  'Если вы не придёте или отмените запись меньше чем за {hours} ч до визита, при следующем визите нужно будет оплатить штраф {percent}% стоимости пропущенной услуги. Оплата — на месте в салоне.':
+    'Dacă nu veniți sau anulați programarea cu mai puțin de {hours} ore înainte de vizită, la următoarea vizită va trebui să achitați o amendă de {percent}% din prețul serviciului ratat. Plata — la salon.',
+  'Если вы не придёте на запись, при следующем визите нужно будет оплатить штраф {percent}% стоимости пропущенной услуги. Оплата — на месте в салоне.':
+    'Dacă nu veniți la programare, la următoarea vizită va trebui să achitați o amendă de {percent}% din prețul serviciului ratat. Plata — la salon.',
+  'До визита меньше {hours} ч: при отмене будет начислен штраф {amount} L, его нужно будет оплатить в салоне при следующем визите. Всё равно отменить?':
+    'Până la vizită au rămas mai puțin de {hours} ore: la anulare se va aplica o amendă de {amount} L, care se achită la salon la următoarea vizită. Anulați totuși?',
+  'У вас неоплаченный штраф {amount} L за пропущенную или поздно отменённую запись. Его нужно оплатить в салоне при следующем визите.':
+    'Aveți o amendă neachitată de {amount} L pentru o programare ratată sau anulată târziu. Ea se achită la salon la următoarea vizită.',
+
   // Ошибки и прочее
   'Нет соединения с сервером. Проверьте интернет.': 'Nu există conexiune cu serverul. Verificați internetul.',
   'Сессия истекла. Войдите снова.': 'Sesiunea a expirat. Intrați din nou.',

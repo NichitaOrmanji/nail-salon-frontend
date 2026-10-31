@@ -17,6 +17,8 @@ function toForm(company) {
     latitude: company.latitude === null || company.latitude === undefined ? '' : String(company.latitude),
     longitude: company.longitude === null || company.longitude === undefined ? '' : String(company.longitude),
     cancel_hours: String(company.cancel_hours ?? 0),
+    penalty_percent: String(company.penalty_percent ?? 0),
+    late_cancel_hours: String(company.late_cancel_hours ?? 0),
   }
 }
 
@@ -92,8 +94,21 @@ export default function SettingsPage() {
       return
     }
 
+    const penaltyPercent = form.penalty_percent.trim() === '' ? 0 : Number(form.penalty_percent)
+    if (!Number.isInteger(penaltyPercent) || penaltyPercent < 0 || penaltyPercent > 100) {
+      setError('Штраф — целое число процентов от 0 до 100')
+      return
+    }
+    const lateHours = form.late_cancel_hours.trim() === '' ? 0 : Number(form.late_cancel_hours)
+    if (!Number.isInteger(lateHours) || lateHours < 0 || lateHours > 48) {
+      setError('Поздняя отмена — целое число часов от 0 до 48')
+      return
+    }
+
     const body = {}
     if (form.cancel_hours !== initial.cancel_hours) body.cancel_hours = cancelHours
+    if (form.penalty_percent !== initial.penalty_percent) body.penalty_percent = penaltyPercent
+    if (form.late_cancel_hours !== initial.late_cancel_hours) body.late_cancel_hours = lateHours
     for (const field of FIELDS) {
       const value = field === 'name' ? form[field].trim() : form[field]
       if (value !== initial[field]) body[field] = value
@@ -113,8 +128,8 @@ export default function SettingsPage() {
       setForm(toForm(saved))
       setInitial(toForm(saved))
       setDone(true)
-      // Название салона в шапке берётся из /me/
-      if ('name' in body) refreshMe().catch(() => {})
+      // Название салона в шапке и правила чёрного списка в журнале берутся из /me/
+      if ('name' in body || 'penalty_percent' in body || 'late_cancel_hours' in body) refreshMe().catch(() => {})
     } catch (err) {
       setError(err.message)
     } finally {
@@ -182,6 +197,19 @@ export default function SettingsPage() {
           >
             <TextInput inputMode="numeric" value={form.cancel_hours} onChange={e => set('cancel_hours', e.target.value.replace(/\D/g, ''))} placeholder="0" />
           </Field>
+          <div className="rounded-2xl p-4 space-y-3" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+            <div className="text-white text-sm font-semibold">Чёрный список</div>
+            <p className="text-gray-500 text-xs">
+              Клиент, который не пришёл или отменил запись слишком поздно, попадает в чёрный список. Штраф он
+              оплачивает в салоне при следующем визите — панель добавит его к счёту. Правило показывается клиентам при записи.
+            </p>
+            <Field label="Штраф, % от стоимости пропущенной услуги" hint="0 — штрафы выключены">
+              <TextInput inputMode="numeric" value={form.penalty_percent} onChange={e => set('penalty_percent', e.target.value.replace(/\D/g, ''))} placeholder="50" />
+            </Field>
+            <Field label="Поздняя отмена — меньше чем за, часов до визита" hint="0 — штрафовать только за неявку">
+              <TextInput inputMode="numeric" value={form.late_cancel_hours} onChange={e => set('late_cancel_hours', e.target.value.replace(/\D/g, ''))} placeholder="3" />
+            </Field>
+          </div>
           <ErrorText>{error}</ErrorText>
           <div className="flex items-center justify-end gap-3">
             {done && <span className="text-xs" style={{ color: '#34d399' }}>Сохранено</span>}

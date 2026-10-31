@@ -6,7 +6,8 @@ import PhoneField from '../../../components/layout/PhoneField'
 import { createAppointment, updateAppointment, fetchFreeTimes, lookupClient } from '../../api/appointments'
 import { fetchStaffServices } from '../../api/services'
 import { notifyDataChanged } from '../../utils/events'
-import { timeToMin, todayString, nowMinutes } from '../../utils/time'
+import { formatShortDate, timeToMin, todayString, nowMinutes } from '../../utils/time'
+import { formatMoney } from '../../utils/money'
 import { DISCARD_CONFIRM } from '../../utils/journal'
 
 function isValidTime(value) {
@@ -308,6 +309,23 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
               <span className="text-gray-500">Новый клиент</span>
             )}
           </p>
+        )}
+        {clientInfo?.data?.blacklist && (
+          <div className="rounded-xl px-3 py-2 text-sm -mt-1" role="alert"
+            style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171', color: '#fca5a5' }}>
+            <div className="font-semibold" style={{ color: '#f87171' }}>⛔ Клиент в чёрном списке</div>
+            {Number(clientInfo.data.blacklist.debt) > 0 ? (
+              <>
+                <div>Долг {formatMoney(clientInfo.data.blacklist.debt)} — оплатит при визите</div>
+                {(clientInfo.data.penalties || []).map(p => (
+                  <div key={p.id} className="text-xs text-gray-400">
+                    {formatShortDate(p.date)} · {p.kind === 'no_show' ? 'не пришёл' : 'поздняя отмена'}
+                    {p.service ? ` · ${p.service}` : ''} · {formatMoney(p.amount)}
+                  </div>
+                ))}
+              </>
+            ) : <div>Долгов нет, нарушений: {clientInfo.data.blacklist.count}</div>}
+          </div>
         )}
 
         <Field label="Имя">

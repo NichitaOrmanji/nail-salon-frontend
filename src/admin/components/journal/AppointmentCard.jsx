@@ -8,6 +8,8 @@ import { cancelPayment } from '../../api/finance'
 import { useStaffAuth } from '../../context/StaffAuthContext'
 import { formatMoney, methodLabel } from '../../utils/money'
 import CheckoutModal from './CheckoutModal'
+import ChoiceDialog from '../ChoiceDialog'
+import { PENALTY_KIND, PENALTY_STATUS, isLateCancel, penaltyAmount } from '../../utils/blacklist'
 import { notifyDataChanged } from '../../utils/events'
 import { formatShortDate, todayString } from '../../utils/time'
 import { ACTIVE_STATUSES } from '../../utils/statuses'
@@ -35,9 +37,12 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
+  // Вопрос про чёрный список: 'no_show' | 'cancel' | null
+  const [penaltyAsk, setPenaltyAsk] = useState(null)
   const panelRef = useRef(null)
   const { me } = useStaffAuth()
   const isOwner = me?.role === 'owner'
+  const fee = penaltyAmount(a, me?.company)
 
   // Заметку изменили на сервере (форма, другой сотрудник): если своих правок нет — берём новую
   if (serverNotes !== baseNotes) {
@@ -153,6 +158,15 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto px-5 py-2">
+        {a.blacklist && (
+          <div className="rounded-xl px-3 py-2 my-2 text-sm" role="alert"
+            style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171', color: '#fca5a5' }}>
+            <div className="font-semibold" style={{ color: '#f87171' }}>⛔ Клиент в чёрном списке</div>
+            {Number(a.blacklist.debt) > 0
+              ? <div>Долг {formatMoney(a.blacklist.debt)} — получить при оплате этого визита</div>
+              : <div>Долгов нет, нарушений: {a.blacklist.count}</div>}
+          </div>
+        )}
         <Row label="Телефон">
           {a.client_phone
             ? <a href={`tel:${a.client_phone}`} style={{ color: '#f472b6' }}>{a.client_phone}</a>
@@ -188,6 +202,13 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
             </span>
           ) : <span className="text-gray-500">не оплачено</span>}
         </Row>
+        {a.penalty && (
+          <Row label="Штраф">
+            <span style={{ color: PENALTY_STATUS[a.penalty.status]?.color }}>
+              {formatMoney(a.penalty.amount)} · {PENALTY_KIND[a.penalty.kind]} · {PENALTY_STATUS[a.penalty.status]?.label}
+            </span>
+          </Row>
+        )}
         <Row label="Источник">{a.source === 'staff' ? 'Персонал' : 'Онлайн'}</Row>
         <Row label="Статус"><StatusBadge status={a.status} /></Row>
 
@@ -220,11 +241,15 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
           {canMarkVisit && (
             <>
               <Button disabled={busy} style={{ color: '#60a5fa' }} onClick={() => patch({ status: 'completed' })}>Пришёл</Button>
-              <Button disabled={busy} style={{ color: '#f87171' }} onClick={() => patch({ status: 'no_show' })}>Не пришёл</Button>
+              <Button disabled={busy} style={{ color: '#f87171' }}
+                onClick={() => (fee > 0 ? setPenaltyAsk('no_show') : patch({ status: 'no_show' }))}>Не пришёл</Button>
             </>
           )}
           {isActive && (
-            <Button variant="danger" disabled={busy} onClick={() => patch({ status: 'cancelled' }, 'Отменить запись?')}>Отменить</Button>
+            <Button variant="danger" disabled={busy}
+              onClick={() => (fee > 0 && isLateCancel(a, me?.company)
+                ? setPenaltyAsk('cancel')
+                : patch({ status: 'cancelled' }, 'Отменить запись?'))}>Отменить</Button>
           )}
           {canRestore && (
             <Button
@@ -241,6 +266,36 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
             <Button disabled={busy} onClick={() => onEdit(a)}>Перенести/изменить</Button>
           )}
         </div>
+      )}
+      {penaltyAsk === 'no_show' && (
+        <ChoiceDialog
+          title="Клиент не пришёл"
+          choices={[
+            { value: 'penalty', label: `В чёрный список, штраф ${formatMoney(fee)}`, variant: 'danger' },
+            { value: 'skip', label: 'Без штрафа (уважительная причина)' },
+          ]}
+          onChoose={choice => {
+            setPenaltyAsk(null)
+            if (choice) patch({ status: 'no_show', penalty: choice === 'penalty' })
+          }}
+        >
+          <p>Штраф {me?.company?.penalty_percent}% стоимости услуги клиент оплатит в салоне при следующем визите.</p>
+        </ChoiceDialog>
+      )}
+      {penaltyAsk === 'cancel' && (
+        <ChoiceDialog
+          title={`Отмена меньше чем за ${me?.company?.late_cancel_hours} ч до визита`}
+          choices={[
+            { value: 'penalty', label: `Клиент отменил поздно — штраф ${formatMoney(fee)}`, variant: 'danger' },
+            { value: 'skip', label: 'Отменить без штрафа (отменяет салон)' },
+          ]}
+          onChoose={choice => {
+            setPenaltyAsk(null)
+            if (choice) patch({ status: 'cancelled', penalty: choice === 'penalty' })
+          }}
+        >
+          <p>Если запись отменяет клиент, он попадёт в чёрный список и оплатит штраф при следующем визите.</p>
+        </ChoiceDialog>
       )}
       {checkoutOpen && (
         <CheckoutModal

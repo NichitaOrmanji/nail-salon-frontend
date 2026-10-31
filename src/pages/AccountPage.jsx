@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCompany } from '../context/CompanyContext'
-import { fetchMyAppointments, cancelAppointment } from '../api/profile'
+import { fetchMyAppointments, cancelAppointment, fetchMyDebt } from '../api/profile'
 import { toDateString } from '../utils/format'
 import Spinner from '../components/layout/Spinner'
 import { t } from '../i18n'
@@ -42,8 +42,10 @@ export default function AccountPage() {
   const [error, setError] = useState(null)
   const [cancellingId, setCancellingId] = useState(null)
   const [cancelError, setCancelError] = useState(null)
+  const [debt, setDebt] = useState(null)
 
   function load() {
+    fetchMyDebt().then(setDebt).catch(() => {})
     return fetchMyAppointments()
       .then(data => { setAppointments(data); setLoading(false) })
       .catch(err => { setError(err.message || t('Не удалось загрузить записи')); setLoading(false) })
@@ -66,7 +68,12 @@ export default function AccountPage() {
   }
 
   async function handleCancel(a) {
-    if (!window.confirm(t('Отменить запись?'))) return
+    // Поздняя отмена — чёрный список: предупреждаем о штрафе
+    const question = a.late_cancel_penalty
+      ? t('До визита меньше {hours} ч: при отмене будет начислен штраф {amount} L, его нужно будет оплатить в салоне при следующем визите. Всё равно отменить?',
+        { hours: company.late_cancel_hours, amount: Number(a.late_cancel_penalty) })
+      : t('Отменить запись?')
+    if (!window.confirm(question)) return
     setCancelError(null)
     setCancellingId(a.id)
     try {
@@ -131,6 +138,13 @@ export default function AccountPage() {
           <h2 className="text-white text-2xl font-bold tracking-tight">{t('Мои записи')}</h2>
           <p className="text-gray-500 text-sm mt-1">{t('История ваших визитов')}</p>
         </div>
+
+        {Number(debt?.debt) > 0 && (
+          <div className="rounded-2xl px-4 py-3 mb-4 text-sm" style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171', color: '#fca5a5' }}>
+            {t('У вас неоплаченный штраф {amount} L за пропущенную или поздно отменённую запись. Его нужно оплатить в салоне при следующем визите.',
+              { amount: Number(debt.debt) })}
+          </div>
+        )}
 
         {loading && <Spinner text={t('Загружаем записи...')} />}
 
