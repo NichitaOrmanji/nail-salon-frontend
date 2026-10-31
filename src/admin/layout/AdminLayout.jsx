@@ -61,7 +61,7 @@ function SidebarContent({ me, isManager, onNavigate, onTelegram, onChangePasswor
           </NavLink>
         ))}
         <a
-          href="/"
+          href={me.company?.slug ? `/?salon=${me.company.slug}` : '/'}
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm text-gray-400"

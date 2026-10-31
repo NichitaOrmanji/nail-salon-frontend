@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { resolveSalon } from './salon'
 import { getLang, t } from '../i18n'
 
 // В продакшене (Vercel) запросы идут на /api того же домена,
@@ -123,6 +124,7 @@ api.interceptors.response.use(
   }
 )
 
-export const SLUG = 'jcnails'
+// Салон сайта записи — по адресу (поддомен или ?salon=), см. api/salon.js
+export const SLUG = resolveSalon()
 
 export default api
