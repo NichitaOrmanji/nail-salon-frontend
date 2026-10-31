@@ -3,6 +3,7 @@ import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCompany } from '../context/CompanyContext'
 import { fetchMyAppointments, cancelAppointment, fetchMyDebt } from '../api/profile'
+import { deleteMyAccount } from '../api/auth'
 import { toDateString } from '../utils/format'
 import Spinner from '../components/layout/Spinner'
 import { t } from '../i18n'
@@ -43,6 +44,7 @@ export default function AccountPage() {
   const [cancellingId, setCancellingId] = useState(null)
   const [cancelError, setCancelError] = useState(null)
   const [debt, setDebt] = useState(null)
+  const [deleteError, setDeleteError] = useState(null)
 
   function load() {
     fetchMyDebt().then(setDebt).catch(() => {})
@@ -83,6 +85,19 @@ export default function AccountPage() {
       setCancelError(err.message || t('Не удалось отменить запись'))
     } finally {
       setCancellingId(null)
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (!window.confirm(t('Удалить аккаунт? Вход, имя и связь с Telegram будут удалены. Записи в салоне останутся — чтобы удалить и их, попросите салон. Отменить нельзя.'))) return
+    setDeleteError(null)
+    try {
+      await deleteMyAccount()
+      localStorage.removeItem('client_name')
+      localStorage.removeItem('client_phone')
+      handleLogout()
+    } catch (err) {
+      setDeleteError(err.message || t('Не удалось удалить аккаунт'))
     }
   }
 
@@ -225,6 +240,13 @@ export default function AccountPage() {
             })}
           </div>
         )}
+
+        <div className="mt-10 pt-6 text-center" style={{ borderTop: '1px solid #242424' }}>
+          <button onClick={handleDeleteAccount} className="text-xs underline" style={{ color: '#9ca3af' }}>
+            {t('Удалить аккаунт')}
+          </button>
+          {deleteError && <p className="text-red-400 text-xs mt-2">{deleteError}</p>}
+        </div>
 
       </div>
     </div>

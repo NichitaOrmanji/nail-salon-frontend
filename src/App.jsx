@@ -12,6 +12,7 @@ import NotFoundPage from './pages/NotFoundPage'
 import ProfilePage from './pages/ProfilePage'
 import AccountPage from './pages/AccountPage'
 import PrivacyPage from './pages/PrivacyPage'
+import RulesPage from './pages/RulesPage'
 import { PAGE_WIDTH } from './components/layout/width'
 import ErrorBoundary from './components/layout/ErrorBoundary'
 import Spinner from './components/layout/Spinner'
@@ -41,6 +42,7 @@ function ClientApp() {
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/account" element={<AccountPage />} />
                   <Route path="/privacy" element={<PrivacyPage />} />
+                  <Route path="/rules" element={<RulesPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </ErrorBoundary>

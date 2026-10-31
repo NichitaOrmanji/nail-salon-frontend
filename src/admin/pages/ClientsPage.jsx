@@ -93,6 +93,13 @@ export default function ClientsPage() {
     if (location.state?.phone) navigate(location.pathname, { replace: true, state: null })
   }
 
+  // Данные клиента удалены — убираем его из списка
+  function forgotten() {
+    const phone = openPhone
+    closeCard()
+    setData(prev => prev && ({ ...prev, results: prev.results.filter(c => c.phone !== phone), count: Math.max(0, (prev.count || 1) - 1) }))
+  }
+
   function rebook(card) {
     try {
       sessionStorage.setItem(REBOOK_KEY, JSON.stringify({ phone: card.phone, name: card.name }))
@@ -139,7 +146,7 @@ export default function ClientsPage() {
         </div>
       )}
 
-      {openPhone && <ClientCardModal phone={openPhone} onClose={closeCard} onRebook={rebook} />}
+      {openPhone && <ClientCardModal phone={openPhone} onClose={closeCard} onRebook={rebook} onForgotten={forgotten} />}
     </div>
   )
 }

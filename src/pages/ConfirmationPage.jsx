@@ -59,6 +59,7 @@ export default function ConfirmationPage() {
   const [telegramUrl, setTelegramUrl] = useState(null)
   const [submitError, setSubmitError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [confirmed, setConfirmed] = useState(false)
 
   // Сохраняем черновик, чтобы введённое не терялось при уходе на главную
   useEffect(() => {
@@ -109,6 +110,7 @@ export default function ConfirmationPage() {
         website: honeypotRef.current?.value || '',
       })
       setTelegramUrl(created?.telegram_url || null)
+      setConfirmed(created?.status === 'confirmed')
       localStorage.setItem('client_name', name.trim())
       localStorage.setItem('client_phone', phone)
       setSent(true)
@@ -127,11 +129,24 @@ export default function ConfirmationPage() {
         <div className="mb-6" style={{ color: '#f472b6' }}>
           <IconSuccess />
         </div>
-        <h2 className="text-white text-2xl font-bold mb-2 tracking-tight">{t('Вы записаны')}</h2>
-        {telegramUrl ? (
+        <h2 className="text-white text-2xl font-bold mb-2 tracking-tight">
+          {confirmed ? t('Запись подтверждена') : t('Вы записаны')}
+        </h2>
+        <p className="text-gray-400 text-sm text-center mb-3 max-w-xs">
+          {confirmed
+            ? t('Ждём вас в салоне. Запись появится в личном кабинете.')
+            : t('Салон подтвердит запись — при необходимости вам позвонят по указанному номеру.')}
+        </p>
+        <p className="text-gray-500 text-xs text-center mb-8 max-w-xs">
+          {t('Не можете прийти — отмените запись в личном кабинете или позвоните в салон.')}{' '}
+          <Link to="/rules" className="underline" style={{ color: '#f472b6' }}>{t('Правила салона')}</Link>
+        </p>
+        {telegramUrl && (
           <>
-            <p className="text-gray-500 text-sm text-center mb-8 max-w-xs">
-              {t('Подтвердите запись в Telegram — там же пришлём напоминание за сутки и за час до визита.')}
+            <p className="text-gray-500 text-xs text-center mb-3 max-w-xs">
+              {confirmed
+                ? t('Хотите напоминание за сутки и за час до визита? Подключите Telegram — это необязательно.')
+                : t('Есть Telegram? Подтвердите запись там сразу и получите напоминания. Это необязательно.')}
             </p>
             <a
               href={telegramUrl}
@@ -140,30 +155,17 @@ export default function ConfirmationPage() {
               className="w-full max-w-xs py-4 rounded-2xl text-white font-semibold text-center transition-all active:scale-95 mb-3"
               style={{ backgroundColor: '#229ED9' }}
             >
-              {t('Подтвердить в Telegram')}
+              {confirmed ? t('Напоминания в Telegram') : t('Подтвердить в Telegram')}
             </a>
-            <button
-              onClick={() => navigate('/')}
-              className="w-full max-w-xs py-4 rounded-2xl text-gray-300 font-semibold transition-all active:scale-95"
-              style={{ backgroundColor: '#242424' }}
-            >
-              {t('На главную')}
-            </button>
-          </>
-        ) : (
-          <>
-            <p className="text-gray-500 text-sm text-center mb-10">
-              {t('Ждём вас в салоне. Запись появится в личном кабинете.')}
-            </p>
-            <button
-              onClick={() => navigate('/')}
-              className="px-10 py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
-              style={{ backgroundColor: '#f472b6' }}
-            >
-              {t('На главную')}
-            </button>
           </>
         )}
+        <button
+          onClick={() => navigate('/')}
+          className="w-full max-w-xs py-4 rounded-2xl font-semibold transition-all active:scale-95"
+          style={telegramUrl ? { backgroundColor: '#242424', color: '#d1d5db' } : { backgroundColor: '#f472b6', color: '#fff' }}
+        >
+          {t('На главную')}
+        </button>
       </div>
     )
   }
@@ -268,7 +270,8 @@ export default function ConfirmationPage() {
               ? t('Если вы не придёте или отмените запись меньше чем за {hours} ч до визита, при следующем визите нужно будет оплатить штраф {percent}% стоимости пропущенной услуги. Оплата — на месте в салоне.',
                 { hours: company.late_cancel_hours, percent: company.penalty_percent })
               : t('Если вы не придёте на запись, при следующем визите нужно будет оплатить штраф {percent}% стоимости пропущенной услуги. Оплата — на месте в салоне.',
-                { percent: company.penalty_percent })}
+                { percent: company.penalty_percent })}{' '}
+            <Link to="/rules" className="underline" style={{ color: '#f472b6' }}>{t('Правила салона')}</Link>
           </p>
         )}
 

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { fetchClientCard, saveClientNote } from '../../api/clients'
+import { fetchClientCard, forgetClient, saveClientNote } from '../../api/clients'
 import { cancelPenaltyPayment, forgivePenalty, payPenalty } from '../../api/penalties'
 import { useStaffAuth } from '../../context/StaffAuthContext'
 import { PENALTY_KIND, PENALTY_STATUS } from '../../utils/blacklist'
 import { METHODS, formatMoney } from '../../utils/money'
 import { clientDate } from '../../utils/time'
+import ChoiceDialog from '../ChoiceDialog'
 import Modal from '../Modal'
 import StatusBadge from '../StatusBadge'
 import { Button, ErrorText, Select, TextArea } from '../ui'
@@ -130,7 +131,49 @@ function BlacklistSection({ card, onChanged }) {
 }
 
 // Карточка клиента: статистика, заметка, история визитов в этом салоне
-export default function ClientCardModal({ phone, onClose, onRebook }) {
+// Удаление данных по просьбе клиента (закон о персональных данных) — с подтверждением
+function ForgetSection({ phone, onForgotten }) {
+  const [asking, setAsking] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  async function choose(value) {
+    setAsking(false)
+    if (value !== 'forget') return
+    setBusy(true)
+    setError(null)
+    try {
+      await forgetClient(phone)
+      onForgotten()
+    } catch (err) {
+      setError(err.message)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="pt-4" style={{ borderTop: '1px solid #2e2e2e' }}>
+      <Button variant="danger" onClick={() => setAsking(true)} disabled={busy}>
+        {busy ? 'Удаляем...' : 'Удалить данные клиента'}
+      </Button>
+      <p className="text-gray-500 text-xs mt-2">Только если клиент сам попросил удалить его данные.</p>
+      <ErrorText>{error}</ErrorText>
+      {asking && (
+        <ChoiceDialog
+          title="Удалить данные клиента?"
+          choices={[{ value: 'forget', label: 'Удалить навсегда', variant: 'danger' }]}
+          onChoose={choose}
+        >
+          <p>Имя, телефон, email и комментарии исчезнут из всех записей этого клиента; заметка, штрафы и Telegram удаляются.</p>
+          <p>Записи и оплаты останутся в журнале и отчётах как «Клиент (данные удалены)».</p>
+          <p className="font-semibold text-white">Отменить это нельзя.</p>
+        </ChoiceDialog>
+      )}
+    </div>
+  )
+}
+
+export default function ClientCardModal({ phone, onClose, onRebook, onForgotten }) {
   const [card, setCard] = useState(null)
   const [error, setError] = useState(null)
 
@@ -192,6 +235,8 @@ export default function ClientCardModal({ phone, onClose, onRebook }) {
               <p className="text-gray-500 text-xs mt-2">Показаны последние {card.appointments.length} записей</p>
             )}
           </div>
+
+          <ForgetSection phone={card.phone} onForgotten={() => (onForgotten || onClose)()} />
         </div>
       )}
     </Modal>

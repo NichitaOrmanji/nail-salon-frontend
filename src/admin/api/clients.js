@@ -20,3 +20,9 @@ export async function saveClientNote(phone, text) {
   const response = await staffApi.put('/clients/note/', { phone, text })
   return response.data
 }
+
+// Удалить данные клиента по его обращению: записи обезличиваются, заметка и штрафы удаляются → { anonymized }
+export async function forgetClient(phone) {
+  const response = await staffApi.post('/clients/forget/', { phone })
+  return response.data
+}

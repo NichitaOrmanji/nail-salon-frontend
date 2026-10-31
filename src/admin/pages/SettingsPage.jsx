@@ -19,6 +19,7 @@ function toForm(company) {
     cancel_hours: String(company.cancel_hours ?? 0),
     penalty_percent: String(company.penalty_percent ?? 0),
     late_cancel_hours: String(company.late_cancel_hours ?? 0),
+    auto_confirm: Boolean(company.auto_confirm),
   }
 }
 
@@ -109,6 +110,7 @@ export default function SettingsPage() {
     if (form.cancel_hours !== initial.cancel_hours) body.cancel_hours = cancelHours
     if (form.penalty_percent !== initial.penalty_percent) body.penalty_percent = penaltyPercent
     if (form.late_cancel_hours !== initial.late_cancel_hours) body.late_cancel_hours = lateHours
+    if (form.auto_confirm !== initial.auto_confirm) body.auto_confirm = form.auto_confirm
     for (const field of FIELDS) {
       const value = field === 'name' ? form[field].trim() : form[field]
       if (value !== initial[field]) body[field] = value
@@ -197,6 +199,22 @@ export default function SettingsPage() {
           >
             <TextInput inputMode="numeric" value={form.cancel_hours} onChange={e => set('cancel_hours', e.target.value.replace(/\D/g, ''))} placeholder="0" />
           </Field>
+          <label className="flex items-start gap-3 rounded-2xl p-4 cursor-pointer" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+            <input
+              type="checkbox"
+              className="mt-1 w-4 h-4 accent-pink-500"
+              checked={form.auto_confirm}
+              onChange={e => set('auto_confirm', e.target.checked)}
+            />
+            <span>
+              <span className="block text-white text-sm font-semibold">Подтверждать онлайн-записи автоматически</span>
+              <span className="block text-gray-500 text-xs mt-1">
+                Включено — запись с сайта сразу «подтверждена», клиент видит это на экране; Telegram не обязателен.
+                Выключено — запись ждёт подтверждения: клиент подтверждает её в Telegram или салон — в журнале
+                (удобно, если клиент без Telegram: позвоните ему и подтвердите).
+              </span>
+            </span>
+          </label>
           <div className="rounded-2xl p-4 space-y-3" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
             <div className="text-white text-sm font-semibold">Чёрный список</div>
             <p className="text-gray-500 text-xs">
