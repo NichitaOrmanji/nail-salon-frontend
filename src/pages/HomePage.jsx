@@ -6,6 +6,7 @@ import { useCompany } from '../context/CompanyContext'
 import { PAGE_WIDTH } from '../components/layout/width'
 import { formatDisplayDate } from '../utils/format'
 import LanguageSwitch from '../components/LanguageSwitch'
+import SalonLogo from '../components/SalonLogo'
 import { getLang, t } from '../i18n'
 
 // ——— Иконки ———
@@ -149,8 +150,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
           {/* Шапка */}
           <div className="flex items-center gap-4 mb-6">
             <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
-              <img src={salon.logo} alt={t('Лого')} className="w-full h-full object-cover"
-                onError={e => { e.target.style.display = 'none' }} />
+              <SalonLogo salon={salon} textClass="text-xl" />
             </div>
             <div>
               <h2 className="text-white text-xl font-bold">{salon.name}</h2>
@@ -262,11 +262,9 @@ export default function HomePage() {
 
       {/* Фото салона */}
       <div className="relative h-52 md:h-72">
-        <img
-          src={salon.main_photo}
-          alt={t('Салон')}
-          className="w-full h-full object-cover"
-        />
+        {salon.main_photo
+          ? <img src={salon.main_photo} alt={t('Салон')} className="w-full h-full object-cover" />
+          : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #3a2430, #1a1a1a 70%)' }} />}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 50%, #1a1a1a 100%)' }} />
 
         <LanguageSwitch className="absolute top-4 left-4" />
@@ -288,12 +286,7 @@ export default function HomePage() {
           className="w-24 h-24 rounded-full overflow-hidden border-4 bg-white flex items-center justify-center mb-4 active:scale-95 transition-all"
           style={{ borderColor: '#1a1a1a' }}
         >
-          <img
-            src={salon.logo}
-            alt={t('Лого')}
-            className="w-full h-full object-cover"
-            onError={e => { e.target.style.display = 'none' }}
-          />
+          <SalonLogo salon={salon} textClass="text-4xl" />
         </button>
 
         {/* Название + адрес + стрелка */}

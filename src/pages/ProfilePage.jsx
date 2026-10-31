@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useCompany } from '../context/CompanyContext'
+import SalonLogo from '../components/SalonLogo'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import PhoneField from '../components/layout/PhoneField'
 import TelegramLogin from '../components/TelegramLogin'
@@ -24,6 +26,7 @@ function IconLock() {
 }
 
 export default function ProfilePage() {
+  const company = useCompany()
   const navigate = useNavigate()
   const { login, loginWithTokens, register } = useAuth()
 
@@ -74,7 +77,7 @@ export default function ProfilePage() {
           <IconBack />
         </button>
         <div className="flex-1">
-          <div className="text-white text-sm font-semibold">JC nails</div>
+          <div className="text-white text-sm font-semibold">{company.name}</div>
           <div className="text-gray-500 text-xs">{t('Личный кабинет')}</div>
         </div>
       </div>
@@ -84,9 +87,9 @@ export default function ProfilePage() {
         {/* Логотип */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-20 h-20 rounded-full overflow-hidden bg-white mb-4">
-            <img src="/SALON.logo.png" alt={t('Лого')} className="w-full h-full object-cover" />
+            <SalonLogo salon={company} />
           </div>
-          <h1 className="text-white text-xl font-bold">JC nails</h1>
+          <h1 className="text-white text-xl font-bold">{company.name}</h1>
         </div>
 
         <TelegramLogin
