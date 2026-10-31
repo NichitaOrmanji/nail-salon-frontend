@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import { useBooking, CONTACT_DRAFT_KEY } from '../context/BookingContext'
@@ -40,6 +40,7 @@ function loadDraft() {
 
 export default function ConfirmationPage() {
   const company = useCompany()
+  const honeypotRef = useRef(null)
   const navigate = useNavigate()
   const { master, service, date, time, reset, getNextRoute } = useBooking()
   const { isLoggedIn } = useAuth()
@@ -103,7 +104,9 @@ export default function ConfirmationPage() {
         date,
         start_time: time,
         notes: notes.trim(),
-        consent: true
+        consent: true,
+        // Поле-ловушка: человек его не видит; заполнил — значит бот, сервер запись не примет
+        website: honeypotRef.current?.value || '',
       })
       setTelegramUrl(created?.telegram_url || null)
       localStorage.setItem('client_name', name.trim())
@@ -268,6 +271,10 @@ export default function ConfirmationPage() {
                 { percent: company.penalty_percent })}
           </p>
         )}
+
+        {/* Ловушка для ботов: скрыто от людей и от экранных дикторов */}
+        <input ref={honeypotRef} type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true"
+          className="absolute -left-[9999px] w-px h-px opacity-0" defaultValue="" />
 
         {/* Согласие на обработку персональных данных (Закон РМ № 133/2011) */}
         <label className="flex items-start gap-3 cursor-pointer select-none">
