@@ -12,18 +12,27 @@ export const DISCARD_CONFIRM = 'Есть несохранённые измене
 const DEFAULT_START = 9 * 60
 const DEFAULT_END = 20 * 60
 
-// Рабочие часы мастера в этот день: { working, dayOff, start, end }
-export function workInfo(master, date, dayOffMasterIds) {
+// Рабочие дни по датам ([{ master, date, ... }]) → Map «id мастера|дата» → день
+export function workDaysMap(workDays = []) {
+  return new Map(workDays.map(d => [`${d.master}|${d.date}`, d]))
+}
+
+// Рабочие часы мастера в этот день: { working, dayOff, start, end, breakStart, breakEnd } (минуты).
+// Как на сервере: выходной по дате → свои часы на дату (customDays) → недельный график
+export function workInfo(master, date, dayOffMasterIds, customDays = new Map()) {
   if (!master) return { working: false, neutral: true }
   if (dayOffMasterIds.has(master.id)) return { working: false, dayOff: true }
-  const day = Array.isArray(master.schedule)
-    ? master.schedule.find(s => s.day_of_week === weekdayIndex(date))
-    : null
-  if (!day || !day.is_working) return { working: false }
+  const day = customDays.get(`${master.id}|${date}`) || (Array.isArray(master.schedule)
+    ? master.schedule.find(s => s.day_of_week === weekdayIndex(date) && s.is_working)
+    : null)
+  if (!day) return { working: false }
   const start = timeToMin(day.start_time)
   const end = timeToMin(day.end_time)
   if (start === null || end === null || end <= start) return { working: false }
-  return { working: true, start, end }
+  const breakStart = day.break_start ? timeToMin(day.break_start) : null
+  const breakEnd = day.break_end ? timeToMin(day.break_end) : null
+  const hasBreak = breakStart !== null && breakEnd !== null && breakStart < breakEnd
+  return { working: true, start, end, breakStart: hasBreak ? breakStart : null, breakEnd: hasBreak ? breakEnd : null }
 }
 
 // Понедельник недели, в которую входит дата
@@ -37,22 +46,23 @@ export function weekDates(date) {
 }
 
 // Часы работы дня по всем мастерам вместе: от самого раннего начала до самого позднего конца
-function unionWork(masters, date, dayOffMasterIds) {
-  const days = masters.filter(m => m.is_active).map(m => workInfo(m, date, dayOffMasterIds)).filter(w => w.working)
+function unionWork(masters, date, dayOffMasterIds, customDays) {
+  const days = masters.filter(m => m.is_active).map(m => workInfo(m, date, dayOffMasterIds, customDays)).filter(w => w.working)
   if (!days.length) return { working: false }
   return { working: true, start: Math.min(...days.map(w => w.start)), end: Math.max(...days.map(w => w.end)) }
 }
 
 // Колонки недели: 7 дней. master — фильтр (null — все мастера, записи которых стоят рядом)
-export function buildWeekColumns({ masters, appointments = [], date, master, dayOffs }) {
+export function buildWeekColumns({ masters, appointments = [], date, master, dayOffs, workDays = [] }) {
   const today = todayString()
+  const customDays = workDaysMap(workDays)
   return weekDates(date).map(day => {
     const offIds = new Set(dayOffs.filter(d => d.date === day).map(d => d.master))
     // «Все мастера»: у каждого мастера в дне своя подколонка — работающие в этот день
     // и те, у кого есть записи (порядок как в списке мастеров)
     const withAppointments = new Set(appointments.filter(a => a.date === day).map(a => a.master?.id ?? 'none'))
     const laneIds = master ? null : [
-      ...masters.filter(m => withAppointments.has(m.id) || (m.is_active && workInfo(m, day, offIds).working)).map(m => m.id),
+      ...masters.filter(m => withAppointments.has(m.id) || (m.is_active && workInfo(m, day, offIds, customDays).working)).map(m => m.id),
       ...(withAppointments.has('none') ? ['none'] : []),
     ]
     const names = new Map(masters.map(m => [m.id, m.name]))
@@ -65,21 +75,22 @@ export function buildWeekColumns({ masters, appointments = [], date, master, day
       isToday: day === today,
       master,
       hidden: false,
-      work: master ? workInfo(master, day, offIds) : unionWork(masters, day, offIds),
+      work: master ? workInfo(master, day, offIds, customDays) : unionWork(masters, day, offIds, customDays),
       match: a => a.date === day && (master ? a.master?.id === master.id : true),
     }
   })
 }
 
 // Колонки дня: активные мастера ∪ скрытые мастера с записями ∪ «Без мастера»
-export function buildColumns({ masters, appointments, date, dayOffMasterIds }) {
+export function buildColumns({ masters, appointments, date, dayOffMasterIds, workDays = [] }) {
+  const customDays = workDaysMap(workDays)
   const columns = []
   const seen = new Set()
   const withAppointments = new Set(appointments.filter(a => a.master).map(a => a.master.id))
 
   for (const m of masters) {
     if (m.is_active || withAppointments.has(m.id)) {
-      columns.push({ key: `m${m.id}`, master: m, hidden: !m.is_active, work: workInfo(m, date, dayOffMasterIds) })
+      columns.push({ key: `m${m.id}`, master: m, hidden: !m.is_active, work: workInfo(m, date, dayOffMasterIds, customDays) })
       seen.add(m.id)
     }
   }

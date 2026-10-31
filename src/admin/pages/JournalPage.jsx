@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { fetchAppointments } from '../api/appointments'
-import { fetchStaffMasters, fetchDaysOff, addDayOff, removeDayOff } from '../api/masters'
+import { fetchStaffMasters, fetchDaysOff, fetchWorkDays, addDayOff, removeDayOff } from '../api/masters'
 import { notifyDataChanged, useAutoRefresh } from '../utils/events'
 import { todayString, addDays, formatDayTitle, isValidDateString, parseDate } from '../utils/time'
 import { ACTIVE_STATUSES, KINDS } from '../utils/statuses'
@@ -80,10 +80,11 @@ export default function JournalPage() {
       fetchAppointments({ dateFrom: rangeFrom, dateTo: rangeTo }),
       fetchStaffMasters(),
       fetchDaysOff({ dateFrom: rangeFrom, dateTo: rangeTo }),
+      fetchWorkDays({ dateFrom: rangeFrom, dateTo: rangeTo }),
     ])
-      .then(([appointments, masters, daysOff]) => {
+      .then(([appointments, masters, daysOff, workDays]) => {
         if (requestId !== requestRef.current) return
-        setData({ key: dataKey, appointments, masters, daysOff })
+        setData({ key: dataKey, appointments, masters, daysOff, workDays })
         setLoadError(null)
       })
       .catch(err => {
@@ -205,9 +206,9 @@ export default function JournalPage() {
   const columns = useMemo(() => {
     if (!current) return []
     if (view === 'week') {
-      return buildWeekColumns({ masters: current.masters, appointments: visibleAppointments, date, master: filterMaster, dayOffs: current.daysOff || [] })
+      return buildWeekColumns({ masters: current.masters, appointments: visibleAppointments, date, master: filterMaster, dayOffs: current.daysOff || [], workDays: current.workDays })
     }
-    return buildColumns({ masters: current.masters, appointments: visibleAppointments, date, dayOffMasterIds })
+    return buildColumns({ masters: current.masters, appointments: visibleAppointments, date, dayOffMasterIds, workDays: current.workDays })
   }, [current, view, filterMaster, visibleAppointments, date, dayOffMasterIds])
 
   // В неделе с фильтром — только записи этого мастера (диапазон часов по ним)

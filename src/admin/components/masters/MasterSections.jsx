@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import { saveSchedule, fetchDaysOff, addDayOff, removeDayOff, setMasterAccess, revokeMasterAccess } from '../../api/masters'
 import { notifyDataChanged } from '../../utils/events'
-import { WEEKDAYS_SHORT, todayString, addDays, formatShortDate, timeToMin } from '../../utils/time'
+import { WEEKDAYS_SHORT, todayString, addDays, formatShortDate } from '../../utils/time'
 import { Button, Checkbox, ErrorText, Field, TextInput, WarningText } from '../ui'
+import { dayHoursError, hoursLabel, lunchLabel } from '../../utils/schedule'
+import TimeField from './TimeField'
 
 // Разделы карточки мастера: график, выходные по датам, доступ в панель
 
@@ -24,11 +26,11 @@ function normalizeSchedule(schedule) {
       is_working: !!found?.is_working,
       start_time: found?.start_time || '09:00',
       end_time: found?.end_time || '18:00',
+      break_start: found?.break_start || null,
+      break_end: found?.break_end || null,
     }
   })
 }
-
-const timeInputStyle = { backgroundColor: '#242424', border: '1px solid #2e2e2e', colorScheme: 'dark' }
 
 export function ScheduleSection({ master, readOnly, onSaved }) {
   const [rows, setRows] = useState(() => normalizeSchedule(master.schedule))
@@ -44,16 +46,27 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
     setRows(list => list.map(r => (r.day_of_week === day ? { ...r, ...patch } : r)))
   }
 
+  // Обед первого рабочего дня с обедом — во все рабочие дни
+  function copyLunch() {
+    const source = rows.find(r => r.is_working && r.break_start && r.break_end)
+    if (!source) return
+    setDone(false)
+    setRows(list => list.map(r => (r.is_working ? { ...r, break_start: source.break_start, break_end: source.break_end } : r)))
+  }
+
   async function handleSave() {
-    const bad = rows.find(r => r.is_working && !(timeToMin(r.start_time) < timeToMin(r.end_time)))
-    if (bad) {
-      setError(`${WEEKDAYS_SHORT[bad.day_of_week]}: начало должно быть раньше конца`)
-      return
+    for (const r of rows.filter(row => row.is_working)) {
+      const message = dayHoursError(r)
+      if (message) {
+        setError(`${WEEKDAYS_SHORT[r.day_of_week]}: ${message}`)
+        return
+      }
     }
     setError(null)
     setSaving(true)
     try {
-      await saveSchedule(master.id, rows)
+      // У нерабочего дня обед не отправляем
+      await saveSchedule(master.id, rows.map(r => (r.is_working ? r : { ...r, break_start: null, break_end: null })))
       setSaved(JSON.stringify(rows))
       setDone(true)
       notifyDataChanged()
@@ -65,43 +78,45 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
     }
   }
 
+  const canCopyLunch = rows.some(r => r.is_working && r.break_start && r.break_end)
+
   return (
-    <Section title="График на неделю">
-      <div className="space-y-1">
+    <Section title="График на неделю (шаблон)">
+      {!readOnly && (
+        <p className="text-gray-500 text-xs mb-3">
+          Действует на все недели. Отдельные даты (другие часы, выходной) — во вкладке «Графики».
+          Обед клиентам не показывается: записаться на это время нельзя.
+        </p>
+      )}
+      <div className="space-y-2">
         {rows.map(r => (
-          <div key={r.day_of_week} className="flex flex-wrap items-center gap-x-3 gap-y-1 min-h-[44px]">
+          <div key={r.day_of_week} className="flex flex-wrap items-center gap-x-3 gap-y-1 min-h-[44px] py-1" style={{ borderTop: r.day_of_week ? '1px solid #2a2a2a' : 'none' }}>
             <span className="w-7 text-sm text-gray-400 flex-shrink-0">{WEEKDAYS_SHORT[r.day_of_week]}</span>
             {readOnly ? (
               <span className="text-sm" style={{ color: r.is_working ? '#ffffff' : '#6b7280' }}>
-                {r.is_working ? `${r.start_time}–${r.end_time}` : 'Выходной'}
+                {r.is_working ? hoursLabel(r) : 'Выходной'}
+                {r.is_working && lunchLabel(r) && <span className="text-gray-500"> · обед {lunchLabel(r)}</span>}
               </span>
             ) : (
               <>
                 <Checkbox checked={r.is_working} onChange={v => update(r.day_of_week, { is_working: v })} label="Работает" className="w-32" />
-                <div className="flex items-center gap-2" style={{ opacity: r.is_working ? 1 : 0.4 }}>
-                  <span className="text-gray-500 text-xs">с</span>
-                  <input
-                    type="time"
-                    step={900}
-                    aria-label="Начало"
-                    value={r.start_time}
-                    disabled={!r.is_working}
-                    onChange={e => update(r.day_of_week, { start_time: e.target.value.slice(0, 5) })}
-                    className="min-h-[40px] px-2 rounded-lg text-white text-sm outline-none"
-                    style={timeInputStyle}
-                  />
-                  <span className="text-gray-500 text-xs">до</span>
-                  <input
-                    type="time"
-                    step={900}
-                    aria-label="Конец"
-                    value={r.end_time}
-                    disabled={!r.is_working}
-                    onChange={e => update(r.day_of_week, { end_time: e.target.value.slice(0, 5) })}
-                    className="min-h-[40px] px-2 rounded-lg text-white text-sm outline-none"
-                    style={timeInputStyle}
-                  />
-                </div>
+                {r.is_working && (
+                  <div className="w-full sm:w-auto pl-8 sm:pl-0 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-gray-500 text-xs w-10">с</span>
+                      <TimeField label="Начало" value={r.start_time} onChange={v => update(r.day_of_week, { start_time: v })} />
+                      <span className="text-gray-500 text-xs">до</span>
+                      <TimeField label="Конец" value={r.end_time} onChange={v => update(r.day_of_week, { end_time: v })} />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-gray-500 text-xs w-10">обед</span>
+                      <TimeField label="Начало обеда" value={r.break_start} onChange={v => update(r.day_of_week, { break_start: v })} />
+                      <span className="text-gray-500 text-xs">до</span>
+                      <TimeField label="Конец обеда" value={r.break_end} clearable
+                        onChange={v => update(r.day_of_week, v ? { break_end: v } : { break_start: null, break_end: null })} />
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -109,8 +124,9 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
       </div>
       <ErrorText className="mt-3">{error}</ErrorText>
       {!readOnly && (
-        <div className="flex items-center justify-end gap-3 mt-3">
+        <div className="flex flex-wrap items-center justify-end gap-3 mt-3">
           {done && !changed && <span className="text-xs" style={{ color: '#34d399' }}>Сохранено</span>}
+          {canCopyLunch && <Button onClick={copyLunch}>Обед во все рабочие дни</Button>}
           <Button variant="primary" disabled={!changed || saving} onClick={handleSave}>
             {saving ? 'Сохраняем...' : 'Сохранить график'}
           </Button>

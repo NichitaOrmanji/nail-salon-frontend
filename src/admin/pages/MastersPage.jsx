@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { fetchStaffMasters, createMaster, updateMaster, hideMaster, uploadMasterPhoto, deleteMasterPhoto } from '../api/masters'
 import { fetchStaffServices } from '../api/services'
@@ -8,6 +9,7 @@ import Modal from '../components/Modal'
 import { Button, Checkbox, ErrorText, Field, PageHeader, TextArea, TextInput } from '../components/ui'
 import { Section, ScheduleSection, DaysOffSection, AccessSection } from '../components/masters/MasterSections'
 import PhotoField from '../components/PhotoField'
+import MonthSchedule from '../components/masters/MonthSchedule'
 import Spinner from '../../components/layout/Spinner'
 
 // Скрыть мастера; при будущих записях бэк отвечает 400 { count } — переспрашиваем
@@ -201,6 +203,9 @@ export default function MastersPage() {
   const [error, setError] = useState(null)
   // { id } — открыт мастер, { id: null } — новый
   const [modal, setModal] = useState(null)
+  // Вкладка в адресе (?tab=schedules), чтобы после обновления страницы остаться на ней
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = searchParams.get('tab') === 'schedules' ? 'schedules' : 'masters'
 
   const load = useCallback(() => {
     return Promise.all([fetchStaffMasters(), fetchStaffServices()])
@@ -236,6 +241,9 @@ export default function MastersPage() {
               </p>
             </Section>
             <ScheduleSection key={JSON.stringify(self.schedule)} master={self} readOnly />
+            <Section title="График по датам">
+              <MonthSchedule masters={[self]} readOnly />
+            </Section>
             <DaysOffSection master={self} readOnly />
           </div>
         )}
@@ -273,13 +281,33 @@ export default function MastersPage() {
   return (
     <div className="px-4 md:px-6 py-5 max-w-4xl">
       <PageHeader title="Мастера" subtitle="График, выходные и доступ в панель">
-        <Button variant="primary" disabled={!services} onClick={() => setModal({ id: null })}>+ Мастер</Button>
+        {tab === 'masters' && (
+          <Button variant="primary" disabled={!services} onClick={() => setModal({ id: null })}>+ Мастер</Button>
+        )}
       </PageHeader>
+
+      <div className="flex gap-2 mb-5" role="tablist" aria-label="Разделы">
+        {[['masters', 'Мастера'], ['schedules', 'Графики']].map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={tab === key}
+            onClick={() => setSearchParams(key === 'masters' ? {} : { tab: key }, { replace: true })}
+            className="px-4 min-h-[40px] rounded-xl text-sm font-medium"
+            style={tab === key ? { backgroundColor: '#f472b6', color: '#fff' } : { backgroundColor: '#242424', color: '#d1d5db' }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       <ErrorText className="mb-3">{error}</ErrorText>
       {!masters && !error && <Spinner />}
 
-      {masters && (
+      {masters && tab === 'schedules' && <MonthSchedule masters={masters} />}
+
+      {masters && tab === 'masters' && (
         <div className="space-y-6">
           <div className="space-y-2">
             {active.length === 0 && <p className="text-gray-500 text-sm">Активных мастеров нет</p>}

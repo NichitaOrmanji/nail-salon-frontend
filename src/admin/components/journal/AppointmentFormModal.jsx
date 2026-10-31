@@ -169,6 +169,8 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
       warnings.push('Вне графика мастера: по графику не работает')
     } else if (t < timeToMin(sched.start_time) || end > timeToMin(sched.end_time)) {
       warnings.push(`Вне графика мастера (работает ${sched.start_time}–${sched.end_time})`)
+    } else if (sched.break_start && sched.break_end && t < timeToMin(sched.break_end) && end > timeToMin(sched.break_start)) {
+      warnings.push(`Попадает на обед мастера (${sched.break_start}–${sched.break_end})`)
     }
   }
   const whenChanged = !isEdit || date !== start.date || time !== start.time
