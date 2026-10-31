@@ -39,7 +39,7 @@ export async function fetchPendingCount() {
   return Number(response.data?.count) || 0
 }
 
-// { times: ['10:00', …], working, day_off, schedule: { start_time, end_time } | null }
+// { times: ['10:00', …], working, day_off, schedule: { start_time, end_time, break_start, break_end } | null }
 export async function fetchFreeTimes({ master, date, service, duration, exclude }) {
   const params = { master, date }
   if (duration) params.duration = duration

@@ -320,6 +320,19 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
               {work.working && work.end < range.end && (
                 <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ ...OFF_STYLE, height: (range.end - work.end) * PX_PER_MIN }} />
               )}
+              {/* Обед: клиенты не видят это время на сайте */}
+              {work.working && work.breakStart !== null && work.breakStart !== undefined && (
+                <div
+                  className="absolute inset-x-0 pointer-events-none flex items-start justify-center"
+                  style={{
+                    ...OFF_STYLE,
+                    top: (Math.max(work.breakStart, range.start) - range.start) * PX_PER_MIN,
+                    height: Math.max(0, Math.min(work.breakEnd, range.end) - Math.max(work.breakStart, range.start)) * PX_PER_MIN,
+                  }}
+                >
+                  <span className="text-[10px] mt-0.5" style={{ color: '#fbbf24' }}>обед</span>
+                </div>
+              )}
 
               {colAppointments.map(a => (
                 <AppointmentBlock

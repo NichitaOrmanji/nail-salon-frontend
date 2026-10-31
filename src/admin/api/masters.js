@@ -71,3 +71,23 @@ export async function deleteMasterPhoto(masterId) {
   const response = await staffApi.delete(`/masters/${masterId}/photo/`)
   return response.data
 }
+
+// График по датам: [{ date, source: template|custom|off|template_off, is_working, start_time, end_time,
+//   break_start, break_end, appointments }]
+export async function fetchMasterDays(masterId, { dateFrom, dateTo }) {
+  const response = await staffApi.get(`/masters/${masterId}/days/`, { params: { date_from: dateFrom, date_to: dateTo } })
+  return expectArray(response.data)
+}
+
+// { dates: [...], mode: custom|off|template, start_time, end_time, break_start, break_end } →
+// { days: [...], conflicts: [{ id, date, start_time, end_time, client_name, reason }] }
+export async function saveMasterDays(masterId, body) {
+  const response = await staffApi.put(`/masters/${masterId}/days/`, body)
+  return response.data
+}
+
+// Рабочие дни по датам всех мастеров (для журнала): [{ master, date, start_time, end_time, break_start, break_end }]
+export async function fetchWorkDays({ dateFrom, dateTo }) {
+  const response = await staffApi.get('/work-days/', { params: { date_from: dateFrom, date_to: dateTo } })
+  return expectArray(response.data)
+}
