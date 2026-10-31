@@ -68,6 +68,14 @@ function SidebarContent({ me, isManager, onNavigate, onTelegram, onChangePasswor
         >
           Сайт записи ↗
         </a>
+        <NavLink
+          to="/admin-panel/help"
+          onClick={onNavigate}
+          className="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm"
+          style={({ isActive }) => ({ color: isActive ? '#f472b6' : '#9ca3af' })}
+        >
+          Помощь
+        </NavLink>
       </nav>
 
       <div className="px-3 py-4 space-y-1" style={{ borderTop: '1px solid #2e2e2e' }}>

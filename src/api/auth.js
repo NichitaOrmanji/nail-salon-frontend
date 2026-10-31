@@ -29,3 +29,8 @@ export async function telegramLoginVerify(token, code) {
   const response = await api.post('/auth/telegram/verify/', { token, code })
   return response.data
 }
+
+// Удалить свой аккаунт (записи остаются в салоне без привязки к аккаунту)
+export async function deleteMyAccount() {
+  await api.delete('/auth/me/')
+}

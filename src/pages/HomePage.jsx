@@ -350,6 +350,8 @@ export default function HomePage() {
         </div>
 
         <div className="text-center mt-8">
+          <Link to="/rules" className="text-gray-600 text-xs underline">{t('Правила салона')}</Link>
+          <span className="text-gray-700 text-xs mx-2">·</span>
           <Link to="/privacy" className="text-gray-600 text-xs underline">{t('Политика конфиденциальности')}</Link>
         </div>
 
