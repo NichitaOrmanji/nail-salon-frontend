@@ -193,19 +193,19 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, showMa
         opacity: muted ? 0.6 : 1,
         zIndex: selected ? 6 : 5,
       }}
-      title={`${a.start_time}–${a.end_time} ${a.client_name}${a.master ? ' · ' + a.master.name : ''}${a.service ? ' · ' + a.service.name : ''} — ${info.label}`}
+      title={`${a.start_time}–${a.end_time} ${a.blacklist ? '⛔ чёрный список · ' : ''}${a.client_name}${a.master ? ' · ' + a.master.name : ''}${a.service ? ' · ' + a.service.name : ''} — ${info.label}`}
     >
       {/* Время не переносится по символам, имя и услуга обрезаются многоточием */}
       <div className={`min-w-0 text-[11px] leading-tight text-white ${muted ? 'line-through' : ''}`}>
         {height < COMPACT_BLOCK_PX ? (
           <div className="truncate">
-            <span className="font-semibold">{a.start_time}</span> {a.client_name}
+            <span className="font-semibold">{a.start_time}</span> {a.blacklist && <span title="Чёрный список">⛔</span>}{a.client_name}
           </div>
         ) : (
           <>
             {/* В узкой подколонке — только начало (конец виден по высоте блока) */}
             <div className="font-semibold whitespace-nowrap truncate">{lanes >= 3 ? a.start_time : `${a.start_time}–${a.end_time}`}</div>
-            <div className="truncate">{a.client_name}</div>
+            <div className="truncate">{a.blacklist && <span title="Чёрный список">⛔ </span>}{a.client_name}</div>
             {showMaster && a.master && height >= 44 && <div className="truncate text-gray-300">{a.master.name}</div>}
             {a.service && height >= (showMaster ? 68 : 56) && <div className="truncate text-gray-300">{a.service.name}</div>}
           </>

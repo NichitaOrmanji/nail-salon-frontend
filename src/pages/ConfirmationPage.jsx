@@ -7,6 +7,7 @@ import { fetchMe } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
 import { fetchSlotsByMaster } from '../api/slots'
 import SalonHeader from '../components/layout/SalonHeader'
+import { useCompany } from '../context/CompanyContext'
 import PhoneField from '../components/layout/PhoneField'
 import { formatDisplayDate, formatDuration, formatPrice } from '../utils/format'
 import { getLang, t } from '../i18n'
@@ -38,6 +39,7 @@ function loadDraft() {
 }
 
 export default function ConfirmationPage() {
+  const company = useCompany()
   const navigate = useNavigate()
   const { master, service, date, time, reset, getNextRoute } = useBooking()
   const { isLoggedIn } = useAuth()
@@ -255,6 +257,17 @@ export default function ConfirmationPage() {
             </p>
           )}
         </div>
+
+        {/* Правило салона (чёрный список) — клиент знает о штрафе до записи */}
+        {Number(company.penalty_percent) > 0 && (
+          <p className="text-gray-500 text-xs leading-relaxed">
+            {Number(company.late_cancel_hours) > 0
+              ? t('Если вы не придёте или отмените запись меньше чем за {hours} ч до визита, при следующем визите нужно будет оплатить штраф {percent}% стоимости пропущенной услуги. Оплата — на месте в салоне.',
+                { hours: company.late_cancel_hours, percent: company.penalty_percent })
+              : t('Если вы не придёте на запись, при следующем визите нужно будет оплатить штраф {percent}% стоимости пропущенной услуги. Оплата — на месте в салоне.',
+                { percent: company.penalty_percent })}
+          </p>
+        )}
 
         {/* Согласие на обработку персональных данных (Закон РМ № 133/2011) */}
         <label className="flex items-start gap-3 cursor-pointer select-none">

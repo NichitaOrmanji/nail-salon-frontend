@@ -3,8 +3,9 @@ import staffApi from './staffClient'
 // Клиентская база (владелец и админ). Клиент — номер телефона из записей салона.
 // { count, page_size, results: [{ phone, name, total, visits, no_shows, cancelled, paid, average_check,
 //   first_date, last_visit, next_visit }] }
-export async function fetchClients({ q = '', sort = 'last', page = 1 } = {}) {
-  const response = await staffApi.get('/clients/', { params: { q: q || undefined, sort, page } })
+// blacklist — только клиенты из чёрного списка; у каждого клиента blacklist: { debt, count } | null
+export async function fetchClients({ q = '', sort = 'last', page = 1, blacklist = false } = {}) {
+  const response = await staffApi.get('/clients/', { params: { q: q || undefined, sort, page, blacklist: blacklist ? 1 : undefined } })
   return response.data
 }
 

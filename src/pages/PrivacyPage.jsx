@@ -66,6 +66,16 @@ export default function PrivacyPage() {
           <p>Acordul dvs., pe care îl dați la programare, și executarea contractului de prestare a serviciului (art. 5 al Legii RM nr. 133/2011).</p>
         </Section>
 
+        <Section title="4.1. Neprezentări și anulări târzii">
+          <p>
+            Dacă nu v-ați prezentat la programare sau ați anulat-o mai târziu de termenul stabilit de salon, salonul
+            marchează acest lucru și aplică o amendă (o parte din prețul serviciului ratat), care se achită la salon
+            la următoarea vizită. Această mențiune se păstrează în salon, este vizibilă doar angajaților lui și nu se
+            transmite altor saloane. Termenul de păstrare — ca pentru istoricul vizitelor; salonul poate elimina mențiunea
+            la cererea dvs.
+          </p>
+        </Section>
+
         <Section title="5. Cui se transmit datele">
           <p>Doar angajaților salonului care lucrează cu programarea dvs. și furnizorilor fără de care serviciul nu funcționează:</p>
           <ul className="list-disc pl-5 space-y-1">
@@ -132,6 +142,15 @@ export default function PrivacyPage() {
 
         <Section title="4. Основание">
           <p>Ваше согласие, которое вы даёте при записи, и исполнение договора об оказании услуги (ст. 5 Закона РМ № 133/2011).</p>
+        </Section>
+
+        <Section title="4.1. Неявки и поздние отмены">
+          <p>
+            Если вы не пришли на запись или отменили её позже срока, установленного салоном, салон отмечает это
+            и начисляет штраф (доля стоимости пропущенной услуги), который оплачивается на месте при следующем визите.
+            Эта отметка хранится в салоне, видна только его сотрудникам и другим салонам не передаётся.
+            Срок хранения — как у истории визитов; салон может снять отметку по вашему обращению.
+          </p>
         </Section>
 
         <Section title="5. Кому передаются данные">

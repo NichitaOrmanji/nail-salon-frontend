@@ -21,7 +21,7 @@ function ClientRow({ client: c, onOpen }) {
       type="button"
       onClick={() => onOpen(c.phone)}
       className="w-full text-left rounded-2xl px-4 py-3 transition-all active:scale-[0.99]"
-      style={{ backgroundColor: '#242424' }}
+      style={{ backgroundColor: '#242424', border: c.blacklist ? '1px solid #f87171' : '1px solid transparent' }}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <span className="text-white text-sm font-semibold break-words">{c.name || 'Без имени'}</span>
@@ -33,6 +33,11 @@ function ClientRow({ client: c, onOpen }) {
         {c.last_visit && <span className="text-gray-500">Был(а): {clientDate(c.last_visit)}</span>}
         {c.next_visit && <span style={{ color: '#34d399' }}>Запись: {clientDate(c.next_visit)}</span>}
         {c.no_shows > 0 && <span style={{ color: '#f87171' }}>Не пришёл: {c.no_shows}</span>}
+        {c.blacklist && (
+          <span className="font-semibold" style={{ color: '#f87171' }}>
+            ⛔ Чёрный список{Number(c.blacklist.debt) > 0 ? ` · долг ${formatMoney(c.blacklist.debt)}` : ''}
+          </span>
+        )}
       </div>
     </button>
   )
@@ -44,6 +49,7 @@ export default function ClientsPage() {
   const [query, setQuery] = useState('')
   const [search, setSearch] = useState('') // отправленный запрос (с задержкой после ввода)
   const [sort, setSort] = useState('last')
+  const [onlyBlacklist, setOnlyBlacklist] = useState(false)
   const [data, setData] = useState(null) // { count, results, page }
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(null)
@@ -58,20 +64,20 @@ export default function ClientsPage() {
 
   useEffect(() => {
     const id = ++requestRef.current
-    fetchClients({ q: search, sort, page: 1 })
+    fetchClients({ q: search, sort, page: 1, blacklist: onlyBlacklist })
       .then(result => {
         if (id !== requestRef.current) return
         setData({ ...result, page: 1 })
         setError(null)
       })
       .catch(err => { if (id === requestRef.current) setError(err.message) })
-  }, [search, sort])
+  }, [search, sort, onlyBlacklist])
 
   async function loadMore() {
     const id = requestRef.current
     setLoadingMore(true)
     try {
-      const result = await fetchClients({ q: search, sort, page: data.page + 1 })
+      const result = await fetchClients({ q: search, sort, page: data.page + 1, blacklist: onlyBlacklist })
       if (id !== requestRef.current) return
       setData(prev => ({ ...result, results: [...prev.results, ...result.results], page: prev.page + 1 }))
     } catch (err) {
@@ -105,6 +111,13 @@ export default function ClientsPage() {
           placeholder="Имя или телефон"
           aria-label="Поиск клиента"
         />
+        <Button
+          aria-pressed={onlyBlacklist}
+          onClick={() => setOnlyBlacklist(v => !v)}
+          style={onlyBlacklist ? { backgroundColor: '#f87171', color: '#fff' } : { color: '#f87171' }}
+        >
+          ⛔ Чёрный список
+        </Button>
         <Select value={sort} onChange={e => setSort(e.target.value)} aria-label="Сортировка" className="sm:max-w-[200px]">
           {SORTS.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
         </Select>
@@ -113,7 +126,7 @@ export default function ClientsPage() {
       <ErrorText className="mb-3">{error}</ErrorText>
       {!data && !error && <Spinner />}
       {data && data.results.length === 0 && (
-        <p className="text-gray-500 text-sm">{search ? 'Никого не нашли' : 'Клиенты появятся после первых записей'}</p>
+        <p className="text-gray-500 text-sm">{search || onlyBlacklist ? 'Никого не нашли' : 'Клиенты появятся после первых записей'}</p>
       )}
       {data && (
         <div className="space-y-2">

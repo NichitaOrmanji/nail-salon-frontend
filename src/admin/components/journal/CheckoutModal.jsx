@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Modal from '../Modal'
-import { Button, ErrorText, Field, TextInput } from '../ui'
+import { Button, Checkbox, ErrorText, Field, TextInput } from '../ui'
 import { checkoutAppointment } from '../../api/finance'
 import { METHODS, formatMoney } from '../../utils/money'
 import { normalizeDecimal } from '../../utils/time'
@@ -13,11 +13,14 @@ export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
   const [percent, setPercent] = useState(false)
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
+  // Чёрный список: долг за прошлые неявки оплачивается при этом визите
+  const debt = Number(a.blacklist?.debt) || 0
+  const [payDebt, setPayDebt] = useState(debt > 0)
 
   const raw = Number(normalizeDecimal(discountText)) || 0
   const discount = Math.round((percent ? price * raw / 100 : raw) * 100) / 100
   const invalid = raw < 0 || discount > price || (percent && raw > 100)
-  const totalAmount = Math.max(0, price - discount)
+  const totalAmount = Math.max(0, price - discount) + (payDebt ? debt : 0)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -25,7 +28,7 @@ export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
     setError(null)
     setSaving(true)
     try {
-      await checkoutAppointment(a.id, { method, discount: discount.toFixed(2) })
+      await checkoutAppointment(a.id, { method, discount: discount.toFixed(2), pay_penalties: payDebt })
       onPaid()
     } catch (err) {
       setError(err.message)
@@ -79,6 +82,16 @@ export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
             ))}
           </div>
         </div>
+        {debt > 0 && (
+          <div className="rounded-xl px-3 py-2" style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171' }}>
+            <Checkbox
+              checked={payDebt}
+              onChange={setPayDebt}
+              label={<span style={{ color: '#fca5a5' }}>Штраф из чёрного списка: {formatMoney(debt)}</span>}
+            />
+            <p className="text-xs text-gray-400 mt-1">Клиент не пришёл или поздно отменил прошлую запись — штраф оплачивается сейчас.</p>
+          </div>
+        )}
         <div className="flex justify-between items-baseline pt-2" style={{ borderTop: '1px solid #2e2e2e' }}>
           <span className="text-gray-400 text-sm">К оплате</span>
           <span className="text-white text-2xl font-bold">{formatMoney(totalAmount)}</span>
