@@ -234,4 +234,6 @@ export default {
   'Удалить аккаунт': 'Șterge contul',
   'Удалить аккаунт? Вход, имя и связь с Telegram будут удалены. Записи в салоне останутся — чтобы удалить и их, попросите салон. Отменить нельзя.': 'Ștergeți contul? Accesul, numele și legătura cu Telegram vor fi șterse. Programările din salon rămân — pentru a le șterge și pe ele, rugați salonul. Acțiunea este ireversibilă.',
   'Не удалось удалить аккаунт': 'Nu s-a reușit ștergerea contului',
+  'Предыдущий месяц': 'Luna precedentă',
+  'Следующий месяц': 'Luna următoare',
 }

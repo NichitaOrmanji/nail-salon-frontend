@@ -25,3 +25,8 @@ dist-ssr
 
 # Локальные настройки (адрес API)
 .env
+
+# Браузерные тесты
+/test-results/
+/playwright-report/
+/blob-report/

@@ -145,6 +145,7 @@ export default function SlotsPage() {
             <button
               onClick={() => changeMonth(-1)}
               disabled={isCurrentMonth}
+              aria-label={t('Предыдущий месяц')}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
               style={{ backgroundColor: '#242424', opacity: isCurrentMonth ? 0.3 : 1 }}
             >
@@ -152,6 +153,7 @@ export default function SlotsPage() {
             </button>
             <button
               onClick={() => changeMonth(1)}
+              aria-label={t('Следующий месяц')}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
               style={{ backgroundColor: '#242424' }}
             >
