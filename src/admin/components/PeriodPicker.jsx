@@ -19,7 +19,7 @@ export default function PeriodPicker({ value, onChange }) {
             aria-pressed={active === p.key}
             onClick={() => onChange(presetRange(p.key))}
             className="min-h-[44px] px-3 text-sm font-medium"
-            style={{ backgroundColor: active === p.key ? '#f472b6' : '#242424', color: active === p.key ? '#ffffff' : '#9ca3af' }}
+            style={{ backgroundColor: active === p.key ? '#db2777' : '#242424', color: active === p.key ? '#ffffff' : '#9ca3af' }}
           >
             {p.label}
           </button>

@@ -72,7 +72,7 @@ export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
                 onClick={() => setMethod(m.key)}
                 className="min-h-[44px] rounded-xl text-sm font-medium"
                 style={{
-                  backgroundColor: method === m.key ? '#f472b6' : '#242424',
+                  backgroundColor: method === m.key ? '#db2777' : '#242424',
                   color: method === m.key ? '#ffffff' : '#d1d5db',
                   border: '1px solid #2e2e2e',
                 }}

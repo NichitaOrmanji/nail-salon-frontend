@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { fetchCompany } from '../api/company'
 import { SLUG } from '../api/client'
+// Картинки JC — из сборки: имя с хэшем, кэш браузера на год
+import jcLogo from '../assets/jc-logo.webp'
+import jcSalon from '../assets/jc-salon.webp'
 
 // Показываем, пока /info/ не ответил (или если бэк недоступен). Картинки JC — только для JC:
 // у других салонов вместо пустого логотипа — буква названия, вместо фото — градиент
@@ -9,8 +12,8 @@ const FALLBACK = SLUG === 'jcnails'
     name: 'JC nails',
     address: 'Bulevardul Moscova, 1/2',
     phone: '+373 671 380-96',
-    logo: '/SALON.logo.png',
-    main_photo: '/salon.jpg',
+    logo: jcLogo,
+    main_photo: jcSalon,
     latitude: 47.0447862,
     longitude: 28.8607939,
     description: '',

@@ -137,6 +137,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
           <div className="w-6" /> {/* spacer */}
           <div className="w-10 h-1 rounded-full" style={{ backgroundColor: '#3a3a3a' }} />
           <button
+          aria-label={t('Закрыть')}
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 transition-all active:scale-90"
             style={{ backgroundColor: '#2e2e2e' }}
@@ -207,7 +208,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
           <button
             onClick={onBook}
             className="w-full py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
-            style={{ backgroundColor: '#f472b6' }}
+            style={{ backgroundColor: '#db2777' }}
           >
             {t('Записаться')}
           </button>
@@ -269,6 +270,7 @@ export default function HomePage() {
 
         <LanguageSwitch className="absolute top-4 left-4" />
         <button
+          aria-label={t('Личный кабинет')}
           onClick={() => navigate(isLoggedIn ? '/account' : '/profile')}
           className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}

@@ -288,7 +288,7 @@ export default function JournalPage() {
               aria-pressed={view === key}
               onClick={() => changeView(key)}
               className="min-h-[44px] px-3 text-sm font-medium"
-              style={{ backgroundColor: view === key ? '#f472b6' : '#242424', color: view === key ? '#ffffff' : '#9ca3af' }}
+              style={{ backgroundColor: view === key ? '#db2777' : '#242424', color: view === key ? '#ffffff' : '#9ca3af' }}
             >
               {label}
             </button>

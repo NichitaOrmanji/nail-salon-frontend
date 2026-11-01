@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { telegramLoginStart, telegramLoginVerify } from '../api/auth'
 import { t } from '../i18n'
 
-const TELEGRAM_BLUE = '#229ED9'
+const TELEGRAM_BLUE = '#1479a8'
 
 // Вход без пароля: бот просит поделиться номером и присылает код, код вводится здесь
 export default function TelegramLogin({ onTokens }) {
@@ -86,7 +86,7 @@ export default function TelegramLogin({ onTokens }) {
         onClick={verify}
         disabled={code.length !== 6 || busy}
         className="w-full py-3 rounded-xl text-white font-semibold transition-all active:scale-95"
-        style={{ backgroundColor: '#f472b6', opacity: code.length === 6 && !busy ? 1 : 0.4 }}
+        style={{ backgroundColor: '#db2777', opacity: code.length === 6 && !busy ? 1 : 0.4 }}
       >
         {busy ? t('Проверяем...') : t('Подтвердить код')}
       </button>

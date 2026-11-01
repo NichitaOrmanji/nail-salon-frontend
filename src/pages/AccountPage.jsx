@@ -128,6 +128,7 @@ export default function AccountPage() {
       {/* Шапка */}
       <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
         <button
+          aria-label={t('Назад')}
           onClick={() => navigate(-1)}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
           style={{ backgroundColor: '#242424' }}
@@ -138,6 +139,7 @@ export default function AccountPage() {
           <div className="text-white text-sm font-semibold">{t('Личный кабинет')}</div>
         </div>
         <button
+          aria-label={t('Выйти')}
           onClick={handleLogout}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
           style={{ backgroundColor: '#242424' }}
@@ -187,7 +189,7 @@ export default function AccountPage() {
             <button
               onClick={() => navigate('/')}
               className="mt-2 px-8 py-4 rounded-2xl text-white font-semibold active:scale-95"
-              style={{ backgroundColor: '#f472b6' }}
+              style={{ backgroundColor: '#db2777' }}
             >
               {t('Записаться')}
             </button>

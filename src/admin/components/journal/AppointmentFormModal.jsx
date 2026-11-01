@@ -392,7 +392,7 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
                     onClick={() => setTime(t)}
                     className="min-h-[44px] px-3 rounded-lg text-sm font-medium"
                     style={{
-                      backgroundColor: t === time ? '#f472b6' : '#242424',
+                      backgroundColor: t === time ? '#db2777' : '#242424',
                       color: t === time ? '#ffffff' : '#d1d5db',
                       border: '1px solid #2e2e2e',
                     }}

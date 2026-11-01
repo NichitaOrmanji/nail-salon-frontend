@@ -12,7 +12,7 @@ export default function LanguageSwitch({ className = '' }) {
           onClick={() => setLang(code)}
           aria-pressed={lang === code}
           className="px-2.5 py-1.5 rounded-full transition-all"
-          style={lang === code ? { backgroundColor: '#f472b6', color: '#ffffff' } : { color: '#d1d5db' }}
+          style={lang === code ? { backgroundColor: '#db2777', color: '#ffffff' } : { color: '#d1d5db' }}
         >
           {code.toUpperCase()}
         </button>

@@ -9,7 +9,7 @@ import ErrorBoundary from '../../components/layout/ErrorBoundary'
 import ChangePasswordModal from '../components/ChangePasswordModal'
 import TelegramModal from '../components/TelegramModal'
 import NewAppointmentsModal from '../components/NewAppointmentsModal'
-import { IconCalendar, IconScissors, IconUsers, IconSettings, IconMenu, IconClose, IconWallet, IconContact } from '../components/Icons'
+import { IconCalendar, IconScissors, IconUsers, IconSettings, IconMenu, IconClose, IconWallet, IconContact, IconAlert } from '../components/Icons'
 
 function menuItems(me, isManager) {
   // Финансы — только владельцу; «Моя зарплата» — сотруднику с профилем мастера
@@ -26,6 +26,7 @@ function menuItems(me, isManager) {
   return [
     { to: '/admin-panel', label: 'Журнал', icon: IconCalendar, end: true },
     { to: '/admin-panel/clients', label: 'Клиенты', icon: IconContact },
+    { to: '/admin-panel/debtors', label: 'Должники', icon: IconAlert },
     { to: '/admin-panel/services', label: 'Услуги', icon: IconScissors },
     { to: '/admin-panel/masters', label: 'Мастера', icon: IconUsers },
     ...(me.role === 'owner' ? [{ to: '/admin-panel/finance', label: 'Финансы', icon: IconWallet }] : []),

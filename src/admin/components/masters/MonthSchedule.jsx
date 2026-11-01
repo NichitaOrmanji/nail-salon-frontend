@@ -81,7 +81,7 @@ function DayCell({ day, date, today, selected, readOnly, onToggle }) {
         </>
       )}
       {day && !working && (
-        <span className="text-[10px] leading-tight" style={{ color: source === 'off' ? '#f87171' : '#6b7280' }}>
+        <span className="text-[10px] leading-tight" style={{ color: source === 'off' ? '#f87171' : '#9098a4' }}>
           {source === 'off' ? 'выходной' : 'не работает'}
         </span>
       )}

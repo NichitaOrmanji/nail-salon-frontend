@@ -22,7 +22,7 @@ test('оплата визита из журнала', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Отменить оплату' })).toBeVisible()
 })
 
-test('неявка → чёрный список со штрафом 50%', async ({ page }) => {
+test('неявка → чёрный список со штрафом 50% → должники → оплата', async ({ page }) => {
   await staffLogin(page)
   await openJournalDay(page, -1)
   await page.getByTitle(/Должник Тест/).first().click()
@@ -34,6 +34,18 @@ test('неявка → чёрный список со штрафом 50%', async
   await expect(page.getByRole('button', { name: '⛔ Чёрный список', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByText('Должник Тест')).toBeVisible()
   await expect(page.getByText(/долг 100/)).toBeVisible()
+
+  // Экран «Должники»: сумма, причина, оплата из карточки клиента
+  await page.goto('/admin-panel/debtors')
+  await expect(page.getByText('Общий долг')).toBeVisible()
+  const row = page.getByRole('button', { name: /Должник Тест/ })
+  await expect(row).toContainText('100 L')
+  await expect(row).toContainText('Не пришёл')
+  await row.click()
+  await page.getByRole('button', { name: 'Оплачен', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Отменить оплату' })).toBeVisible()  // оплата сохранена
+  await page.getByRole('button', { name: 'Закрыть' }).click()
+  await expect(page.getByText('Должников нет')).toBeVisible()
 })
 
 test('удаление данных клиента по его просьбе', async ({ page }) => {

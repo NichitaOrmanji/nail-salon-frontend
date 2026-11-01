@@ -236,4 +236,6 @@ export default {
   'Не удалось удалить аккаунт': 'Nu s-a reușit ștergerea contului',
   'Предыдущий месяц': 'Luna precedentă',
   'Следующий месяц': 'Luna următoare',
+  'Закрыть': 'Închide',
+  'Выйти': 'Ieșire',
 }

@@ -1,7 +1,7 @@
 // Общие элементы панели: кнопки, поля, сообщения. Цвета — как в клиентской части.
 
 const BUTTON_STYLES = {
-  primary: { backgroundColor: '#f472b6', color: '#ffffff' },
+  primary: { backgroundColor: '#db2777', color: '#ffffff' },
   secondary: { backgroundColor: '#242424', color: '#ffffff', border: '1px solid #2e2e2e' },
   danger: { backgroundColor: '#242424', color: '#f87171', border: '1px solid #2e2e2e' },
   ghost: { backgroundColor: 'transparent', color: '#9ca3af' },

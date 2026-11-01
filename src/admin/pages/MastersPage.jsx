@@ -295,7 +295,7 @@ export default function MastersPage() {
             aria-selected={tab === key}
             onClick={() => setSearchParams(key === 'masters' ? {} : { tab: key }, { replace: true })}
             className="px-4 min-h-[40px] rounded-xl text-sm font-medium"
-            style={tab === key ? { backgroundColor: '#f472b6', color: '#fff' } : { backgroundColor: '#242424', color: '#d1d5db' }}
+            style={tab === key ? { backgroundColor: '#db2777', color: '#fff' } : { backgroundColor: '#242424', color: '#d1d5db' }}
           >
             {label}
           </button>

@@ -4,7 +4,7 @@ export const STATUSES = {
   confirmed: { label: 'Подтверждена', color: '#34d399' },
   completed: { label: 'Пришёл', color: '#9ca3af' },
   no_show: { label: 'Не пришёл', color: '#f87171' },
-  cancelled: { label: 'Отменена', color: '#6b7280' },
+  cancelled: { label: 'Отменена', color: '#9098a4' },
 }
 
 // Статусы, которые занимают время мастера (как BUSY_STATUSES на бэке)
@@ -23,7 +23,7 @@ export const KINDS = {
   staff: { label: 'Записал администратор', color: '#60a5fa' },
   completed: { label: 'Визит состоялся', color: '#9ca3af' },
   no_show: { label: 'Не пришёл', color: '#f87171' },
-  cancelled: { label: 'Отменена', color: '#6b7280' },
+  cancelled: { label: 'Отменена', color: '#9098a4' },
 }
 
 export function appointmentKind(a) {

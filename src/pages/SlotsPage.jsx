@@ -186,7 +186,7 @@ export default function SlotsPage() {
                 disabled={isPast}
                 className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl text-sm transition-all active:scale-90"
                 style={{
-                  backgroundColor: isSelected ? '#f472b6' : todayMark ? '#242424' : 'transparent',
+                  backgroundColor: isSelected ? '#db2777' : todayMark ? '#242424' : 'transparent',
                   color: isPast ? '#374151' : '#ffffff',
                   fontWeight: todayMark ? '700' : '400',
                 }}
@@ -228,7 +228,7 @@ export default function SlotsPage() {
                       onClick={() => selectSlot(slot)}
                       className="py-3 rounded-xl text-sm font-medium transition-all active:scale-95"
                       style={{
-                        backgroundColor: selectedSlot === slot ? '#f472b6' : '#242424',
+                        backgroundColor: selectedSlot === slot ? '#db2777' : '#242424',
                         color: selectedSlot === slot ? '#ffffff' : '#9ca3af'
                       }}
                     >
@@ -255,7 +255,7 @@ export default function SlotsPage() {
           <button
             onClick={() => navigate(getNextRoute('slots'))}
             className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"
-            style={{ backgroundColor: '#f472b6' }}
+            style={{ backgroundColor: '#db2777' }}
           >
             <div className="text-sm font-semibold">{t('Далее')}</div>
             <div className="text-xs opacity-75 mt-0.5">{t('{date} в {time}', { date: formatDisplayDate(selectedDate, { withYear: false, lang: getLang() }), time: selectedSlot })}</div>

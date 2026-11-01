@@ -70,6 +70,7 @@ export default function ProfilePage() {
       {/* Шапка */}
       <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
         <button
+          aria-label={t('Назад')}
           onClick={() => navigate(-1)}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
           style={{ backgroundColor: '#242424' }}
@@ -110,7 +111,7 @@ export default function ProfilePage() {
             onClick={() => { setTab('login'); setError(null) }}
             className="flex-1 py-3 rounded-xl text-sm font-medium transition-all"
             style={{
-              backgroundColor: tab === 'login' ? '#f472b6' : 'transparent',
+              backgroundColor: tab === 'login' ? '#db2777' : 'transparent',
               color: tab === 'login' ? '#ffffff' : '#9ca3af'
             }}
           >
@@ -120,7 +121,7 @@ export default function ProfilePage() {
             onClick={() => { setTab('register'); setError(null) }}
             className="flex-1 py-3 rounded-xl text-sm font-medium transition-all"
             style={{
-              backgroundColor: tab === 'register' ? '#f472b6' : 'transparent',
+              backgroundColor: tab === 'register' ? '#db2777' : 'transparent',
               color: tab === 'register' ? '#ffffff' : '#9ca3af'
             }}
           >
@@ -183,7 +184,7 @@ export default function ProfilePage() {
           disabled={!canSubmit || loading}
           className="w-full py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
           style={{
-            backgroundColor: '#f472b6',
+            backgroundColor: '#db2777',
             opacity: canSubmit && !loading ? 1 : 0.4
           }}
         >

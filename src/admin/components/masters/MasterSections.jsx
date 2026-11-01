@@ -93,7 +93,7 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
           <div key={r.day_of_week} className="flex flex-wrap items-center gap-x-3 gap-y-1 min-h-[44px] py-1" style={{ borderTop: r.day_of_week ? '1px solid #2a2a2a' : 'none' }}>
             <span className="w-7 text-sm text-gray-400 flex-shrink-0">{WEEKDAYS_SHORT[r.day_of_week]}</span>
             {readOnly ? (
-              <span className="text-sm" style={{ color: r.is_working ? '#ffffff' : '#6b7280' }}>
+              <span className="text-sm" style={{ color: r.is_working ? '#ffffff' : '#9098a4' }}>
                 {r.is_working ? hoursLabel(r) : 'Выходной'}
                 {r.is_working && lunchLabel(r) && <span className="text-gray-500"> · обед {lunchLabel(r)}</span>}
               </span>

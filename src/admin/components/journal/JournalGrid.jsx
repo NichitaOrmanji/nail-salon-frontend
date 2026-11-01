@@ -120,7 +120,7 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
             <span className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>скрыт</span>
           )}
         </div>
-        <div className="text-xs truncate" style={{ color: col.work.working || !col.master ? '#9ca3af' : '#6b7280' }}>
+        <div className="text-xs truncate" style={{ color: col.work.working || !col.master ? '#9ca3af' : '#9098a4' }}>
           {columnHours(col)}
         </div>
         {col.laneNames?.length > 1 && (
@@ -292,13 +292,13 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
             <div
               key={m}
               className="absolute right-2 text-[11px] leading-none"
-              style={{ top: i === 0 ? 4 : i * SLOT_PX - 5, color: m % 60 === 0 ? '#9ca3af' : '#4b5563' }}
+              style={{ top: i === 0 ? 4 : i * SLOT_PX - 5, color: m % 60 === 0 ? '#9ca3af' : '#8b929e' }}
             >
               {minToTime(m)}
             </div>
           ))}
           {nowVisible && (
-            <div className="absolute right-0 w-2 h-2 rounded-full" style={{ top: nowTop - 4, backgroundColor: '#f472b6' }} />
+            <div className="absolute right-0 w-2 h-2 rounded-full" style={{ top: nowTop - 4, backgroundColor: '#db2777' }} />
           )}
         </div>
 
@@ -348,7 +348,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
               ))}
 
               {nowVisible && col.isToday && (
-                <div className="absolute inset-x-0 pointer-events-none" style={{ top: nowTop, height: 2, backgroundColor: '#f472b6', zIndex: 7 }} />
+                <div className="absolute inset-x-0 pointer-events-none" style={{ top: nowTop, height: 2, backgroundColor: '#db2777', zIndex: 7 }} />
               )}
             </div>
           )
