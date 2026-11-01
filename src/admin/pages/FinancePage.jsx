@@ -32,7 +32,7 @@ export default function FinancePage() {
               aria-selected={tab === t.key}
               onClick={() => setSearchParams({ tab: t.key }, { replace: true })}
               className="min-h-[44px] px-4 text-sm font-medium"
-              style={{ backgroundColor: tab === t.key ? '#f472b6' : '#242424', color: tab === t.key ? '#ffffff' : '#9ca3af' }}
+              style={{ backgroundColor: tab === t.key ? '#db2777' : '#242424', color: tab === t.key ? '#ffffff' : '#9ca3af' }}
             >
               {t.label}
             </button>

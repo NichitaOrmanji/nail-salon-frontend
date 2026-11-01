@@ -79,7 +79,7 @@ export default function TelegramModal({ onClose }) {
           target="_blank"
           rel="noreferrer"
           className="min-h-[44px] px-4 rounded-xl text-sm font-medium inline-flex items-center justify-center text-white"
-          style={{ backgroundColor: '#229ED9' }}
+          style={{ backgroundColor: '#1479a8' }}
         >
           Открыть Telegram
         </a>

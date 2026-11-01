@@ -13,6 +13,7 @@ import FinancePage from './pages/FinancePage'
 import MySalaryPage from './pages/MySalaryPage'
 import ClientsPage from './pages/ClientsPage'
 import HelpPage from './pages/HelpPage'
+import DebtorsPage from './pages/DebtorsPage'
 
 // Панель салона: /admin-panel/*
 export default function AdminApp() {
@@ -24,6 +25,7 @@ export default function AdminApp() {
           <Route element={<RequireStaff><AdminLayout /></RequireStaff>}>
             <Route index element={<JournalPage />} />
             <Route path="clients" element={<ManagerOnly><ClientsPage /></ManagerOnly>} />
+            <Route path="debtors" element={<ManagerOnly><DebtorsPage /></ManagerOnly>} />
             <Route path="services" element={<ServicesPage />} />
             <Route path="masters" element={<MastersPage />} />
             <Route path="settings" element={<ManagerOnly><SettingsPage /></ManagerOnly>} />

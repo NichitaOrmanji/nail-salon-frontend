@@ -137,7 +137,7 @@ export default function MastersPage() {
                   {/* Аватар */}
                   <div
                     className="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0"
-                    style={{ backgroundColor: '#242424', color: '#6b7280' }}
+                    style={{ backgroundColor: '#242424', color: '#9098a4' }}
                   >
                     <MasterPhoto src={m.photo} name={m.name} />
                   </div>
@@ -163,7 +163,7 @@ export default function MastersPage() {
                   style={{ borderColor: isSelected ? '#f472b6' : '#374151' }}
                 >
                   {isSelected && (
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#f472b6' }} />
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#db2777' }} />
                   )}
                 </div>
               </button>

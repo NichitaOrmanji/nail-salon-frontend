@@ -153,7 +153,7 @@ export default function ConfirmationPage() {
               target="_blank"
               rel="noreferrer"
               className="w-full max-w-xs py-4 rounded-2xl text-white font-semibold text-center transition-all active:scale-95 mb-3"
-              style={{ backgroundColor: '#229ED9' }}
+              style={{ backgroundColor: '#1479a8' }}
             >
               {confirmed ? t('Напоминания в Telegram') : t('Подтвердить в Telegram')}
             </a>
@@ -162,7 +162,7 @@ export default function ConfirmationPage() {
         <button
           onClick={() => navigate('/')}
           className="w-full max-w-xs py-4 rounded-2xl font-semibold transition-all active:scale-95"
-          style={telegramUrl ? { backgroundColor: '#242424', color: '#d1d5db' } : { backgroundColor: '#f472b6', color: '#fff' }}
+          style={telegramUrl ? { backgroundColor: '#242424', color: '#d1d5db' } : { backgroundColor: '#db2777', color: '#fff' }}
         >
           {t('На главную')}
         </button>
@@ -257,7 +257,7 @@ export default function ConfirmationPage() {
 
           </div>
           {phone && !phoneValid && (
-            <p className="text-xs mt-2 px-1" style={{ color: phoneInvalid ? '#f87171' : '#6b7280' }}>
+            <p className="text-xs mt-2 px-1" style={{ color: phoneInvalid ? '#f87171' : '#9098a4' }}>
               {t('Проверьте номер телефона')}
             </p>
           )}
@@ -304,7 +304,7 @@ export default function ConfirmationPage() {
           disabled={!canSubmit || submitting}
           className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"
           style={{
-            backgroundColor: '#f472b6',
+            backgroundColor: '#db2777',
             opacity: canSubmit && !submitting ? 1 : 0.4
           }}
         >

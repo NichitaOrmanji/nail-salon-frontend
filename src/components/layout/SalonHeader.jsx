@@ -38,7 +38,7 @@ function LeaveDialog({ onSave, onDiscard, onCancel }) {
             onClick={onSave}
             autoFocus
             className="w-full py-3.5 rounded-2xl text-white font-semibold transition-all active:scale-95"
-            style={{ backgroundColor: '#f472b6' }}
+            style={{ backgroundColor: '#db2777' }}
           >
             {t('Сохранить и выйти')}
           </button>

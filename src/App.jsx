@@ -1,31 +1,76 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { BookingProvider } from './context/BookingContext'
 import { AuthProvider } from './context/AuthContext'
 import { CompanyProvider } from './context/CompanyContext'
 import HomePage from './pages/HomePage'
-import MastersPage from './pages/MastersPage'
-import ServicesPage from './pages/ServicesPage'
-import SlotsPage from './pages/SlotsPage'
-import ConfirmationPage from './pages/ConfirmationPage'
-import NotFoundPage from './pages/NotFoundPage'
-import ProfilePage from './pages/ProfilePage'
-import AccountPage from './pages/AccountPage'
-import PrivacyPage from './pages/PrivacyPage'
-import RulesPage from './pages/RulesPage'
 import { PAGE_WIDTH } from './components/layout/width'
 import ErrorBoundary from './components/layout/ErrorBoundary'
 import Spinner from './components/layout/Spinner'
 import { useLang } from './i18n'
 
+// Страницу грузим, когда она нужна. После выкладки новой версии старые файлы исчезают —
+// открытая вкладка один раз перезагружается и получает новые (иначе — экран ошибки)
+function lazyPage(load) {
+  return lazy(() => load().catch(error => {
+    try {
+      if (!sessionStorage.getItem('chunk-reload')) {
+        sessionStorage.setItem('chunk-reload', '1')
+        window.location.reload()
+        return new Promise(() => {})
+      }
+    } catch { /* хранилище недоступно — показываем ошибку */ }
+    throw error
+  }))
+}
+
+// Главная — сразу; шаги записи — отдельными файлами, подгружаются заранее (см. ниже)
+const loadBooking = [
+  () => import('./pages/ServicesPage'),
+  () => import('./pages/MastersPage'),
+  () => import('./pages/SlotsPage'),
+  () => import('./pages/ConfirmationPage'),
+]
+const ServicesPage = lazyPage(loadBooking[0])
+const MastersPage = lazyPage(loadBooking[1])
+const SlotsPage = lazyPage(loadBooking[2])
+const ConfirmationPage = lazyPage(loadBooking[3])
+const ProfilePage = lazyPage(() => import('./pages/ProfilePage'))
+const AccountPage = lazyPage(() => import('./pages/AccountPage'))
+const PrivacyPage = lazyPage(() => import('./pages/PrivacyPage'))
+const RulesPage = lazyPage(() => import('./pages/RulesPage'))
+const NotFoundPage = lazyPage(() => import('./pages/NotFoundPage'))
+
 // Панель салона грузится отдельным чанком, чтобы клиентский бандл не рос
-const AdminApp = lazy(() => import('./admin/AdminApp'))
+const AdminApp = lazyPage(() => import('./admin/AdminApp'))
+
+// Пока клиент смотрит главную, браузер в простое докачивает шаги записи —
+// переход к выбору услуги без ожидания
+function usePrefetchBooking() {
+  useEffect(() => {
+    try { sessionStorage.removeItem('chunk-reload') } catch { /* недоступно */ }
+    const prefetch = () => loadBooking.forEach(load => load().catch(() => {}))
+    if ('requestIdleCallback' in window) {
+      const id = window.requestIdleCallback(prefetch, { timeout: 3000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const timer = setTimeout(prefetch, 1500)
+    return () => clearTimeout(timer)
+  }, [])
+}
+
+const pageFallback = (
+  <div className="min-h-screen flex items-center justify-center">
+    <Spinner />
+  </div>
+)
 
 // Клиентская часть: мобильная обёртка и провайдеры записи
 function ClientApp() {
   // Смена языка перерисовывает страницы заново (тексты берутся при отрисовке);
   // выбранная запись хранится в провайдерах выше и не теряется
   const lang = useLang()
+  usePrefetchBooking()
   return (
     <AuthProvider>
       <CompanyProvider>
@@ -33,6 +78,7 @@ function ClientApp() {
           <div style={{ backgroundColor: '#111111' }} className="min-h-screen">
             <div className={`mx-auto w-full ${PAGE_WIDTH} min-h-screen relative`} style={{ backgroundColor: '#1a1a1a' }}>
               <ErrorBoundary key={lang}>
+                <Suspense fallback={pageFallback}>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/masters" element={<MastersPage />} />
@@ -45,6 +91,7 @@ function ClientApp() {
                   <Route path="/rules" element={<RulesPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
+                </Suspense>
               </ErrorBoundary>
             </div>
           </div>
