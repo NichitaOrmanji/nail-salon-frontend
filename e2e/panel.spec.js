@@ -30,7 +30,8 @@ test('неявка → чёрный список со штрафом 50%', async
   await page.getByRole('button', { name: /В чёрный список, штраф 100/ }).click()
 
   await page.goto('/admin-panel/clients')
-  await page.getByRole('button', { name: /Чёрный список/ }).click()
+  await page.getByRole('button', { name: '⛔ Чёрный список', exact: true }).click()
+  await expect(page.getByRole('button', { name: '⛔ Чёрный список', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByText('Должник Тест')).toBeVisible()
   await expect(page.getByText(/долг 100/)).toBeVisible()
 })
