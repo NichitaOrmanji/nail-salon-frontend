@@ -45,18 +45,18 @@ jobs:
       DATABASE_URL: postgres://e2e:e2e@localhost:5432/e2e
       E2E_PASSWORD: E2e-pass-2026!
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: NichitaOrmanji/nail-salon-frontend
           ref: ${{ inputs.frontend_ref || github.sha }}
           path: frontend
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: C001tea/online-registration-site
           ref: ${{ inputs.backend_ref || 'main' }}
           path: backend
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
           cache: pip
@@ -72,7 +72,7 @@ jobs:
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8000/api/health/ && exit 0; sleep 1; done
           cat "$RUNNER_TEMP/backend.log"; exit 1
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -90,7 +90,7 @@ jobs:
       - name: Отчёт при ошибке
         if: failure()
         run: cp "$RUNNER_TEMP/backend.log" frontend/test-results/ 2>/dev/null || true
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: e2e-report
