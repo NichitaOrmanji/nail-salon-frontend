@@ -1,0 +1,25 @@
+# Известные уязвимости в зависимостях, которые попадают на сайт (npm audit без dev-пакетов).
+# Раз в день и на PR, меняющие package-lock.json. Красный — обновите пакет из отчёта
+# (Dependabot обычно уже открыл PR).
+name: Dependency audit
+
+on:
+  schedule:
+    - cron: '29 4 * * *'
+  pull_request:
+    paths: [package-lock.json]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  npm-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: npm audit (зависимости сайта)
+        run: npm audit --omit=dev --audit-level=moderate
