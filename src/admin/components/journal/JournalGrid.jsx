@@ -271,7 +271,10 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
   }
 
   return (
-    <div ref={scrollRef} className="flex-1 min-h-0 overflow-auto overscroll-contain" style={{ backgroundColor: '#141414' }}>
+    // Прокручиваемая сетка: фокус с клавиатуры (Tab) и стрелки для прокрутки, подпись для экранного диктора
+    <div ref={scrollRef} tabIndex={0} role="region" aria-label="Сетка журнала"
+      className="flex-1 min-h-0 overflow-auto overscroll-contain focus:outline-none focus-visible:ring-1 focus-visible:ring-pink-400"
+      style={{ backgroundColor: '#141414' }}>
       <div
         className="grid"
         style={{
