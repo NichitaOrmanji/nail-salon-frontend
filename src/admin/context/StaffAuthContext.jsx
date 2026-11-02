@@ -50,7 +50,11 @@ export function StaffAuthProvider({ children }) {
   }, [])
 
   async function login(username, password) {
-    const data = await staffLogin(username, password)
+    await signIn(await staffLogin(username, password))
+  }
+
+  // Вход по готовым токенам (после регистрации салона): { access, refresh, me }
+  async function signIn(data) {
     saveStaffTokens(data)
     setLogoutMessage(null)
     if (data.me) {
@@ -70,7 +74,7 @@ export function StaffAuthProvider({ children }) {
   const isManager = isManagerRole(me?.role)
 
   return (
-    <StaffAuthContext.Provider value={{ me, loading, meError, login, logout, refreshMe: loadMe, isManager, logoutMessage }}>
+    <StaffAuthContext.Provider value={{ me, loading, meError, login, signIn, logout, refreshMe: loadMe, isManager, logoutMessage }}>
       {children}
     </StaffAuthContext.Provider>
   )

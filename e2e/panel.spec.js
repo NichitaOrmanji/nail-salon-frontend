@@ -4,7 +4,7 @@ import { test, expect, staffLogin, openJournalDay, PASSWORD } from './fixtures'
 
 test('неверный пароль — ошибка, верный — журнал @desktop', async ({ page }) => {
   await page.goto('/admin-panel/login')
-  await page.getByLabel('Логин или телефон').fill('e2e_owner')
+  await page.getByLabel('Логин, email или телефон').fill('e2e_owner')
   await page.getByLabel('Пароль').fill(PASSWORD + 'x')
   await page.getByRole('button', { name: 'Войти' }).click()
   await expect(page.getByText(/Неверный логин или пароль/)).toBeVisible()

@@ -63,7 +63,7 @@ export async function fillAndBook(page, { name, phone }) {
 
 export async function staffLogin(page, username = 'e2e_owner') {
   await page.goto('/admin-panel/login')
-  await page.getByLabel('Логин или телефон').fill(username)
+  await page.getByLabel('Логин, email или телефон').fill(username)
   await page.getByLabel('Пароль').fill(PASSWORD)
   await page.getByRole('button', { name: 'Войти' }).click()
   await page.waitForURL(url => !url.pathname.endsWith('/login'))
@@ -89,3 +89,40 @@ export async function openJournalDay(page, offsetDays) {
   const step = offsetDays < 0 ? 'Предыдущий день' : 'Следующий день'
   for (let i = 0; i < Math.abs(offsetDays); i++) await page.getByRole('button', { name: step }).click()
 }
+
+// Письма бэкенда в CI пишутся в файлы (EMAIL_BACKEND=filebased, папка E2E_MAIL_DIR).
+// Последняя ссылка из письма на адрес to, путь вида /admin-panel/verify-email
+export async function linkFromEmail(to, path, { timeout = 10_000 } = {}) {
+  const fs = await import('node:fs')
+  const dir = process.env.E2E_MAIL_DIR
+  if (!dir) throw new Error('E2E_MAIL_DIR не задан: письма бэкенда некуда смотреть')
+  const pattern = new RegExp(`https?://[^\\s]+${path.replace(/[/-]/g, '\\$&')}\\?[^\\s]+`, 'g')
+  const deadline = Date.now() + timeout
+  while (Date.now() < deadline) {
+    const files = fs.existsSync(dir) ? fs.readdirSync(dir).map(f => `${dir}/${f}`) : []
+    const messages = files
+      .sort((a, b) => fs.statSync(a).mtimeMs - fs.statSync(b).mtimeMs)
+      .flatMap(file => fs.readFileSync(file, 'utf8').split(/^-{79}$/m))
+      .filter(text => new RegExp(`^To: ${to.replace(/[.+]/g, '\\$&')}$`, 'mi').test(text))
+    const links = messages.map(decodeBody).flatMap(text => text.match(pattern) || [])
+    if (links.length) return links[links.length - 1]
+    await new Promise(resolve => setTimeout(resolve, 300))
+  }
+  throw new Error(`Письмо со ссылкой ${path} на ${to} не пришло`)
+}
+
+// Тело письма: Django кодирует кириллицу в base64 (или quoted-printable)
+function decodeBody(message) {
+  const split = message.search(/\r?\n\r?\n/)
+  if (split < 0) return message
+  const headers = message.slice(0, split)
+  const body = message.slice(split).trim()
+  if (/^Content-Transfer-Encoding:\s*base64/mi.test(headers)) return Buffer.from(body, 'base64').toString('utf8')
+  if (/^Content-Transfer-Encoding:\s*quoted-printable/mi.test(headers)) {
+    return body.replace(/=\r?\n/g, '').replace(/=([0-9A-F]{2})/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+  }
+  return body
+}
+
+// Пароль для новых салонов в тестах регистрации
+export const NEW_PASSWORD = 'Salon-e2e-2026!'

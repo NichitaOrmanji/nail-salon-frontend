@@ -44,6 +44,13 @@ jobs:
       SECRET_KEY: e2e-secret-key-e2e-secret-key-e2e-secret-key-e2e-secret-1234
       DATABASE_URL: postgres://e2e:e2e@localhost:5432/e2e
       E2E_PASSWORD: E2e-pass-2026!
+      # Регистрация салонов и письма: бэкенд пишет письма в файлы, тесты берут из них ссылки
+      SIGNUP_ENABLED: 'true'
+      EMAIL_BACKEND: django.core.mail.backends.filebased.EmailBackend
+      EMAIL_FILE_PATH: /tmp/e2e-mail
+      E2E_MAIL_DIR: /tmp/e2e-mail
+      PANEL_URL: http://localhost:5300
+      SALON_URL_TEMPLATE: http://localhost:5300/?salon={slug}
     steps:
       - uses: actions/checkout@v4
         with:

@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { fetchSignupConfig } from '../api/signup'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { Button, Field, TextInput, ErrorText } from '../components/ui'
 
@@ -11,6 +12,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  // «Забыли пароль?» и «Создать салон» — только если на сервере настроена почта / открыта регистрация
+  const [config, setConfig] = useState(null)
+
+  useEffect(() => {
+    fetchSignupConfig().then(setConfig).catch(() => {})
+  }, [])
 
   // Возвращаем туда, откуда выкинуло (только внутри панели)
   const from = typeof location.state?.from === 'string' && location.state.from.startsWith('/admin-panel')
@@ -53,7 +60,7 @@ export default function LoginPage() {
           <p className="text-gray-500 text-sm mt-1">Вход для персонала · TimePoint</p>
         </div>
 
-        <Field label="Логин или телефон">
+        <Field label="Логин, email или телефон">
           <TextInput
             autoComplete="username"
             autoCapitalize="none"
@@ -76,6 +83,16 @@ export default function LoginPage() {
           {loading ? 'Входим...' : 'Войти'}
         </Button>
 
+        {config?.password_reset && (
+          <Link to="/admin-panel/forgot-password" className="block text-center text-sm underline" style={{ color: '#f472b6' }}>
+            Забыли пароль?
+          </Link>
+        )}
+        {config?.signup && (
+          <p className="text-center text-gray-400 text-sm">
+            Новый салон? <Link to="/admin-panel/signup" className="underline" style={{ color: '#f472b6' }}>Создать за 2 минуты</Link>
+          </p>
+        )}
         <a href="/" className="block text-center text-gray-500 text-xs py-2">Сайт записи ↗</a>
       </form>
     </div>

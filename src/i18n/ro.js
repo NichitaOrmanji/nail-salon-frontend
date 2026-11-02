@@ -238,4 +238,6 @@ export default {
   'Следующий месяц': 'Luna următoare',
   'Закрыть': 'Închide',
   'Выйти': 'Ieșire',
+  'Салон не найден': 'Salonul nu a fost găsit',
+  'Проверьте ссылку. Если салон только что зарегистрировался, онлайн-запись откроется после подтверждения его email.': 'Verificați linkul. Dacă salonul tocmai s-a înregistrat, programarea online se va deschide după confirmarea emailului său.',
 }

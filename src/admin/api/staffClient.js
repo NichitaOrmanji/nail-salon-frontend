@@ -94,6 +94,10 @@ const FIELD_LABELS = {
   longitude: 'Долгота',
   day_of_week: 'День недели',
   schedule: 'График',
+  salon_name: 'Название салона',
+  slug: 'Адрес сайта',
+  email: 'Email',
+  accept_terms: 'Условия',
 }
 
 // Первый текст ошибки внутри значения (строка, массив, вложенный объект)
