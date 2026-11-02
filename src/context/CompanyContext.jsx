@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { fetchCompany } from '../api/company'
 import { SLUG } from '../api/client'
+import { t } from '../i18n'
 // Картинки JC — из сборки: имя с хэшем, кэш браузера на год
 import jcLogo from '../assets/jc-logo.webp'
 import jcSalon from '../assets/jc-salon.webp'
@@ -22,8 +23,21 @@ const FALLBACK = SLUG === 'jcnails'
 
 const CompanyContext = createContext(FALLBACK)
 
+// Салона с таким адресом нет или он ещё не открыл запись (не подтвердил email) — вместо пустой главной
+function SalonNotFound() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: '#1a1a1a' }}>
+      <h1 className="text-white text-xl font-bold mb-2">{t('Салон не найден')}</h1>
+      <p className="text-gray-400 text-sm max-w-xs">
+        {t('Проверьте ссылку. Если салон только что зарегистрировался, онлайн-запись откроется после подтверждения его email.')}
+      </p>
+    </div>
+  )
+}
+
 export function CompanyProvider({ children }) {
   const [company, setCompany] = useState(FALLBACK)
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     fetchCompany()
@@ -34,8 +48,10 @@ export function CompanyProvider({ children }) {
         setCompany(c => ({ ...c, ...filled }))
         if (filled.name) document.title = filled.name
       })
-      .catch(() => {})
+      .catch(err => { if (err?.status === 404) setNotFound(true) })
   }, [])
+
+  if (notFound) return <SalonNotFound />
 
   return (
     <CompanyContext.Provider value={company}>

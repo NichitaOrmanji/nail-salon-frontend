@@ -115,7 +115,9 @@ api.interceptors.response.use(
       return Promise.reject(new Error(message || t('Неверные данные. Проверьте заполненные поля.')))
     }
     if (status === 404) {
-      return Promise.reject(new Error(message || t('Данные не найдены.')))
+      const notFound = new Error(message || t('Данные не найдены.'))
+      notFound.status = 404
+      return Promise.reject(notFound)
     }
     if (status >= 500) {
       return Promise.reject(new Error(t('Ошибка сервера. Попробуйте позже.')))

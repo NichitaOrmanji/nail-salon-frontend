@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 // Общие элементы панели: кнопки, поля, сообщения. Цвета — как в клиентской части.
 
 const BUTTON_STYLES = {
@@ -20,6 +22,14 @@ export function Button({ variant = 'secondary', className = '', style, disabled,
       {children}
     </button>
   )
+}
+
+// Ссылка, оформленная как кнопка (кнопку внутрь ссылки класть нельзя — экранный диктор путается).
+// to — переход внутри сайта, href — внешняя ссылка
+export function ButtonLink({ to, href, variant = 'secondary', className = '', children, ...props }) {
+  const classes = `min-h-[44px] px-4 rounded-xl text-sm font-medium transition-all active:scale-95 inline-flex items-center justify-center gap-2 ${className}`
+  if (to) return <Link to={to} className={classes} style={BUTTON_STYLES[variant]} {...props}>{children}</Link>
+  return <a href={href} className={classes} style={BUTTON_STYLES[variant]} {...props}>{children}</a>
 }
 
 // Подпись + поле

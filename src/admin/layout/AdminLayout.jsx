@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { fetchPendingCount } from '../api/appointments'
 import { useAutoRefresh } from '../utils/events'
@@ -9,7 +9,7 @@ import ErrorBoundary from '../../components/layout/ErrorBoundary'
 import ChangePasswordModal from '../components/ChangePasswordModal'
 import TelegramModal from '../components/TelegramModal'
 import NewAppointmentsModal from '../components/NewAppointmentsModal'
-import { IconCalendar, IconScissors, IconUsers, IconSettings, IconMenu, IconClose, IconWallet, IconContact, IconAlert } from '../components/Icons'
+import { IconCalendar, IconScissors, IconUsers, IconSettings, IconMenu, IconClose, IconWallet, IconContact, IconAlert, IconStart } from '../components/Icons'
 
 function menuItems(me, isManager) {
   // Финансы — только владельцу; «Моя зарплата» — сотруднику с профилем мастера
@@ -24,6 +24,7 @@ function menuItems(me, isManager) {
     ]
   }
   return [
+    { to: '/admin-panel/start', label: 'Начало работы', icon: IconStart },
     { to: '/admin-panel', label: 'Журнал', icon: IconCalendar, end: true },
     { to: '/admin-panel/clients', label: 'Клиенты', icon: IconContact },
     { to: '/admin-panel/debtors', label: 'Должники', icon: IconAlert },
@@ -42,6 +43,11 @@ function SidebarContent({ me, isManager, onNavigate, onTelegram, onChangePasswor
       <div className="px-5 pt-5 pb-4">
         <div className="text-white text-base font-bold truncate">{me.company?.name}</div>
         <div className="text-gray-500 text-xs">Панель салона</div>
+        {me.role === 'owner' && me.company?.trial_ends_at && (
+          <div className="text-xs mt-1" style={{ color: '#fbbf24' }}>
+            Пробный период до {new Date(me.company.trial_ends_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
+          </div>
+        )}
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 space-y-1">
@@ -189,6 +195,18 @@ export default function AdminLayout() {
             >
               Обновить
             </button>
+          </div>
+        )}
+        {me.company?.status === 'pending' && (
+          <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: '#2e1f28', borderBottom: '1px solid #db2777' }}>
+            <span className="flex-1 min-w-0 text-sm text-gray-200">
+              Подтвердите email{me.email ? ` (${me.email})` : ''} — до этого клиенты не видят сайт записи.
+            </span>
+            {isManager && (
+              <Link to="/admin-panel/start" className="min-h-[36px] px-4 rounded-xl text-sm font-medium inline-flex items-center" style={{ backgroundColor: '#db2777', color: '#fff' }}>
+                Подробнее
+              </Link>
+            )}
           </div>
         )}
         {/* Шапка: название салона и бейдж новых записей */}

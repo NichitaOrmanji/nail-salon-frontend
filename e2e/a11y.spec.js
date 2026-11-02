@@ -38,13 +38,22 @@ test('клиентский сайт: главная, шаги записи, ка
   }
 })
 
-test('панель: вход и журнал @desktop', async ({ page }) => {
+test('панель: вход, регистрация, журнал, начало работы @desktop', async ({ page }) => {
   await page.goto('/admin-panel/login')
   await audit(page, 'вход в панель')
+  await page.goto('/admin-panel/signup')
+  await expect(page.getByRole('button', { name: 'Создать салон' })).toBeVisible()
+  await audit(page, 'регистрация салона')
+  await page.goto('/admin-panel/forgot-password')
+  await expect(page.getByRole('button', { name: 'Отправить ссылку' })).toBeVisible()
+  await audit(page, 'забыли пароль')
   await staffLogin(page)
   await expect(page.getByRole('button', { name: 'Сегодня' })).toBeVisible()
   await audit(page, 'журнал')
   await page.goto('/admin-panel/debtors')
   await expect(page.getByText('Общий долг')).toBeVisible()
   await audit(page, 'должники')
+  await page.goto('/admin-panel/start')
+  await expect(page.getByRole('button', { name: 'Скопировать ссылку' })).toBeVisible()
+  await audit(page, 'начало работы')
 })
