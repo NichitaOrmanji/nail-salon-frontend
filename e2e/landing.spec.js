@@ -1,17 +1,25 @@
-// Страница продукта: кнопка «Начать работу» ведёт на регистрацию салона; доступность.
+// Страница продукта: кнопка «Начать работу» ведёт на регистрацию; переключатель темы; доступность в обеих темах.
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect } from './fixtures'
 
-test('лендинг: «Начать работу» → регистрация салона, доступность @desktop', async ({ page }) => {
-  // Контраст проверяем в итоговых цветах: без анимаций появления (как у тех, кто отключил движение)
-  await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/welcome')
-  await expect(page.getByRole('heading', { level: 1, name: 'Онлайн-запись клиентов. Всё для вашего удобства!' })).toBeVisible()
-  await expect(page.getByText('14 дней бесплатно').first()).toBeVisible()
-
+async function audit(page, label) {
   const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()
   const serious = result.violations.filter(v => ['serious', 'critical'].includes(v.impact))
-  expect(serious.map(v => `${v.id}: ${v.help} — ${v.nodes.slice(0, 5).map(n => n.target.join(' ')).join(' | ')}`), 'доступность: лендинг').toEqual([])
+  expect(serious.map(v => `${v.id}: ${v.help} — ${v.nodes.slice(0, 5).map(n => n.target.join(' ')).join(' | ')}`), `доступность: ${label}`).toEqual([])
+}
+
+test('лендинг: «Начать работу» → регистрация, темы, доступность @desktop', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: 'light' })
+  await page.goto('/welcome')
+  await expect(page.getByRole('heading', { level: 1, name: 'Онлайн-запись клиентов. Всё для вашего удобства!' })).toBeVisible()
+  await expect(page.locator('.tp')).toHaveAttribute('data-theme', 'light')
+  await audit(page, 'лендинг, светлая')
+
+  await page.getByRole('button', { name: 'Тёмная тема' }).click()
+  await expect(page.locator('.tp')).toHaveAttribute('data-theme', 'dark')
+  await audit(page, 'лендинг, тёмная')
+  await page.reload()
+  await expect(page.locator('.tp')).toHaveAttribute('data-theme', 'dark')  // выбор запомнен
 
   await page.getByRole('link', { name: 'Начать работу' }).first().click()
   await expect(page).toHaveURL(/\/admin-panel\/signup$/)

@@ -1,304 +1,252 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+// Шрифты — с нашего домена (CSP). В Plus Jakarta Sans и Instrument Serif нет кириллицы:
+// русские буквы берутся из близких по характеру Manrope и Playfair Display
+import '@fontsource/plus-jakarta-sans/latin-400.css'
+import '@fontsource/plus-jakarta-sans/latin-500.css'
+import '@fontsource/plus-jakarta-sans/latin-600.css'
+import '@fontsource/plus-jakarta-sans/latin-700.css'
+import '@fontsource/plus-jakarta-sans/latin-800.css'
+import '@fontsource/manrope/cyrillic-400.css'
+import '@fontsource/manrope/cyrillic-500.css'
+import '@fontsource/manrope/cyrillic-600.css'
+import '@fontsource/manrope/cyrillic-700.css'
+import '@fontsource/manrope/cyrillic-800.css'
+import '@fontsource/instrument-serif/latin-400-italic.css'
+import '@fontsource/playfair-display/cyrillic-500-italic.css'
 import './landing.css'
 
-// Страница продукта: что это, как начать и кнопка «Начать работу» → регистрация салона.
+// Страница продукта: что это, как начать и кнопка «Начать работу» → регистрация.
 // Открывается на /welcome, а на домене timepoint.tech — как главная (см. App.jsx).
-// Картинки — живые мини-экраны из HTML/CSS с теми же цветами статусов, что в журнале панели.
 
 const SIGNUP = '/admin-panel/signup'
 const LOGIN = '/admin-panel/login'
+const THEME_KEY = 'tp-landing-theme'
 
-const SERVICES = ['Маникюр', 'Педикюр', 'Наращивание', 'Брови', 'Ресницы', 'Макияж', 'Массаж', 'Стрижки', 'Окрашивание', 'Депиляция']
+// Иконки Lucide (stroke-width 1.5)
+const ICONS = {
+  'arrow-right': <><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></>,
+  'layout-grid': <><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /></>,
+  calendar: <><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M16 2v4" /><path d="M8 2v4" /><path d="M3 10h18" /></>,
+  'calendar-check': <><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M16 2v4" /><path d="M8 2v4" /><path d="M3 10h18" /><path d="m9 16 2 2 4-4" /></>,
+  'chevron-left': <path d="m15 18-6-6 6-6" />,
+  'chevron-right': <path d="m9 18 6-6-6-6" />,
+  'chevron-down': <path d="m6 9 6 6 6-6" />,
+  send: <><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></>,
+  link: <><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></>,
+  'qr-code': <><rect width="5" height="5" x="3" y="3" rx="1" /><rect width="5" height="5" x="16" y="3" rx="1" /><rect width="5" height="5" x="3" y="16" rx="1" /><path d="M21 16h-3a2 2 0 0 0-2 2v3" /><path d="M21 21v.01" /><path d="M12 7v3a2 2 0 0 1-2 2H7" /><path d="M3 12h.01" /><path d="M12 3h.01" /><path d="M12 16v.01" /><path d="M16 12h1" /><path d="M21 12v.01" /><path d="M12 21v-1" /></>,
+  users: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></>,
+  wallet: <><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></>,
+  'shield-check': <><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></>,
+  bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
+  languages: <><path d="m5 8 6 6" /><path d="m4 14 6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" /><path d="m22 22-5-10-5 10" /><path d="M14 18h6" /></>,
+  smartphone: <><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /><path d="M12 18h.01" /></>,
+  clock: <><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></>,
+  settings: <><path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="17" r="3" /><circle cx="7" cy="7" r="3" /></>,
+  share: <><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.59 13.51 6.83 3.98" /><path d="m15.41 6.51-6.82 3.98" /></>,
+  moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />,
+  sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></>,
+}
+
+function Icon({ name, size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+      strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+      {ICONS[name]}
+    </svg>
+  )
+}
+
+function Logo({ size = 28 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M32 8a24 24 0 1 0 24 24" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" />
+      <circle cx="50" cy="14" r="7" fill="var(--accent)" />
+    </svg>
+  )
+}
+
+function Ping({ color = 'var(--accent)', size = 'h-2 w-2' }) {
+  return (
+    <span className={`relative flex ${size} shrink-0`} aria-hidden="true">
+      <span className="ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: color }} />
+      <span className={`relative inline-flex ${size} rounded-full`} style={{ background: color }} />
+    </span>
+  )
+}
+
+function Badge({ children, tone = 'accent' }) {
+  const tones = {
+    accent: { background: 'var(--accent-soft)', color: 'var(--accent-text)' },
+    bad: { background: 'var(--bad-soft)', color: 'var(--bad)' },
+    wait: { background: 'var(--wait-soft)', color: 'var(--wait)' },
+    info: { background: 'var(--info-soft)', color: 'var(--info)' },
+  }
+  return (
+    <span className="inline-flex w-fit shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-bold uppercase tracking-wider" style={tones[tone]}>
+      {children}
+    </span>
+  )
+}
+
+// Тема лендинга: выбор посетителя (запоминается) или тема устройства
+function useLandingTheme() {
+  const [stored, setStored] = useState(() => {
+    try { return localStorage.getItem(THEME_KEY) } catch { return null }
+  })
+  const [system, setSystem] = useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+  useEffect(() => {
+    const media = window.matchMedia?.('(prefers-color-scheme: dark)')
+    if (!media) return undefined
+    const onChange = e => setSystem(e.matches ? 'dark' : 'light')
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [])
+  const theme = stored === 'light' || stored === 'dark' ? stored : system
+  const toggle = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setStored(next)
+    try { localStorage.setItem(THEME_KEY, next) } catch { /* без хранилища — до перезагрузки */ }
+  }
+  return [theme, toggle]
+}
+
+const JOURNAL = [
+  { name: 'Ольга', blocks: [
+    { top: 6, h: 64, tone: 'ok', title: 'Стрижка', time: '10:00–11:00' },
+    { top: 96, h: 56, tone: 'info', title: 'Окрашивание', time: '12:30' },
+    { top: 196, h: 56, tone: 'wait', title: 'Укладка', time: '15:00 · ждёт' },
+  ] },
+  { name: 'Анна', blocks: [
+    { top: 30, h: 56, tone: 'done', title: 'Массаж', time: '10:30 · пришёл' },
+    { top: 128, h: 84, tone: 'ok', title: 'Консультация', time: '13:00–14:30' },
+  ] },
+  { name: 'Мария', blocks: [
+    { top: 6, h: 52, tone: 'bad', title: 'Не пришла', time: '10:00' },
+    { top: 80, h: 64, tone: 'wait', title: 'Маникюр', time: '11:30 · ждёт' },
+    { top: 176, h: 72, tone: 'ok', title: 'Педикюр', time: '14:30–16:00' },
+  ] },
+]
+
+const LEGEND = [['ok', 'Подтверждена'], ['wait', 'Ждёт подтверждения'], ['info', 'Записал администратор'], ['done', 'Пришёл'], ['bad', 'Не пришёл']]
 
 const STEPS = [
-  { tag: '2 минуты', color: '#f472b6', title: 'Создайте салон', text: 'Название, email и пароль. Адрес страницы записи подберётся по названию.' },
-  { tag: 'Один вечер', color: '#c084fc', title: 'Настройте под себя', text: 'Услуги и цены, мастера, графики. «Начало работы» подскажет, что осталось.' },
-  { tag: 'Сразу', color: '#fbbf24', title: 'Поделитесь ссылкой', text: 'В Instagram, на картах, QR-кодом на ресепшене. Клиенты записываются сами.' },
+  { tone: 'accent', icon: 'clock', tag: '2 минуты', title: 'Создайте аккаунт', text: 'Название, email и пароль. Адрес страницы записи подберётся по названию.' },
+  { tone: 'wait', icon: 'settings', tag: 'Один вечер', title: 'Добавьте услуги и график', text: 'Цены, специалисты, рабочие часы. Раздел «Начало работы» покажет, что осталось.' },
+  { tone: 'info', icon: 'share', tag: 'Сразу', title: 'Поделитесь ссылкой', text: 'В профиле соцсетей и на картах. Записи начнут приходить сами.' },
 ]
 
 const FAQ = [
   { q: 'Сколько это стоит?', a: 'Первые 14 дней бесплатно, банковская карта не нужна. О стоимости после пробного периода сообщим заранее.' },
   { q: 'Нужен ли свой сайт?', a: 'Нет. Вы получаете готовую страницу записи со своим названием, фото, адресом и картой.' },
   { q: 'Что нужно клиентам?', a: 'Только телефон и ссылка. Скачивать приложение не нужно.' },
-  { q: 'Можно дать доступ сотрудникам?', a: 'Да: администратор ведёт журнал, мастер видит свои записи и свою зарплату. Касса и отчёты — только у владельца.' },
+  { q: 'Можно дать доступ сотрудникам?', a: 'Да. Администратор ведёт журнал, специалист видит свои записи и зарплату. Касса и отчёты доступны только владельцу.' },
 ]
 
-// Появление блоков при прокрутке (без движения — если пользователь его отключил)
-function useReveal(rootRef) {
-  useEffect(() => {
-    const root = rootRef.current
-    if (!root) return undefined
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (reduce || !('IntersectionObserver' in window)) return undefined
-    root.classList.add('lp-anim')
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible')
-          observer.unobserve(entry.target)
-        }
-      })
-    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' })
-    root.querySelectorAll('.lp-reveal').forEach(el => observer.observe(el))
-    return () => observer.disconnect()
-  }, [rootRef])
-}
-
-function Logo() {
+function CardTitle({ icon, children, badge }) {
   return (
-    <span className="inline-flex items-center gap-2.5 text-white font-bold text-lg">
-      <span className="w-9 h-9 rounded-xl flex items-center justify-center text-sm" aria-hidden="true"
-        style={{ background: 'linear-gradient(135deg, #db2777, #9333ea)' }}>TP</span>
-      TimePoint
-    </span>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <span className="icon-pad"><Icon name={icon} /></span>
+        <h3 className="text-lg font-bold tracking-tight">{children}</h3>
+      </div>
+      {badge}
+    </div>
   )
 }
 
-function CtaLink({ className = '', children = 'Начать работу' }) {
+function BookingExample() {
+  const slots = [['10:00'], ['11:00', 'busy'], ['12:30'], ['14:30', 'picked'], ['16:00', 'busy'], ['17:30']]
   return (
-    <Link to={SIGNUP} className={`lp-btn-primary inline-flex items-center justify-center gap-2 min-h-[52px] px-8 rounded-2xl text-base font-semibold ${className}`}>
-      {children}
-      <span aria-hidden="true">→</span>
-    </Link>
-  )
-}
-
-// Телефон клиента: выбор времени + уведомление салону
-function HeroPhone() {
-  const slots = ['10:00', '11:30', '13:00', '14:30', '16:00', '17:30']
-  const busy = ['11:30', '16:00']
-  return (
-    <div className="relative mx-auto w-[270px] sm:w-[300px]" aria-hidden="true">
-      <div className="lp-float rounded-[36px] p-2.5" style={{ background: 'linear-gradient(160deg, #3a3a42, #17171b)', boxShadow: '0 40px 80px -30px rgba(147, 51, 234, 0.55)' }}>
-        <div className="rounded-[28px] overflow-hidden" style={{ backgroundColor: '#1a1a1d' }}>
-          <div className="h-28 relative" style={{ background: 'linear-gradient(135deg, #be185d, #7e22ce 60%, #b45309)' }}>
-            <div className="absolute left-4 bottom-[-22px] w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-lg"
-              style={{ background: '#0e0e11', border: '3px solid #1a1a1d' }}>N</div>
-          </div>
-          <div className="px-4 pt-8 pb-5">
-            <p className="text-white font-semibold">Nail Studio</p>
-            <p className="text-xs" style={{ color: '#a1a1aa' }}>Маникюр + покрытие · 1 ч 30 мин</p>
-            <p className="text-xs mt-4 mb-2 font-medium" style={{ color: '#d4d4d8' }}>Пятница, 14 ноября</p>
-            <div className="grid grid-cols-3 gap-2">
-              {slots.map((time, i) => {
-                const selected = time === '14:30'
-                const taken = busy.includes(time)
-                return (
-                  <span key={time}
-                    className={`lp-slot text-center text-sm rounded-xl py-2 ${selected ? 'lp-slot-selected font-semibold' : ''}`}
-                    style={{
-                      '--lp-delay': `${300 + i * 90}ms`,
-                      backgroundColor: selected ? '#db2777' : '#242429',
-                      color: selected ? '#ffffff' : taken ? '#a1a1aa' : '#e4e4e7',
-                      textDecoration: taken ? 'line-through' : 'none',
-                    }}>
-                    {time}
-                  </span>
-                )
-              })}
-            </div>
-            <div className="mt-5 rounded-xl py-3 text-center text-sm font-semibold text-white" style={{ background: 'linear-gradient(100deg, #db2777, #a21caf)' }}>
-              Записаться на 14:30
+    <div className="flex min-w-0 flex-col gap-3 lg:col-span-5" aria-label="Пример страницы записи">
+      <div className="card rounded-[28px] p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="tp-invert grid h-11 w-11 shrink-0 place-items-center rounded-xl text-sm font-extrabold">ВС</div>
+            <div className="min-w-0">
+              <p className="truncate font-bold tracking-tight">Ваша студия</p>
+              <p className="truncate text-[13px] muted">Консультация · 45 мин · 300 лей</p>
             </div>
           </div>
+          <Badge>Онлайн</Badge>
+        </div>
+        <div className="mt-5 flex items-center justify-between border-t hairline pt-4 text-sm">
+          <span className="font-semibold">Пятница, 14 ноября</span>
+          <span className="flex items-center gap-1 muted"><Icon name="chevron-left" /><Icon name="chevron-right" /></span>
+        </div>
+        <div className="num mt-3 grid grid-cols-3 gap-2 text-sm font-semibold">
+          {slots.map(([time, state]) => (
+            <span key={time}
+              className={`rounded-lg py-2.5 text-center ${state === 'picked' ? 'btn-primary' : 'soft'} ${state === 'busy' ? 'line-through sub' : ''}`}>
+              {time}
+            </span>
+          ))}
+        </div>
+        <div className="tp-invert mt-4 flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold">
+          <Icon name="calendar-check" /> Записаться на 14:30
         </div>
       </div>
-
-      <div className="lp-notify absolute -right-3 sm:-right-24 -top-10 sm:top-10 w-[220px] rounded-2xl p-3 text-left"
-        style={{ backgroundColor: 'rgba(24, 24, 27, 0.92)', border: '1px solid #3f3f46', backdropFilter: 'blur(8px)', boxShadow: '0 20px 40px -15px rgba(0,0,0,0.8)' }}>
-        <div className="flex items-center gap-2 mb-1">
-          <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white font-bold" style={{ backgroundColor: '#1479a8' }}>T</span>
-          <span className="text-[11px]" style={{ color: '#a1a1aa' }}>Telegram · сейчас</span>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1.4fr_1fr]">
+        <div className="card flex min-w-0 items-start gap-3 rounded-2xl p-4">
+          <span className="icon-pad"><Icon name="send" /></span>
+          <div className="min-w-0">
+            <p className="text-[12px] muted">Telegram · сейчас</p>
+            <p className="text-sm font-bold">Новая запись: Анна</p>
+            <p className="text-[13px] muted">пт, 14:30</p>
+          </div>
         </div>
-        <p className="text-sm text-white font-medium leading-snug">Новая запись: Анна</p>
-        <p className="text-xs leading-snug" style={{ color: '#d4d4d8' }}>Маникюр + покрытие, пт 14:30</p>
-      </div>
-
-      <div className="lp-notify absolute -left-3 sm:-left-16 -bottom-4 sm:bottom-16 rounded-full px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5"
-        style={{ backgroundColor: '#052e1f', color: '#6ee7b7', border: '1px solid #065f46', animationDelay: '1.6s' }}>
-        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#34d399' }} />
-        Подтверждена
+        <div className="card flex items-center gap-3 rounded-2xl p-4">
+          <Ping color="var(--ok)" size="h-2.5 w-2.5" />
+          <div className="min-w-0">
+            <p className="text-[12px] muted">Статус</p>
+            <p className="text-sm font-bold" style={{ color: 'var(--ok)' }}>Подтверждена</p>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
-function Marquee() {
-  const row = [...SERVICES, ...SERVICES]
-  const colors = ['#f472b6', '#c084fc', '#fbbf24', '#6ee7b7', '#93c5fd']
+function Journal() {
   return (
-    <div className="py-5 overflow-hidden" style={{ borderTop: '1px solid #1f1f24', borderBottom: '1px solid #1f1f24' }} aria-hidden="true">
-      <div className="lp-marquee-track flex w-max gap-8 whitespace-nowrap">
-        {row.map((name, i) => (
-          <span key={i} className="flex items-center gap-8 text-lg sm:text-xl font-semibold" style={{ color: '#e4e4e7' }}>
-            {name}
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[i % colors.length] }} />
-          </span>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// Мини-журнал: три мастера, записи цветами статусов как в панели
-function JournalMock() {
-  const masters = [
-    { name: 'Ольга', blocks: [{ top: 4, h: 30, c: '#34d399', t: 'Маникюр' }, { top: 42, h: 22, c: '#60a5fa', t: 'Педикюр' }, { top: 72, h: 20, c: '#f59e0b', t: 'Дизайн' }] },
-    { name: 'Анна', blocks: [{ top: 10, h: 24, c: '#9ca3af', t: 'Брови' }, { top: 40, h: 34, c: '#34d399', t: 'Наращивание' }] },
-    { name: 'Мария', blocks: [{ top: 0, h: 20, c: '#f87171', t: 'Не пришла' }, { top: 28, h: 26, c: '#f59e0b', t: 'Ресницы' }, { top: 62, h: 28, c: '#34d399', t: 'Маникюр' }] },
-  ]
-  const legend = [['#34d399', 'Подтверждена'], ['#f59e0b', 'Ждёт'], ['#60a5fa', 'Записал админ'], ['#9ca3af', 'Пришёл'], ['#f87171', 'Не пришёл']]
-  return (
-    <div aria-hidden="true">
-      <div className="grid grid-cols-3 gap-2">
-        {masters.map((m, mi) => (
-          <div key={m.name}>
-            <p className="text-xs mb-1.5 font-medium" style={{ color: '#d4d4d8' }}>{m.name}</p>
-            <div className="relative h-40 md:h-[22rem] rounded-xl" style={{ backgroundColor: '#111114', backgroundImage: 'repeating-linear-gradient(to bottom, #232328 0 1px, transparent 1px 20%)' }}>
-              {m.blocks.map((b, bi) => (
-                <div key={bi} className="lp-block absolute left-1 right-1 rounded-md px-1.5 py-1 text-[11px] font-medium overflow-hidden"
-                  style={{
-                    '--lp-delay': `${200 + (mi * 3 + bi) * 90}ms`,
-                    top: `${b.top}%`, height: `${b.h}%`,
-                    backgroundColor: `color-mix(in srgb, ${b.c} 22%, #141417)`,
-                    borderLeft: `3px solid ${b.c}`,
-                    color: '#f4f4f5',
-                  }}>
-                  {b.t}
+    <article className="card hover-lift min-w-0 rounded-[28px] p-6 md:col-span-6 lg:col-span-8 lg:row-span-2">
+      <CardTitle icon="calendar" badge={<Badge>Главный экран</Badge>}>Журнал записей</CardTitle>
+      <p className="mt-3 max-w-lg text-sm leading-relaxed muted">День или неделя по специалистам. Цвет записи сразу показывает её состояние.</p>
+      <div className="mt-6 overflow-x-auto rounded-xl" tabIndex={0} role="region" aria-label="Пример журнала записей на день">
+        <div className="grid min-w-[520px] grid-cols-[48px_repeat(3,minmax(0,1fr))] gap-x-2 text-[12px]" aria-hidden="true">
+          <span />
+          {JOURNAL.map(m => <span key={m.name} className="pb-2 font-bold">{m.name}</span>)}
+          <div className="num relative muted" style={{ height: 300 }}>
+            {['10:00', '12:00', '14:00', '16:00'].map((t, i) => (
+              <span key={t} className="absolute right-1" style={{ top: `${i * 25}%` }}>{t}</span>
+            ))}
+          </div>
+          {JOURNAL.map(m => (
+            <div key={m.name} className="soft relative rounded-xl" style={{ height: 300 }}>
+              {m.blocks.map(b => (
+                <div key={b.title} className="absolute inset-x-1.5 rounded-lg border-l-[3px] px-2 py-1.5"
+                  style={{ top: b.top, height: b.h, background: `var(--${b.tone}-soft)`, borderColor: `var(--${b.tone})` }}>
+                  <b className="block truncate">{b.title}</b>
+                  <span className="num sub">{b.time}</span>
                 </div>
               ))}
             </div>
-          </div>
+          ))}
+        </div>
+      </div>
+      <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[12px] muted">
+        {LEGEND.map(([tone, label]) => (
+          <li key={tone} className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-sm" style={{ background: `var(--${tone})` }} />{label}
+          </li>
         ))}
-      </div>
-      <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-3">
-        {legend.map(([c, label]) => (
-          <span key={label} className="inline-flex items-center gap-1.5 text-[11px]" style={{ color: '#d4d4d8' }}>
-            <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: c }} />{label}
-          </span>
-        ))}
-      </div>
-    </div>
+      </ul>
+    </article>
   )
 }
-
-function ChatMock() {
-  return (
-    <div className="space-y-2" aria-hidden="true">
-      <div className="lp-block rounded-2xl rounded-tl-sm px-3 py-2 text-xs max-w-[85%]" style={{ '--lp-delay': '150ms', backgroundColor: '#1e3a5f', color: '#e0f2fe' }}>
-        Вы записаны в Nail Studio на пт, 14:30. Мастер — Ольга.
-      </div>
-      <div className="lp-block rounded-2xl rounded-tl-sm px-3 py-2 text-xs max-w-[85%]" style={{ '--lp-delay': '450ms', backgroundColor: '#1e3a5f', color: '#e0f2fe' }}>
-        Напоминаем: завтра в 14:30. Ждём вас!
-      </div>
-      <div className="lp-block ml-auto rounded-2xl rounded-tr-sm px-3 py-2 text-xs max-w-[60%] text-right" style={{ '--lp-delay': '750ms', backgroundColor: '#3b2a5f', color: '#f3e8ff' }}>
-        Спасибо, буду!
-      </div>
-    </div>
-  )
-}
-
-function QrMock() {
-  const [image, setImage] = useState(null)
-  useEffect(() => {
-    let alive = true
-    import('qrcode')
-      .then(QR => QR.toDataURL('https://timepoint.tech', { width: 240, margin: 1, color: { dark: '#111111', light: '#ffffff' } }))
-      .then(data => { if (alive) setImage(data) })
-      .catch(() => {})
-    return () => { alive = false }
-  }, [])
-  return (
-    <div className="flex items-center gap-4" aria-hidden="true">
-      <div className="w-24 h-24 rounded-xl p-1.5 shrink-0" style={{ backgroundColor: '#ffffff', transform: 'rotate(-4deg)' }}>
-        {image && <img src={image} alt="" className="w-full h-full" />}
-      </div>
-      <div className="min-w-0">
-        <p className="text-xs mb-1" style={{ color: '#a1a1aa' }}>Ваша ссылка</p>
-        <p className="text-xs font-semibold whitespace-nowrap rounded-lg px-2 py-1 inline-block" style={{ backgroundColor: '#2a1830', color: '#f9a8d4' }}>nail-studio.timepoint.tech</p>
-      </div>
-    </div>
-  )
-}
-
-function ClientsMock() {
-  const rows = [
-    { n: 'Анна К.', v: '12 визитов', badge: null },
-    { n: 'Ирина М.', v: '5 визитов', badge: ['Долг 150 лей', '#fbbf24', '#3a2a0a'] },
-    { n: 'Виктория С.', v: '2 неявки', badge: ['Чёрный список', '#fca5a5', '#3b1414'] },
-  ]
-  return (
-    <ul className="space-y-2" aria-hidden="true">
-      {rows.map((r, i) => (
-        <li key={r.n} className="lp-block flex items-center justify-between gap-2 rounded-xl px-3 py-2" style={{ '--lp-delay': `${150 + i * 120}ms`, backgroundColor: '#111114' }}>
-          <span className="min-w-0">
-            <span className="block text-sm text-white truncate">{r.n}</span>
-            <span className="block text-[11px]" style={{ color: '#a1a1aa' }}>{r.v}</span>
-          </span>
-          {r.badge && (
-            <span className="text-[11px] font-semibold rounded-full px-2 py-0.5 whitespace-nowrap" style={{ color: r.badge[1], backgroundColor: r.badge[2] }}>{r.badge[0]}</span>
-          )}
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-function CashMock() {
-  const bars = [42, 58, 35, 70, 88, 100, 64]
-  const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-  return (
-    <div aria-hidden="true">
-      <p className="text-2xl font-bold text-white">18 450 <span className="text-sm font-medium" style={{ color: '#a1a1aa' }}>лей за неделю</span></p>
-      <div className="flex items-end gap-2 h-24 mt-3">
-        {bars.map((h, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
-            <div className="lp-bar w-full rounded-md" style={{ '--lp-delay': `${i * 70}ms`, height: `${h}%`, background: i === 5 ? 'linear-gradient(180deg, #fbbf24, #f59e0b)' : 'linear-gradient(180deg, #a78bfa, #7c3aed)' }} />
-            <span className="text-[10px]" style={{ color: '#a1a1aa' }}>{days[i]}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function LangMock() {
-  const [ro, setRo] = useState(false)
-  useEffect(() => {
-    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (reduce) return undefined
-    const timer = setInterval(() => setRo(v => !v), 2600)
-    return () => clearInterval(timer)
-  }, [])
-  return (
-    <div aria-hidden="true">
-      <div className="inline-flex rounded-full p-1" style={{ backgroundColor: '#111114' }}>
-        {['RU', 'RO'].map(code => {
-          const active = (code === 'RO') === ro
-          return (
-            <span key={code} className="px-3 py-1 rounded-full text-xs font-bold transition-colors duration-300"
-              style={{ backgroundColor: active ? '#0f766e' : 'transparent', color: active ? '#ffffff' : '#a1a1aa' }}>{code}</span>
-          )
-        })}
-      </div>
-      <p className="text-lg font-semibold text-white mt-3 transition-opacity duration-300">{ro ? 'Programează-te online' : 'Записаться онлайн'}</p>
-    </div>
-  )
-}
-
-const FEATURES = [
-  { key: 'journal', span: 'md:col-span-2 md:row-span-2', accent: '#34d399', title: 'Журнал записей', text: 'Неделя по мастерам. Цвет записи сразу говорит, что с ней: ждёт подтверждения, подтверждена, клиент пришёл или нет.', mock: <JournalMock /> },
-  { key: 'tg', accent: '#60a5fa', title: 'Telegram', text: 'Вам — новые записи и отмены. Клиентам — подтверждение и напоминание.', mock: <ChatMock /> },
-  { key: 'qr', accent: '#f472b6', title: 'Ссылка и QR-код', text: 'Для Instagram, карт и ресепшена. Приложение клиентам не нужно.', mock: <QrMock /> },
-  { key: 'clients', accent: '#f87171', title: 'База клиентов', text: 'История визитов, долги и чёрный список для тех, кто не приходит.', mock: <ClientsMock /> },
-  { key: 'cash', accent: '#a78bfa', title: 'Касса и зарплаты', text: 'Оплата визитов, выручка и расчёт зарплат мастеров.', mock: <CashMock /> },
-  { key: 'lang', accent: '#2dd4bf', title: 'Русский и румынский', text: 'Клиент выбирает язык сайта записи сам.', mock: <LangMock /> },
-]
 
 export default function LandingPage() {
-  const rootRef = useRef(null)
-  useReveal(rootRef)
+  const [theme, toggleTheme] = useLandingTheme()
 
   useEffect(() => {
     const previous = document.title
@@ -306,134 +254,223 @@ export default function LandingPage() {
     return () => { document.title = previous }
   }, [])
 
-  return (
-    <div ref={rootRef} className="lp min-h-dvh relative">
-      <div className="lp-glow" aria-hidden="true" />
+  const card = 'card hover-lift min-w-0 rounded-[28px] p-6'
 
-      <header className="sticky top-0 z-20" style={{ backgroundColor: 'rgba(14, 14, 17, 0.72)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Logo />
-          <nav aria-label="Основное" className="flex items-center gap-1 sm:gap-3">
-            <a href="#features" className="hidden sm:inline-flex text-sm min-h-[44px] items-center px-2" style={{ color: '#d4d4d8' }}>Возможности</a>
-            <a href="#faq" className="hidden sm:inline-flex text-sm min-h-[44px] items-center px-2" style={{ color: '#d4d4d8' }}>Вопросы</a>
-            <Link to={LOGIN} className="text-sm min-h-[44px] inline-flex items-center px-3 rounded-xl font-medium text-white" style={{ border: '1px solid #3f3f46' }}>
-              Войти
-            </Link>
+  return (
+    <div className="tp min-h-dvh" data-theme={theme}>
+      <header className="glass sticky top-0 z-20 border-b hairline">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
+          <a href="#top" className="flex items-center gap-2.5" aria-label="TimePoint — наверх">
+            <Logo />
+            <span className="text-[17px] font-extrabold tracking-tight">TimePoint</span>
+          </a>
+          <nav className="flex items-center gap-1 text-sm font-medium" aria-label="Основное">
+            <a href="#features" className="nav-link hidden rounded-lg px-3 py-2 md:inline-block">Возможности</a>
+            <a href="#start" className="nav-link hidden rounded-lg px-3 py-2 md:inline-block">Как начать</a>
+            <a href="#faq" className="nav-link hidden rounded-lg px-3 py-2 md:inline-block">Вопросы</a>
+            <button type="button" onClick={toggleTheme} className="icon-pad hover-lift ml-1"
+              aria-label={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}>
+              <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
+            </button>
+            <Link to={LOGIN} className="hover-lift inline-flex min-h-[44px] items-center rounded-lg px-3">Войти</Link>
           </nav>
         </div>
       </header>
 
-      <main className="relative">
-        <section className="max-w-6xl mx-auto px-4 pt-12 pb-16 sm:pt-20 sm:pb-24 grid gap-14 md:grid-cols-[1.1fr_1fr] items-center">
-          <div className="text-center md:text-left">
-            <p className="lp-reveal inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium mb-5"
-              style={{ backgroundColor: 'rgba(219, 39, 119, 0.12)', color: '#f9a8d4', border: '1px solid rgba(219, 39, 119, 0.35)' }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#f472b6' }} />
-              Онлайн-запись · журнал · клиенты
-            </p>
-            <h1 className="lp-reveal text-white text-4xl sm:text-6xl font-extrabold leading-[1.05] tracking-tight" style={{ '--lp-delay': '80ms' }}>
-              Онлайн-запись клиентов. <span className="lp-gradient-text">Всё для вашего удобства!</span>
-            </h1>
-            <p className="lp-reveal text-base sm:text-lg mt-5 max-w-xl mx-auto md:mx-0" style={{ color: '#d4d4d8', '--lp-delay': '160ms' }}>
-              Клиенты выбирают услугу, мастера и время со своего телефона. Вы видите все записи
-              в одном журнале и получаете уведомления в Telegram.
-            </p>
-            <div className="lp-reveal mt-8 flex flex-col sm:flex-row items-center gap-3 md:justify-start justify-center" style={{ '--lp-delay': '240ms' }}>
-              <CtaLink className="w-full sm:w-auto" />
-              <a href="#how" className="w-full sm:w-auto min-h-[52px] px-6 rounded-2xl inline-flex items-center justify-center text-base font-medium text-white"
-                style={{ border: '1px solid #3f3f46', backgroundColor: 'rgba(255,255,255,0.03)' }}>
-                Как это работает
-              </a>
+      <main id="top">
+        <section className="relative overflow-hidden border-b hairline">
+          <div className="dots pointer-events-none absolute inset-0 opacity-20" aria-hidden="true"
+            style={{ WebkitMaskImage: 'linear-gradient(to bottom, #000, transparent 85%)', maskImage: 'linear-gradient(to bottom, #000, transparent 85%)' }} />
+          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-16 lg:grid-cols-12">
+            <div className="min-w-0 lg:col-span-7">
+              <span className="card inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[13px] font-semibold" style={{ boxShadow: 'none' }}>
+                <Ping /> 14 дней бесплатно · без банковской карты
+              </span>
+              <h1 className="mt-6 text-[2.6rem] font-extrabold leading-[1.02] tracking-tighter sm:text-6xl lg:text-[4.25rem]">
+                Онлайн-запись клиентов.{' '}
+                <span className="serif mt-1 block text-[1.08em] tracking-tight accent-display">Всё для вашего удобства!</span>
+              </h1>
+              <p className="mt-6 max-w-xl text-lg leading-relaxed muted">
+                Клиент сам выбирает услугу, специалиста и свободное время по вашей ссылке. Вы видите все записи
+                в одном журнале и получаете уведомления в Telegram.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link to={SIGNUP} className="btn-primary hover-lift inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6 text-[15px] font-bold shadow-xl shadow-black/5">
+                  Начать работу <Icon name="arrow-right" />
+                </Link>
+                <a href="#features" className="card hover-lift inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6 text-[15px] font-semibold">
+                  <Icon name="layout-grid" /> Что внутри
+                </a>
+              </div>
+              <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t hairline pt-6">
+                {[['Регистрация', '2 мин'], ['Приём записей', '24/7'], ['Языки сайта', 'RU · RO']].map(([label, value]) => (
+                  <div key={label}>
+                    <dt className="text-[13px] muted">{label}</dt>
+                    <dd className="num mt-1 text-2xl font-extrabold tracking-tight">{value}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
-            <ul className="lp-reveal mt-6 flex flex-wrap gap-x-5 gap-y-2 justify-center md:justify-start text-sm" style={{ color: '#d4d4d8', '--lp-delay': '320ms' }}>
-              {[['#34d399', '14 дней бесплатно'], ['#fbbf24', 'Без банковской карты'], ['#c084fc', 'Настройка за вечер']].map(([c, t]) => (
-                <li key={t} className="inline-flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: c }} />{t}
+            <BookingExample />
+          </div>
+        </section>
+
+        <section id="features" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-24">
+          <div className="grid gap-4 lg:grid-cols-12 lg:items-end">
+            <h2 className="text-4xl font-extrabold tracking-tighter sm:text-5xl lg:col-span-7">
+              Запись, журнал и клиенты <span className="serif tracking-tight accent-display">в одном окне</span>
+            </h2>
+            <p className="max-w-md text-base leading-relaxed muted lg:col-span-5 lg:justify-self-end">
+              Для салонов, студий, кабинетов и частных специалистов, которые работают по записи.
+            </p>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-6 lg:grid-cols-12">
+            <Journal />
+
+            <article className={`${card} md:col-span-3 lg:col-span-4`}>
+              <CardTitle icon="send">Telegram</CardTitle>
+              <p className="mt-3 text-sm leading-relaxed muted">Вам — новые записи и отмены. Клиенту — подтверждение и напоминание накануне.</p>
+              <div className="mt-4 flex flex-col gap-2 text-[13px]">
+                <p className="soft w-fit max-w-full rounded-xl rounded-tl-sm px-3 py-2">Вы записаны на пт, 14:30</p>
+                <p className="soft w-fit max-w-full rounded-xl rounded-tl-sm px-3 py-2">Напоминаем: завтра в 14:30</p>
+              </div>
+            </article>
+
+            <article className={`${card} md:col-span-3 lg:col-span-4`}>
+              <CardTitle icon="link">Ссылка и QR-код</CardTitle>
+              <p className="mt-3 text-sm leading-relaxed muted">Для соцсетей, Google Maps и ресепшена. Клиенту ничего не нужно устанавливать.</p>
+              <div className="mt-4 flex items-center gap-3">
+                <span className="tp-invert grid h-12 w-12 shrink-0 place-items-center rounded-lg"><Icon name="qr-code" /></span>
+                <span className="min-w-0 break-all rounded-lg px-2.5 py-1.5 text-[13px] font-semibold" style={{ background: 'var(--accent-soft)', color: 'var(--accent-text)' }}>
+                  studio.timepoint.tech
+                </span>
+              </div>
+            </article>
+
+            <article className={`${card} md:col-span-6 lg:col-span-5`}>
+              <CardTitle icon="users" badge={<Badge tone="bad">Чёрный список</Badge>}>База клиентов</CardTitle>
+              <p className="mt-3 text-sm leading-relaxed muted">История визитов, долги и защита от тех, кто записывается и не приходит.</p>
+              <ul className="mt-4 flex flex-col gap-2 text-sm">
+                <li className="soft flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"><span className="min-w-0 truncate font-semibold">Анна К.</span><span className="num shrink-0 text-[12px] sub">12 визитов</span></li>
+                <li className="soft flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"><span className="min-w-0 truncate font-semibold">Ирина М.</span><Badge tone="wait">долг 150 лей</Badge></li>
+                <li className="soft flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"><span className="min-w-0 truncate font-semibold">Виктор С.</span><Badge tone="bad">2 неявки</Badge></li>
+              </ul>
+            </article>
+
+            <article className={`${card} md:col-span-3 lg:col-span-4`}>
+              <CardTitle icon="wallet">Касса и зарплаты</CardTitle>
+              <p className="num mt-4 text-3xl font-extrabold tracking-tighter">18 450 <span className="text-sm font-semibold tracking-normal muted">лей за неделю</span></p>
+              <div className="mt-4 flex items-end gap-1.5" style={{ height: 72 }} aria-hidden="true">
+                {[42, 58, 36, 70, 88, 100, 64].map((h, i) => (
+                  <span key={i} className={`flex-1 rounded ${i === 5 ? '' : 'soft'}`} style={{ height: `${h}%`, background: i === 5 ? 'var(--accent)' : undefined }} />
+                ))}
+              </div>
+              <div className="num mt-1.5 grid grid-cols-7 text-center text-[11px] muted" aria-hidden="true">
+                {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => <span key={d}>{d}</span>)}
+              </div>
+            </article>
+
+            <article className={`${card} md:col-span-3 lg:col-span-3`}>
+              <CardTitle icon="shield-check">Доступы</CardTitle>
+              <ul className="mt-4 flex flex-col gap-3 text-sm">
+                <li><b className="block">Владелец</b><span className="muted">всё, включая кассу</span></li>
+                <li><b className="block">Администратор</b><span className="muted">журнал и клиенты</span></li>
+                <li><b className="block">Специалист</b><span className="muted">свои записи и зарплата</span></li>
+              </ul>
+            </article>
+
+            <article className="tp-invert hover-lift relative min-w-0 overflow-hidden rounded-[28px] p-6 shadow-xl shadow-black/5 md:col-span-3 lg:col-span-4">
+              <div className="grid-lines pointer-events-none absolute inset-0 opacity-[0.07]" aria-hidden="true" style={{ '--pattern': 'var(--invert-fg)' }} />
+              <div className="relative">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 place-items-center rounded-[10px]" style={{ background: 'color-mix(in srgb, var(--invert-fg) 10%, transparent)' }}><Icon name="bell" /></span>
+                  <h3 className="text-lg font-bold tracking-tight">Меньше неявок</h3>
+                </div>
+                <p className="mt-5 text-5xl font-extrabold tracking-tighter">за 24 <span className="serif">часа</span></p>
+                <p className="mt-2 text-sm opacity-80">клиент получает напоминание, а вы — правила отмены и штраф за неявку</p>
+              </div>
+            </article>
+
+            <article className={`${card} md:col-span-3 lg:col-span-4`}>
+              <CardTitle icon="languages">Русский и румынский</CardTitle>
+              <p className="mt-3 text-sm leading-relaxed muted">Клиент выбирает язык сайта записи сам.</p>
+              <div className="mt-4 flex flex-wrap gap-2 text-sm font-semibold">
+                <span className="rounded-lg px-3 py-1.5" style={{ background: 'var(--accent-soft)', color: 'var(--accent-text)' }}>Записаться</span>
+                <span className="soft rounded-lg px-3 py-1.5">Programează-te</span>
+              </div>
+            </article>
+
+            <article className={`${card} md:col-span-6 lg:col-span-4`}>
+              <CardTitle icon="smartphone">Работает в браузере</CardTitle>
+              <p className="mt-3 text-sm leading-relaxed muted">Панель открывается с телефона и компьютера. Ничего не нужно скачивать ни вам, ни клиентам.</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="start" className="relative scroll-mt-20 border-y hairline">
+          <div className="dots pointer-events-none absolute inset-0 opacity-20" aria-hidden="true" />
+          <div className="relative mx-auto max-w-6xl px-4 py-24">
+            <h2 className="text-4xl font-extrabold tracking-tighter sm:text-5xl">
+              Запуск за <span className="serif tracking-tight accent-display">один вечер</span>
+            </h2>
+            <ol className="mt-12 grid gap-4 md:grid-cols-3">
+              {STEPS.map(step => (
+                <li key={step.title} className="card hover-lift flex flex-col gap-3 rounded-[28px] p-6">
+                  <Badge tone={step.tone}><Icon name={step.icon} size={14} /> {step.tag}</Badge>
+                  <h3 className="text-lg font-bold tracking-tight">{step.title}</h3>
+                  <p className="text-sm leading-relaxed muted">{step.text}</p>
                 </li>
               ))}
-            </ul>
+            </ol>
           </div>
-          <HeroPhone />
         </section>
 
-        <Marquee />
-
-        <section id="how" className="max-w-6xl mx-auto px-4 py-20 scroll-mt-16" aria-labelledby="how-title">
-          <h2 id="how-title" className="lp-reveal text-white text-3xl sm:text-4xl font-bold text-center">От регистрации до первой записи</h2>
-          <p className="lp-reveal text-center mt-3 mb-12" style={{ color: '#a1a1aa', '--lp-delay': '80ms' }}>Без установки, без звонков в поддержку.</p>
-          <ol className="relative grid gap-5 md:grid-cols-3 list-none p-0 m-0">
-            <span className="hidden md:block absolute top-[34px] left-[16%] right-[16%] h-px" aria-hidden="true"
-              style={{ background: 'linear-gradient(90deg, #f472b6, #c084fc, #fbbf24)' }} />
-            {STEPS.map((step, i) => (
-              <li key={step.title} className="lp-reveal relative" style={{ '--lp-delay': `${i * 120}ms` }}>
-                <div className="lp-card rounded-3xl p-6 h-full" style={{ '--lp-accent': step.color }}>
-                  <span className="inline-block rounded-full px-3 py-1 text-xs font-bold mb-4"
-                    style={{ color: '#0e0e11', backgroundColor: step.color }}>{step.tag}</span>
-                  <h3 className="text-white text-lg font-semibold mb-2">{step.title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: '#d4d4d8' }}>{step.text}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section id="features" className="max-w-6xl mx-auto px-4 pb-20 scroll-mt-16" aria-labelledby="features-title">
-          <h2 id="features-title" className="lp-reveal text-white text-3xl sm:text-4xl font-bold text-center mb-12">
-            Всё для работы — <span className="lp-gradient-text">в одном месте</span>
+        <section id="faq" className="mx-auto grid max-w-6xl scroll-mt-20 gap-10 px-4 py-24 lg:grid-cols-12">
+          <h2 className="text-4xl font-extrabold tracking-tighter sm:text-5xl lg:col-span-4">
+            Частые <span className="serif tracking-tight accent-display">вопросы</span>
           </h2>
-          <ul className="grid gap-5 md:grid-cols-3 list-none p-0 m-0">
-            {FEATURES.map((f, i) => (
-              <li key={f.key} className={`lp-reveal ${f.span || ''}`} style={{ '--lp-delay': `${(i % 3) * 100}ms` }}>
-                <div className="lp-card rounded-3xl p-6 h-full flex flex-col" style={{ '--lp-accent': f.accent }}>
-                  <span className="w-8 h-1.5 rounded-full mb-4" style={{ backgroundColor: f.accent }} aria-hidden="true" />
-                  <h3 className="text-white text-lg font-semibold">{f.title}</h3>
-                  <p className="text-sm leading-relaxed mt-1.5 mb-5" style={{ color: '#d4d4d8' }}>{f.text}</p>
-                  <div className="mt-auto">{f.mock}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section id="faq" className="max-w-3xl mx-auto px-4 pb-20 scroll-mt-16" aria-labelledby="faq-title">
-          <h2 id="faq-title" className="lp-reveal text-white text-3xl sm:text-4xl font-bold text-center mb-10">Частые вопросы</h2>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3 lg:col-span-8">
             {FAQ.map((item, i) => (
-              <details key={item.q} className="lp-faq lp-reveal lp-card rounded-2xl" style={{ '--lp-delay': `${i * 80}ms`, '--lp-accent': '#c084fc' }}>
-                <summary className="flex items-center justify-between gap-4 px-5 py-4 min-h-[56px] text-white font-semibold">
+              <details key={item.q} className="card rounded-2xl" open={i === 0}>
+                <summary className="flex min-h-[56px] items-center justify-between gap-4 px-5 py-4 font-bold">
                   {item.q}
-                  <span className="lp-chevron text-2xl leading-none" style={{ color: '#f472b6' }} aria-hidden="true">+</span>
+                  <span className="chev muted"><Icon name="chevron-down" /></span>
                 </summary>
-                <p className="px-5 pb-5 -mt-1 text-sm leading-relaxed" style={{ color: '#d4d4d8' }}>{item.a}</p>
+                <p className="px-5 pb-5 text-sm leading-relaxed muted">{item.a}</p>
               </details>
             ))}
           </div>
         </section>
 
-        <section className="max-w-6xl mx-auto px-4 pb-20">
-          <div className="lp-reveal relative overflow-hidden rounded-[32px] px-6 py-14 sm:py-16 text-center"
-            style={{ background: 'linear-gradient(120deg, #9d174d 0%, #6b21a8 55%, #92400e 100%)' }}>
-            <div className="absolute inset-0 pointer-events-none" aria-hidden="true"
-              style={{ background: 'radial-gradient(50% 80% at 85% 0%, rgba(251, 191, 36, 0.25), transparent 70%), radial-gradient(40% 70% at 10% 100%, rgba(244, 114, 182, 0.3), transparent 70%)' }} />
-            <h2 className="relative text-white text-3xl sm:text-4xl font-bold">Готовы принимать записи онлайн?</h2>
-            <p className="relative mt-3 text-base sm:text-lg" style={{ color: '#fdf2f8' }}>Создайте салон за две минуты. Первые 14 дней бесплатно.</p>
-            <div className="relative mt-8 flex justify-center">
-              <Link to={SIGNUP} className="inline-flex items-center gap-2 min-h-[52px] px-8 rounded-2xl text-base font-semibold transition-transform hover:-translate-y-0.5"
-                style={{ backgroundColor: '#ffffff', color: '#831843' }}>
-                Начать работу <span aria-hidden="true">→</span>
+        <section className="mx-auto max-w-6xl px-4 pb-24">
+          <div className="tp-invert relative overflow-hidden rounded-[32px] shadow-xl shadow-black/5">
+            <div className="grid-lines pointer-events-none absolute inset-0 opacity-[0.07]" aria-hidden="true" style={{ '--pattern': 'var(--invert-fg)' }} />
+            <div className="relative grid gap-8 p-8 sm:p-12 md:grid-cols-[1fr_auto] md:items-center">
+              <div className="min-w-0">
+                <h2 className="text-4xl font-extrabold tracking-tighter sm:text-5xl">
+                  Откройте запись <span className="serif tracking-tight" style={{ color: 'var(--accent-on-invert)' }}>сегодня</span>
+                </h2>
+                <p className="mt-3 max-w-md opacity-80">Аккаунт создаётся за две минуты. Первые 14 дней бесплатно.</p>
+              </div>
+              <Link to={SIGNUP} className="btn-primary hover-lift inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl px-6 text-[15px] font-bold md:w-auto">
+                Начать работу <Icon name="arrow-right" />
               </Link>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="max-w-6xl mx-auto px-4 py-8 flex flex-wrap items-center justify-between gap-3 text-sm"
-        style={{ borderTop: '1px solid #1f1f24', color: '#a1a1aa' }}>
-        <Logo />
-        <nav aria-label="Документы" className="flex gap-4">
-          <Link to="/admin-panel/terms" className="hover:text-white min-h-[44px] inline-flex items-center">Правила сервиса</Link>
-          <Link to={LOGIN} className="hover:text-white min-h-[44px] inline-flex items-center">Вход для салонов</Link>
-        </nav>
+      <footer className="border-t hairline">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm muted">
+          <span className="flex items-center gap-2 font-extrabold tracking-tight" style={{ color: 'var(--ink)' }}>
+            <Logo size={22} /> TimePoint
+          </span>
+          <nav className="flex gap-5" aria-label="Документы">
+            <Link to="/admin-panel/terms" className="nav-link inline-flex min-h-[44px] items-center">Правила сервиса</Link>
+            <Link to={LOGIN} className="nav-link inline-flex min-h-[44px] items-center">Вход для бизнеса</Link>
+          </nav>
+        </div>
       </footer>
     </div>
   )
