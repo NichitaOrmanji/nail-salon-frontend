@@ -198,7 +198,7 @@ export default function ConfirmationPage() {
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
             <span className="text-gray-500 text-sm">{t('Услуга')}</span>
-            <span className="text-white text-sm font-medium text-right">{service.name}</span>
+            <span className="text-white text-sm font-medium text-right wrap-anywhere">{service.name}</span>
           </div>
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>

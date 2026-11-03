@@ -143,7 +143,7 @@ export default function MastersPage() {
                   </div>
 
                   {/* Инфо */}
-                  <div className="text-left">
+                  <div className="text-left wrap-anywhere">
                     <div className="text-white text-sm font-medium">{m.name}</div>
                     {m.specialty && (
                       <div className="text-gray-500 text-xs mt-0.5">{m.specialty}</div>

@@ -83,9 +83,9 @@ export default function SalonHeader() {
       >
         <IconBack />
       </button>
-      <button onClick={goHome} className="flex-1 text-left active:opacity-70 transition-all" title={t('На главную')}>
-        <div className="text-white text-sm font-semibold">{company.name}</div>
-        <div className="text-gray-500 text-xs">{company.address}</div>
+      <button onClick={goHome} className="flex-1 min-w-0 text-left active:opacity-70 transition-all" title={t('На главную')}>
+        <div className="text-white text-sm font-semibold truncate">{company.name}</div>
+        <div className="text-gray-500 text-xs truncate">{company.address}</div>
       </button>
       <LanguageSwitch />
 
