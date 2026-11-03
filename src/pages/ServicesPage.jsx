@@ -170,7 +170,7 @@ export default function ServicesPage() {
                           backgroundColor: isSelected ? '#2e2e2e' : 'transparent'
                         }}
                       >
-                        <div className="text-left flex-1">
+                        <div className="text-left flex-1 wrap-anywhere">
                           <div className="text-white text-sm font-medium">{item.name}</div>
                           <div className="text-gray-500 text-xs mt-0.5">
                             {formatDuration(item.duration, getLang())} · {formatPrice(item.price)}

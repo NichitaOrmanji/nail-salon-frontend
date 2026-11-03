@@ -17,13 +17,16 @@ export async function fetchSlots({ masterId, serviceId, date }) {
 // Возвращает { 'HH:MM': [masterId, ...] }
 export async function fetchSlotsByMaster({ serviceId, date }) {
   const masters = await fetchMasters({ serviceId })
-  const results = await Promise.all(
+  // Сбой у одного мастера не скрывает свободное время остальных; ошибка — только если не ответил никто
+  const results = await Promise.allSettled(
     masters.map(m =>
       fetchSlots({ masterId: m.id, serviceId, date }).then(slots => ({ id: m.id, slots }))
     )
   )
+  const loaded = results.filter(r => r.status === 'fulfilled').map(r => r.value)
+  if (results.length && !loaded.length) throw results[0].reason
   const byTime = {}
-  for (const { id, slots } of results) {
+  for (const { id, slots } of loaded) {
     for (const slot of slots) {
       (byTime[slot] ||= []).push(id)
     }

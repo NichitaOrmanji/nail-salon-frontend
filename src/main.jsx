@@ -6,6 +6,16 @@ import { initSentry } from './sentry'
 
 initSentry()
 
+// Страница продукта грузится отдельным файлом: сразу красим фон в её тему, чтобы в светлой
+// теме не мелькал тёмный экран (ключ и цвета — как в pages/LandingPage.jsx и landing.css)
+const { pathname, hostname } = window.location
+if (pathname === '/welcome' || (pathname === '/' && ['timepoint.tech', 'www.timepoint.tech'].includes(hostname))) {
+  let saved = null
+  try { saved = localStorage.getItem('tp-landing-theme') } catch { /* хранилище недоступно */ }
+  const dark = saved === 'dark' || saved === 'light' ? saved === 'dark' : window.matchMedia?.('(prefers-color-scheme: dark)').matches
+  document.body.style.backgroundColor = dark ? '#09090b' : '#f8fafc'
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
