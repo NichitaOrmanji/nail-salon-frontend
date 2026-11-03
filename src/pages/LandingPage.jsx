@@ -302,7 +302,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     const previous = document.title
-    document.title = 'TimePoint — онлайн-запись для салонов красоты'
+    document.title = 'TimePoint — онлайн-запись клиентов'
     return () => { document.title = previous }
   }, [])
 
@@ -329,10 +329,10 @@ export default function LandingPage() {
             <p className="lp-reveal inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium mb-5"
               style={{ backgroundColor: 'rgba(219, 39, 119, 0.12)', color: '#f9a8d4', border: '1px solid rgba(219, 39, 119, 0.35)' }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#f472b6' }} />
-              Для салонов красоты в Молдове
+              Онлайн-запись · журнал · клиенты
             </p>
             <h1 className="lp-reveal text-white text-4xl sm:text-6xl font-extrabold leading-[1.05] tracking-tight" style={{ '--lp-delay': '80ms' }}>
-              Онлайн-запись для <span className="lp-gradient-text">салона красоты</span>
+              Клиенты записываются сами. <span className="lp-gradient-text">Вы занимаетесь делом.</span>
             </h1>
             <p className="lp-reveal text-base sm:text-lg mt-5 max-w-xl mx-auto md:mx-0" style={{ color: '#d4d4d8', '--lp-delay': '160ms' }}>
               Клиенты выбирают услугу, мастера и время со своего телефона. Вы видите все записи
@@ -379,7 +379,7 @@ export default function LandingPage() {
 
         <section id="features" className="max-w-6xl mx-auto px-4 pb-20 scroll-mt-16" aria-labelledby="features-title">
           <h2 id="features-title" className="lp-reveal text-white text-3xl sm:text-4xl font-bold text-center mb-12">
-            Всё для работы салона — <span className="lp-gradient-text">в одном месте</span>
+            Всё для работы — <span className="lp-gradient-text">в одном месте</span>
           </h2>
           <ul className="grid gap-5 md:grid-cols-3 list-none p-0 m-0">
             {FEATURES.map((f, i) => (
