@@ -1,0 +1,105 @@
+/* Лендинг TimePoint: светлая (Swiss Minimal, rose-600) и тёмная (Midnight Tech, rose-500) темы.
+   Цвета — переменные на обёртке .tp; тема — атрибут data-theme на ней (выбор посетителя или тема устройства).
+   Подключается только со страницей продукта (отдельный CSS-чанк). */
+
+.tp {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --card-2: #f1f5f9;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: rgba(0, 0, 0, 0.05);
+  --glass: rgba(255, 255, 255, 0.8);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  --accent: #e11d48;
+  --accent-hover: #be123c;
+  --btn: #e11d48;              /* фон кнопок и выбранного времени (белый текст) */
+  --btn-hover: #be123c;
+  --on-accent: #ffffff;
+  --accent-text: #be123c;      /* rose-700: мелкий текст на светлом и на rose-50 */
+  --accent-display: #e11d48;   /* rose-600: крупные курсивные акценты */
+  --sub: #475569;              /* slate-600: подписи внутри цветных плашек */
+  --accent-soft: #fff1f2;
+  --accent-on-invert: #fb7185;
+  --icon-bg: #fff1f2;
+  --icon-fg: #e11d48;
+  --ok: #047857; --ok-soft: #ecfdf5;
+  --wait: #b45309; --wait-soft: #fef3c7;
+  --info: #1d4ed8; --info-soft: #dbeafe;
+  --bad: #b91c1c; --bad-soft: #fee2e2;
+  --done: #64748b; --done-soft: #f1f5f9;
+  --pattern: #0f172a;
+  --invert-bg: #0f172a;
+  --invert-fg: #f8fafc;
+  --font-sans: "Plus Jakarta Sans", "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Instrument Serif", "Playfair Display", Georgia, serif;
+
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  color-scheme: light;
+}
+
+.tp[data-theme="dark"] {
+  --bg: #09090b; --card: #121215; --card-2: #1b1b20; --ink: #f4f4f5; --muted: #a1a1aa;
+  --line: rgba(255, 255, 255, 0.1); --glass: rgba(18, 18, 21, 0.8);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 20px 25px -5px rgba(0, 0, 0, 0.35);
+  --accent: #f43f5e; --accent-hover: #fb7185; --on-accent: #ffffff;
+  --btn: #e11d48; --btn-hover: #f43f5e; /* белый текст на #f43f5e — 3.7:1, на #e11d48 — 4.7:1 */
+  --accent-text: #fb7185; --accent-display: #fb7185; --sub: #a1a1aa; --accent-soft: rgba(244, 63, 94, 0.1); --accent-on-invert: #be123c;
+  --icon-bg: rgba(244, 63, 94, 0.1); --icon-fg: #fb7185;
+  --ok: #34d399; --ok-soft: rgba(16, 185, 129, 0.12);
+  --wait: #fbbf24; --wait-soft: rgba(245, 158, 11, 0.12);
+  --info: #93c5fd; --info-soft: rgba(59, 130, 246, 0.14);
+  --bad: #f87171; --bad-soft: rgba(239, 68, 68, 0.12);
+  --done: #a1a1aa; --done-soft: rgba(255, 255, 255, 0.05);
+  --pattern: #ffffff; --invert-bg: #f4f4f5; --invert-fg: #09090b;
+  color-scheme: dark;
+}
+
+.tp .serif { font-family: var(--font-serif); font-style: italic; font-weight: 400; }
+.tp h1, .tp h2, .tp h3 { text-wrap: balance; }
+.tp .num { font-variant-numeric: tabular-nums; }
+.tp .muted { color: var(--muted); }
+.tp .accent-text { color: var(--accent-text); }
+.tp .accent-display { color: var(--accent-display); }
+.tp .sub { color: var(--sub); }
+.tp .hairline { border-color: var(--line); }
+.tp .soft { background: var(--card-2); }
+.tp .card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.tp .glass { background: var(--glass); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.tp .dots { background-image: radial-gradient(var(--pattern) 1px, transparent 1px); background-size: 20px 20px; }
+.tp .grid-lines {
+  background-image: linear-gradient(var(--pattern) 1px, transparent 1px), linear-gradient(90deg, var(--pattern) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.tp .icon-pad {
+  display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0;
+  border-radius: 10px; background: var(--icon-bg); color: var(--icon-fg); border: 1px solid var(--line);
+}
+.tp .btn-primary { background: var(--btn); color: var(--on-accent); }
+.tp .btn-primary:hover { background: var(--btn-hover); }
+.tp .tp-invert { background: var(--invert-bg); color: var(--invert-fg); }
+.tp .hover-lift { transition: all 200ms ease; }
+.tp .hover-lift:hover { transform: translateY(-2px); }
+.tp .nav-link { color: var(--muted); transition: color 200ms ease; }
+.tp .nav-link:hover { color: var(--ink); }
+.tp :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.tp details summary { list-style: none; cursor: pointer; }
+.tp details summary::-webkit-details-marker { display: none; }
+.tp .chev { transition: transform 200ms ease; }
+.tp details[open] .chev { transform: rotate(180deg); }
+
+@keyframes tp-ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+.tp .ping { animation: tp-ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tp .ping { animation: none; }
+  .tp *, .tp *::before { transition: none !important; }
+}
