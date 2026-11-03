@@ -6,7 +6,7 @@ test('лендинг: «Начать работу» → регистрация �
   // Контраст проверяем в итоговых цветах: без анимаций появления (как у тех, кто отключил движение)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/welcome')
-  await expect(page.getByRole('heading', { level: 1, name: 'Клиенты записываются сами. Вы занимаетесь делом.' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Онлайн-запись клиентов. Всё для вашего удобства!' })).toBeVisible()
   await expect(page.getByText('14 дней бесплатно').first()).toBeVisible()
 
   const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze()

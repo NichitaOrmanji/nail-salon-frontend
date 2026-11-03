@@ -332,7 +332,7 @@ export default function LandingPage() {
               Онлайн-запись · журнал · клиенты
             </p>
             <h1 className="lp-reveal text-white text-4xl sm:text-6xl font-extrabold leading-[1.05] tracking-tight" style={{ '--lp-delay': '80ms' }}>
-              Клиенты записываются сами. <span className="lp-gradient-text">Вы занимаетесь делом.</span>
+              Онлайн-запись клиентов. <span className="lp-gradient-text">Всё для вашего удобства!</span>
             </h1>
             <p className="lp-reveal text-base sm:text-lg mt-5 max-w-xl mx-auto md:mx-0" style={{ color: '#d4d4d8', '--lp-delay': '160ms' }}>
               Клиенты выбирают услугу, мастера и время со своего телефона. Вы видите все записи
