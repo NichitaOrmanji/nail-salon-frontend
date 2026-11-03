@@ -41,6 +41,12 @@ const PrivacyPage = lazyPage(() => import('./pages/PrivacyPage'))
 const RulesPage = lazyPage(() => import('./pages/RulesPage'))
 const NotFoundPage = lazyPage(() => import('./pages/NotFoundPage'))
 
+// Страница продукта («Начать работу» → регистрация салона) — вне клиентских провайдеров и мобильной обёртки
+const LandingPage = lazyPage(() => import('./pages/LandingPage'))
+// На домене самого сервиса главная — страница продукта; на адресах салонов и по умолчанию — сайт записи
+const PRODUCT_HOSTS = ['timepoint.tech', 'www.timepoint.tech']
+const isProductHost = typeof window !== 'undefined' && PRODUCT_HOSTS.includes(window.location.hostname)
+
 // Панель салона грузится отдельным чанком, чтобы клиентский бандл не рос
 const AdminApp = lazyPage(() => import('./admin/AdminApp'))
 
@@ -122,6 +128,19 @@ export default function App() {
             </ErrorBoundary>
           }
         />
+        {['/welcome', ...(isProductHost ? ['/'] : [])].map(path => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <ErrorBoundary>
+                <Suspense fallback={pageFallback}>
+                  <LandingPage />
+                </Suspense>
+              </ErrorBoundary>
+            }
+          />
+        ))}
         <Route path="*" element={<ClientApp />} />
       </Routes>
     </BrowserRouter>

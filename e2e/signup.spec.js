@@ -50,6 +50,8 @@ test('регистрация → подтверждение email → салон
   await page.evaluate(() => localStorage.clear())
   await page.goto('/admin-panel/login')
   await page.getByRole('link', { name: 'Забыли пароль?' }).click()
+  // Поле входа «Логин, email или телефон» тоже подходит под подпись «Email» — ждём страницу восстановления
+  await expect(page).toHaveURL(/\/admin-panel\/forgot-password$/)
   await page.getByLabel('Email').fill(email)
   await page.getByRole('button', { name: 'Отправить ссылку' }).click()
   await expect(page.getByText(/мы отправили на него ссылку/)).toBeVisible()
