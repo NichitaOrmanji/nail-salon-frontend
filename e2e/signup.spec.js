@@ -52,8 +52,14 @@ test('регистрация → подтверждение email → салон
   await page.getByRole('link', { name: 'Забыли пароль?' }).click()
   // Поле входа «Логин, email или телефон» тоже подходит под подпись «Email» — ждём страницу восстановления
   await expect(page).toHaveURL(/\/admin-panel\/forgot-password$/)
-  await page.getByLabel('Email').fill(email)
-  await page.getByRole('button', { name: 'Отправить ссылку' }).click()
+  // Страница может дорисоваться после первого ввода (на медленном CI ввод терялся) — вводим, пока кнопка не станет доступна
+  await page.waitForLoadState('networkidle')
+  const sendLink = page.getByRole('button', { name: 'Отправить ссылку' })
+  await expect(async () => {
+    await page.getByLabel('Email').fill(email)
+    await expect(sendLink).toBeEnabled({ timeout: 1000 })
+  }).toPass({ timeout: 15_000 })
+  await sendLink.click()
   await expect(page.getByText(/мы отправили на него ссылку/)).toBeVisible()
   await page.goto(await linkFromEmail(email, '/admin-panel/reset-password'))
   await page.getByLabel('Новый пароль').fill(NEW_PASSWORD)
