@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
   return (
     <AuthCard title="Восстановление пароля" subtitle="Пришлём ссылку для нового пароля" onSubmit={handleSubmit}>
       {message ? (
-        <p className="text-sm text-center" style={{ color: '#34d399' }}>{message}. Проверьте и папку «Спам».</p>
+        <p className="text-sm text-center" style={{ color: 'var(--success-text)' }}>{message}. Проверьте и папку «Спам».</p>
       ) : (
         <>
           <Field label="Email, указанный при регистрации">
@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
           </p>
         </>
       )}
-      <Link to="/admin-panel/login" className="block text-center text-sm underline" style={{ color: '#f472b6' }}>Ко входу</Link>
+      <Link to="/admin-panel/login" className="block text-center text-sm underline" style={{ color: 'var(--accent-text)' }}>Ко входу</Link>
     </AuthCard>
   )
 }

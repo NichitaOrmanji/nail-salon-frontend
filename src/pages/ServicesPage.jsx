@@ -85,7 +85,7 @@ export default function ServicesPage() {
   const visibleCategories = [...new Set(filtered.map(s => s.category_name))]
 
   return (
-    <div className="min-h-screen pb-32" style={{ backgroundColor: '#1a1a1a' }}>
+    <div className="min-h-screen pb-32" style={{ backgroundColor: 'transparent' }}>
 
       <SalonHeader />
 
@@ -105,7 +105,7 @@ export default function ServicesPage() {
           <button
             onClick={retry}
             className="px-6 py-3 rounded-2xl text-white text-sm font-medium active:scale-95"
-            style={{ backgroundColor: '#242424' }}
+            style={{ backgroundColor: 'var(--surface-2)' }}
           >
             {t('Попробовать снова')}
           </button>
@@ -129,8 +129,8 @@ export default function ServicesPage() {
                 onClick={() => setActiveCategory(cat)}
                 className="px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap active:scale-95"
                 style={{
-                  backgroundColor: activeCategory === cat ? '#db2777' : '#242424',
-                  color: activeCategory === cat ? '#ffffff' : '#9ca3af'
+                  backgroundColor: activeCategory === cat ? 'var(--accent)' : 'var(--surface-2)',
+                  color: activeCategory === cat ? 'var(--text)' : 'var(--text-muted)'
                 }}
               >
                 {cat}
@@ -140,7 +140,7 @@ export default function ServicesPage() {
 
           {/* Поиск */}
           <div className="px-6 mb-6">
-            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ backgroundColor: '#242424' }}>
+            <div className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ backgroundColor: 'var(--surface-2)' }}>
               <span className="text-gray-500"><IconSearch /></span>
               <input
                 type="text"
@@ -157,7 +157,7 @@ export default function ServicesPage() {
             {visibleCategories.map(cat => (
               <div key={cat} className="mb-6">
                 <h3 className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">{cat}</h3>
-                <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#242424' }}>
+                <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
                   {filtered.filter(s => s.category_name === cat).map((item, idx, arr) => {
                     const isSelected = service?.id === item.id
                     return (
@@ -166,8 +166,8 @@ export default function ServicesPage() {
                         onClick={() => selectService(item)}
                         className="w-full flex items-center justify-between px-4 py-4 transition-all active:scale-95"
                         style={{
-                          borderBottom: idx < arr.length - 1 ? '1px solid #2e2e2e' : 'none',
-                          backgroundColor: isSelected ? '#2e2e2e' : 'transparent'
+                          borderBottom: idx < arr.length - 1 ? '1px solid var(--border)' : 'none',
+                          backgroundColor: isSelected ? 'var(--surface-3)' : 'transparent'
                         }}
                       >
                         <div className="text-left flex-1">
@@ -179,8 +179,8 @@ export default function ServicesPage() {
                         <div
                           className="w-5 h-5 rounded-full flex items-center justify-center ml-4 flex-shrink-0 transition-all"
                           style={{
-                            backgroundColor: isSelected ? '#db2777' : 'transparent',
-                            border: isSelected ? 'none' : '2px solid #374151'
+                            backgroundColor: isSelected ? 'var(--accent)' : 'transparent',
+                            border: isSelected ? 'none' : '2px solid var(--border-strong)'
                           }}
                         >
                           {isSelected && <IconCheck />}
@@ -197,11 +197,11 @@ export default function ServicesPage() {
 
       {/* Кнопка далее */}
       {service && (
-        <div className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} p-4`} style={{ backgroundColor: '#1a1a1a' }}>
+        <div className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} p-4`} style={{ backgroundColor: 'var(--bg)' }}>
           <button
             onClick={() => navigate(getNextRoute('services'))}
             className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"
-            style={{ backgroundColor: '#db2777' }}
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             <div className="text-sm font-semibold">{t('Далее')}</div>
             <div className="text-xs opacity-75 mt-0.5">

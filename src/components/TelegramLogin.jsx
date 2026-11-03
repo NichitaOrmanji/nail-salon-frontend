@@ -43,7 +43,7 @@ export default function TelegramLogin({ onTokens }) {
           onClick={begin}
           disabled={busy}
           className="w-full py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
-          style={{ backgroundColor: TELEGRAM_BLUE, opacity: busy ? 0.6 : 1 }}
+          style={{ backgroundColor: TELEGRAM_BLUE, color: '#ffffff', opacity: busy ? 0.6 : 1 }}
         >
           {busy ? t('Подождите...') : t('Войти через Telegram')}
         </button>
@@ -54,7 +54,7 @@ export default function TelegramLogin({ onTokens }) {
   }
 
   return (
-    <div className="mb-6 rounded-2xl p-4 space-y-3" style={{ backgroundColor: '#242424' }}>
+    <div className="mb-6 rounded-2xl p-4 space-y-3" style={{ backgroundColor: 'var(--surface-2)' }}>
       <ol className="text-gray-300 text-sm space-y-1 list-decimal pl-5">
         <li>{t('Откройте бота и нажмите «Старт».')}</li>
         <li>{t('Нажмите «📱 Поделиться номером».')}</li>
@@ -65,7 +65,7 @@ export default function TelegramLogin({ onTokens }) {
         target="_blank"
         rel="noreferrer"
         className="block w-full py-3 rounded-xl text-white text-sm font-semibold text-center"
-        style={{ backgroundColor: TELEGRAM_BLUE }}
+        style={{ backgroundColor: TELEGRAM_BLUE, color: '#ffffff' }}
       >
         {t('Открыть Telegram')}
       </a>
@@ -79,14 +79,14 @@ export default function TelegramLogin({ onTokens }) {
         onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
         onKeyDown={e => e.key === 'Enter' && verify()}
         className="w-full px-4 py-3 rounded-xl text-white text-center text-lg tracking-[0.4em] outline-none placeholder-gray-600 placeholder:tracking-normal placeholder:text-sm"
-        style={{ backgroundColor: '#1a1a1a' }}
+        style={{ backgroundColor: 'var(--bg)' }}
       />
       {error && <p className="text-red-400 text-sm text-center">{error}</p>}
       <button
         onClick={verify}
         disabled={code.length !== 6 || busy}
         className="w-full py-3 rounded-xl text-white font-semibold transition-all active:scale-95"
-        style={{ backgroundColor: '#db2777', opacity: code.length === 6 && !busy ? 1 : 0.4 }}
+        style={{ backgroundColor: 'var(--accent)', opacity: code.length === 6 && !busy ? 1 : 0.4 }}
       >
         {busy ? t('Проверяем...') : t('Подтвердить код')}
       </button>

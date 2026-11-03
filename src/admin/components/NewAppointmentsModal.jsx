@@ -58,7 +58,7 @@ export default function NewAppointmentsModal({ onClose }) {
             <p className="text-gray-500 text-xs">Показаны первые {MAX_PENDING_ITEMS} записей — подтвердите их, чтобы увидеть остальные</p>
           )}
           {items.map(a => (
-            <div key={a.id} className="rounded-2xl p-4" style={{ backgroundColor: '#242424' }}>
+            <div key={a.id} className="rounded-2xl p-4" style={{ backgroundColor: 'var(--surface-2)' }}>
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                 <div className="text-white text-sm font-semibold">
                   {formatShortDate(a.date)}, {a.start_time}–{a.end_time}
@@ -71,7 +71,7 @@ export default function NewAppointmentsModal({ onClose }) {
                 {a.client_phone && (
                   <>
                     <span className="text-gray-600"> · </span>
-                    <a href={`tel:${a.client_phone}`} style={{ color: '#f472b6' }}>{a.client_phone}</a>
+                    <a href={`tel:${a.client_phone}`} style={{ color: 'var(--accent-text)' }}>{a.client_phone}</a>
                   </>
                 )}
               </div>

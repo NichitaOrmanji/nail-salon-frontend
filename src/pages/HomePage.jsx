@@ -130,17 +130,17 @@ function SalonInfoSheet({ open, onClose, onBook }) {
       {/* Панель */}
       <div
         className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} z-50 rounded-t-3xl overflow-y-auto`}
-        style={{ backgroundColor: '#1e1e1e', maxHeight: '85vh' }}
+        style={{ backgroundColor: 'var(--surface-1)', maxHeight: '85vh' }}
       >
         {/* Ручка + крестик */}
         <div className="flex items-center justify-between px-6 pt-4 pb-2">
           <div className="w-6" /> {/* spacer */}
-          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: '#3a3a3a' }} />
+          <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--surface-4)' }} />
           <button
           aria-label={t('Закрыть')}
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 transition-all active:scale-90"
-            style={{ backgroundColor: '#2e2e2e' }}
+            style={{ backgroundColor: 'var(--surface-3)' }}
           >
             <IconClose />
           </button>
@@ -150,7 +150,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
 
           {/* Шапка */}
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-white flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-[#ffffff] flex items-center justify-center">
               <SalonLogo salon={salon} textClass="text-xl" />
             </div>
             <div>
@@ -194,7 +194,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
                 target="_blank"
                 rel="noreferrer"
                 className="inline-block text-sm mb-6"
-                style={{ color: '#f472b6' }}
+                style={{ color: 'var(--accent-text)' }}
               >
                 {t('Открыть в Google Maps ↗')}
               </a>
@@ -204,11 +204,11 @@ function SalonInfoSheet({ open, onClose, onBook }) {
         </div>
 
         {/* Кнопка Записаться */}
-        <div className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} p-4 z-50`} style={{ backgroundColor: '#1e1e1e' }}>
+        <div className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} p-4 z-50`} style={{ backgroundColor: 'var(--surface-1)' }}>
           <button
             onClick={onBook}
             className="w-full py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
-            style={{ backgroundColor: '#db2777' }}
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             {t('Записаться')}
           </button>
@@ -259,14 +259,14 @@ export default function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#1a1a1a' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
 
       {/* Фото салона */}
       <div className="relative h-52 md:h-72">
         {salon.main_photo
           ? <img src={salon.main_photo} alt={t('Салон')} className="w-full h-full object-cover" />
-          : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #3a2430, #1a1a1a 70%)' }} />}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 50%, #1a1a1a 100%)' }} />
+          : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, var(--accent-tint-2), var(--bg) 70%)' }} />}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 50%, var(--bg) 100%)' }} />
 
         <LanguageSwitch className="absolute top-4 left-4" />
         <button
@@ -285,8 +285,8 @@ export default function HomePage() {
         {/* Логотип — большой, отдельно */}
         <button
           onClick={() => setSheetOpen(true)}
-          className="w-24 h-24 rounded-full overflow-hidden border-4 bg-white flex items-center justify-center mb-4 active:scale-95 transition-all"
-          style={{ borderColor: '#1a1a1a' }}
+          className="w-24 h-24 rounded-full overflow-hidden border-4 bg-[#ffffff] flex items-center justify-center mb-4 active:scale-95 transition-all"
+          style={{ borderColor: 'var(--bg)' }}
         >
           <SalonLogo salon={salon} textClass="text-4xl" />
         </button>
@@ -311,7 +311,7 @@ export default function HomePage() {
           <button
             onClick={() => navigate(getNextRoute('home'))}
             className="w-full flex items-center justify-between px-5 py-4 rounded-2xl mb-3 transition-all active:scale-95"
-            style={{ backgroundColor: '#2e1f28', border: '1px solid #f472b6' }}
+            style={{ backgroundColor: 'var(--accent-tint)', border: '1px solid var(--accent)' }}
           >
             <div className="text-left">
               <div className="text-white text-base font-medium">{t('Продолжить запись')}</div>
@@ -323,7 +323,7 @@ export default function HomePage() {
                   .filter(Boolean).join(' · ')}
               </div>
             </div>
-            <span className="flex-shrink-0" style={{ color: '#f472b6' }}><IconChevronRight /></span>
+            <span className="flex-shrink-0" style={{ color: 'var(--accent-text)' }}><IconChevronRight /></span>
           </button>
         )}
 
@@ -334,11 +334,11 @@ export default function HomePage() {
               key={item.path}
               onClick={() => handleNavigate(item.path)}
               className="w-full h-full flex items-center justify-between px-5 py-5 rounded-2xl transition-all active:scale-95"
-              style={{ backgroundColor: '#242424' }}
+              style={{ backgroundColor: 'var(--surface-2)' }}
             >
               <div className="flex items-center gap-4">
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: '#2e2e2e', color: '#f472b6' }}>
+                  style={{ backgroundColor: 'var(--surface-3)', color: 'var(--accent-text)' }}>
                   {item.icon}
                 </div>
                 <div className="text-left">

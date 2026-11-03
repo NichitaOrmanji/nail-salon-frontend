@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom'
 // Общие элементы панели: кнопки, поля, сообщения. Цвета — как в клиентской части.
 
 const BUTTON_STYLES = {
-  primary: { backgroundColor: '#db2777', color: '#ffffff' },
-  secondary: { backgroundColor: '#242424', color: '#ffffff', border: '1px solid #2e2e2e' },
-  danger: { backgroundColor: '#242424', color: '#f87171', border: '1px solid #2e2e2e' },
-  ghost: { backgroundColor: 'transparent', color: '#9ca3af' },
+  primary: { backgroundColor: 'var(--accent)', color: 'var(--text)' },
+  secondary: { backgroundColor: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)' },
+  danger: { backgroundColor: 'var(--surface-2)', color: 'var(--danger-text)', border: '1px solid var(--border)' },
+  ghost: { backgroundColor: 'transparent', color: 'var(--text-muted)' },
 }
 
 // Кнопка действия: высота не меньше 44px (удобно пальцем)
@@ -44,7 +44,7 @@ export function Field({ label, hint, children, className = '' }) {
 }
 
 const inputClass = 'w-full min-h-[44px] px-3 py-2 rounded-xl text-white text-sm outline-none placeholder-gray-600 focus:ring-1 focus:ring-pink-400'
-const inputStyle = { backgroundColor: '#242424', border: '1px solid #2e2e2e', colorScheme: 'dark' }
+const inputStyle = { backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)', colorScheme: 'dark' }
 
 export function TextInput({ className = '', style, ...props }) {
   return <input className={`${inputClass} ${className}`} style={{ ...inputStyle, ...style }} {...props} />
@@ -71,7 +71,7 @@ export function Checkbox({ checked, onChange, label, disabled, className = '' })
         disabled={disabled}
         onChange={e => onChange?.(e.target.checked)}
         className="w-5 h-5 flex-shrink-0"
-        style={{ accentColor: '#f472b6' }}
+        style={{ accentColor: 'var(--accent-text)' }}
       />
       <span className="text-sm text-white min-w-0">{label}</span>
     </label>
@@ -86,7 +86,7 @@ export function ErrorText({ children, className = '' }) {
 export function WarningText({ children, className = '' }) {
   if (!children) return null
   return (
-    <p className={`text-sm rounded-xl px-3 py-2 ${className}`} style={{ color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
+    <p className={`text-sm rounded-xl px-3 py-2 ${className}`} style={{ color: 'var(--warning-text)', backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
       {children}
     </p>
   )

@@ -290,7 +290,7 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
         <div>
           <label htmlFor="appointment-phone" className="block text-gray-400 text-xs font-medium mb-1.5">Телефон</label>
           {/* Без overflow-hidden: иначе обрезается список стран */}
-          <div className="rounded-xl relative" style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e' }}>
+          <div className="rounded-xl relative" style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)' }}>
             <PhoneField value={phone} onChange={setPhone} inputId="appointment-phone" inputLabel="Телефон" />
           </div>
         </div>
@@ -301,7 +301,7 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
               <>
                 <span className="text-gray-400">Визитов: {clientInfo.data.visits ?? 0}</span>
                 <span className="text-gray-600"> · </span>
-                <span style={{ color: clientInfo.data.no_shows > 0 ? '#f87171' : '#9ca3af' }}>
+                <span style={{ color: clientInfo.data.no_shows > 0 ? 'var(--danger-text)' : 'var(--text-muted)' }}>
                   Не пришёл: {clientInfo.data.no_shows ?? 0}
                 </span>
               </>
@@ -312,8 +312,8 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
         )}
         {clientInfo?.data?.blacklist && (
           <div className="rounded-xl px-3 py-2 text-sm -mt-1" role="alert"
-            style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171', color: '#fca5a5' }}>
-            <div className="font-semibold" style={{ color: '#f87171' }}>⛔ Клиент в чёрном списке</div>
+            style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid var(--danger-text)', color: 'var(--danger-soft)' }}>
+            <div className="font-semibold" style={{ color: 'var(--danger-text)' }}>⛔ Клиент в чёрном списке</div>
             {Number(clientInfo.data.blacklist.debt) > 0 ? (
               <>
                 <div>Долг {formatMoney(clientInfo.data.blacklist.debt)} — оплатит при визите</div>
@@ -392,9 +392,9 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
                     onClick={() => setTime(t)}
                     className="min-h-[44px] px-3 rounded-lg text-sm font-medium"
                     style={{
-                      backgroundColor: t === time ? '#db2777' : '#242424',
-                      color: t === time ? '#ffffff' : '#d1d5db',
-                      border: '1px solid #2e2e2e',
+                      backgroundColor: t === time ? 'var(--accent)' : 'var(--surface-2)',
+                      color: t === time ? 'var(--text)' : 'var(--text-soft)',
+                      border: '1px solid var(--border)',
                     }}
                   >
                     {t}

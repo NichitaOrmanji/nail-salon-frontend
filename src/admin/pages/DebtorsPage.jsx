@@ -11,9 +11,9 @@ import Spinner from '../../components/layout/Spinner'
 
 function Total({ label, value, color }) {
   return (
-    <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+    <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border)' }}>
       <div className="text-gray-500 text-xs">{label}</div>
-      <div className="text-lg font-bold" style={{ color: color || '#ffffff' }}>{value}</div>
+      <div className="text-lg font-bold" style={{ color: color || 'var(--text)' }}>{value}</div>
     </div>
   )
 }
@@ -25,7 +25,7 @@ function DebtorRow({ debtor, onOpen }) {
       type="button"
       onClick={() => onOpen(debtor.phone)}
       className="w-full text-left rounded-2xl px-4 py-3 transition-all active:scale-[0.99]"
-      style={{ backgroundColor: '#242424', border: '1px solid #3a2a2a' }}
+      style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--danger-tint)' }}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
@@ -33,14 +33,14 @@ function DebtorRow({ debtor, onOpen }) {
           <div className="text-gray-400 text-xs">{debtor.phone}</div>
         </div>
         <div className="text-right">
-          <div className="text-base font-bold" style={{ color: '#f87171' }}>{formatMoney(debtor.debt)}</div>
+          <div className="text-base font-bold" style={{ color: 'var(--danger-text)' }}>{formatMoney(debtor.debt)}</div>
           <div className="text-gray-500 text-[11px]">долг</div>
         </div>
       </div>
 
       <div className="mt-2 text-xs">
         {visit ? (
-          <span style={{ color: '#34d399' }}>
+          <span style={{ color: 'var(--success-text)' }}>
             Придёт {formatShortDate(visit.date)}, {visit.time}{visit.master ? ` · ${visit.master}` : ''} — получить при визите
           </span>
         ) : (
@@ -94,9 +94,9 @@ export default function DebtorsPage() {
       {data && (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-5">
-            <Total label="Общий долг" value={formatMoney(data.total_debt)} color={Number(data.total_debt) ? '#f87171' : undefined} />
+            <Total label="Общий долг" value={formatMoney(data.total_debt)} color={Number(data.total_debt) ? 'var(--danger-text)' : undefined} />
             <Total label="Должников" value={data.debtors} />
-            <Total label="Оплачено штрафов в этом месяце" value={formatMoney(data.paid_this_month)} color="#34d399" />
+            <Total label="Оплачено штрафов в этом месяце" value={formatMoney(data.paid_this_month)} color="var(--success-text)" />
           </div>
           {data.results.length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-10">Должников нет</p>

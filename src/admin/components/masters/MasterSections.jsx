@@ -10,7 +10,7 @@ import TimeField from './TimeField'
 
 export function Section({ title, children }) {
   return (
-    <section className="rounded-2xl p-4" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+    <section className="rounded-2xl p-4" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border)' }}>
       <h3 className="text-white text-sm font-semibold mb-3">{title}</h3>
       {children}
     </section>
@@ -90,10 +90,10 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
       )}
       <div className="space-y-2">
         {rows.map(r => (
-          <div key={r.day_of_week} className="flex flex-wrap items-center gap-x-3 gap-y-1 min-h-[44px] py-1" style={{ borderTop: r.day_of_week ? '1px solid #2a2a2a' : 'none' }}>
+          <div key={r.day_of_week} className="flex flex-wrap items-center gap-x-3 gap-y-1 min-h-[44px] py-1" style={{ borderTop: r.day_of_week ? '1px solid var(--border)' : 'none' }}>
             <span className="w-7 text-sm text-gray-400 flex-shrink-0">{WEEKDAYS_SHORT[r.day_of_week]}</span>
             {readOnly ? (
-              <span className="text-sm" style={{ color: r.is_working ? '#ffffff' : '#9098a4' }}>
+              <span className="text-sm" style={{ color: r.is_working ? 'var(--text)' : 'var(--text-faint)' }}>
                 {r.is_working ? hoursLabel(r) : 'Выходной'}
                 {r.is_working && lunchLabel(r) && <span className="text-gray-500"> · обед {lunchLabel(r)}</span>}
               </span>
@@ -125,7 +125,7 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
       <ErrorText className="mt-3">{error}</ErrorText>
       {!readOnly && (
         <div className="flex flex-wrap items-center justify-end gap-3 mt-3">
-          {done && !changed && <span className="text-xs" style={{ color: '#34d399' }}>Сохранено</span>}
+          {done && !changed && <span className="text-xs" style={{ color: 'var(--success-text)' }}>Сохранено</span>}
           {canCopyLunch && <Button onClick={copyLunch}>Обед во все рабочие дни</Button>}
           <Button variant="primary" disabled={!changed || saving} onClick={handleSave}>
             {saving ? 'Сохраняем...' : 'Сохранить график'}
@@ -221,7 +221,7 @@ export function DaysOffSection({ master, readOnly }) {
           <Button type="submit" variant="primary" disabled={!newDate || busy}>Добавить</Button>
         </form>
       )}
-      {message && <p className="text-xs mb-3" style={{ color: '#34d399' }}>{message}</p>}
+      {message && <p className="text-xs mb-3" style={{ color: 'var(--success-text)' }}>{message}</p>}
       <WarningText className="mb-3">{warning}</WarningText>
       <ErrorText className="mb-3">{error}</ErrorText>
       {items === null && !error && <p className="text-gray-500 text-sm">Загрузка...</p>}
@@ -232,7 +232,7 @@ export function DaysOffSection({ master, readOnly }) {
             <div key={d.id ?? d.date} className="flex items-center justify-between gap-2 min-h-[44px]">
               <span className="text-white text-sm">{formatShortDate(d.date)}</span>
               {!readOnly && (
-                <Button variant="ghost" disabled={busy} onClick={() => handleRemove(d.date)} style={{ color: '#f87171' }}>Удалить</Button>
+                <Button variant="ghost" disabled={busy} onClick={() => handleRemove(d.date)} style={{ color: 'var(--danger-text)' }}>Удалить</Button>
               )}
             </div>
           ))}
@@ -342,7 +342,7 @@ export function AccessSection({ master, onChanged }) {
         </form>
       )}
       <ErrorText className="mt-3">{error}</ErrorText>
-      {message && <p className="text-xs mt-3" style={{ color: '#34d399' }}>{message}</p>}
+      {message && <p className="text-xs mt-3" style={{ color: 'var(--success-text)' }}>{message}</p>}
     </Section>
   )
 }

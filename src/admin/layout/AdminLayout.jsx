@@ -5,6 +5,7 @@ import { fetchPendingCount } from '../api/appointments'
 import { useAutoRefresh } from '../utils/events'
 import { useNewVersion } from '../utils/version'
 import { ROLE_LABELS } from '../utils/statuses'
+import { isThemeLocked, setThemeChoice, useThemeChoice } from '../../theme'
 import ErrorBoundary from '../../components/layout/ErrorBoundary'
 import ChangePasswordModal from '../components/ChangePasswordModal'
 import TelegramModal from '../components/TelegramModal'
@@ -36,6 +37,28 @@ function menuItems(me, isManager) {
   ]
 }
 
+// Тема панели и сайта на этом устройстве (по умолчанию — как в настройках телефона)
+function ThemeSelect() {
+  const choice = useThemeChoice()
+  if (isThemeLocked()) return null
+  return (
+    <label className="flex items-center gap-2 px-3 min-h-[44px] text-sm text-gray-300">
+      <span className="flex-shrink-0">Тема</span>
+      <select
+        value={choice}
+        onChange={e => setThemeChoice(e.target.value)}
+        className="flex-1 min-w-0 min-h-[36px] rounded-lg px-2 text-sm text-white"
+        style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)' }}
+      >
+        <option value="auto">Как на телефоне</option>
+        <option value="light">Светлая</option>
+        <option value="dark">Тёмная</option>
+        <option value="classic">Прежняя</option>
+      </select>
+    </label>
+  )
+}
+
 // Содержимое меню: одно и то же для левой колонки и выезжающей панели
 function SidebarContent({ me, isManager, onNavigate, onTelegram, onChangePassword, onLogout }) {
   return (
@@ -44,7 +67,7 @@ function SidebarContent({ me, isManager, onNavigate, onTelegram, onChangePasswor
         <div className="text-white text-base font-bold truncate">{me.company?.name}</div>
         <div className="text-gray-500 text-xs">Панель салона</div>
         {me.role === 'owner' && me.company?.trial_ends_at && (
-          <div className="text-xs mt-1" style={{ color: '#fbbf24' }}>
+          <div className="text-xs mt-1" style={{ color: 'var(--warning-text)' }}>
             Пробный период до {new Date(me.company.trial_ends_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
           </div>
         )}
@@ -59,8 +82,8 @@ function SidebarContent({ me, isManager, onNavigate, onTelegram, onChangePasswor
             onClick={onNavigate}
             className="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm font-medium transition-all"
             style={({ isActive }) => ({
-              backgroundColor: isActive ? '#242424' : 'transparent',
-              color: isActive ? '#f472b6' : '#d1d5db',
+              backgroundColor: isActive ? 'var(--surface-2)' : 'transparent',
+              color: isActive ? 'var(--accent-text)' : 'var(--text-soft)',
             })}
           >
             <item.icon />
@@ -79,13 +102,13 @@ function SidebarContent({ me, isManager, onNavigate, onTelegram, onChangePasswor
           to="/admin-panel/help"
           onClick={onNavigate}
           className="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm"
-          style={({ isActive }) => ({ color: isActive ? '#f472b6' : '#9ca3af' })}
+          style={({ isActive }) => ({ color: isActive ? 'var(--accent-text)' : 'var(--text-muted)' })}
         >
           Помощь
         </NavLink>
       </nav>
 
-      <div className="px-3 py-4 space-y-1" style={{ borderTop: '1px solid #2e2e2e' }}>
+      <div className="px-3 py-4 space-y-1" style={{ borderTop: '1px solid var(--border)' }}>
         <div className="px-3 pb-2">
           <div className="text-white text-sm font-medium truncate">{me.name || me.username}</div>
           <div className="text-gray-500 text-xs">{ROLE_LABELS[me.role] || me.role}</div>
@@ -104,11 +127,12 @@ function SidebarContent({ me, isManager, onNavigate, onTelegram, onChangePasswor
         >
           Сменить пароль
         </button>
+        <ThemeSelect />
         <button
           type="button"
           onClick={onLogout}
           className="w-full text-left px-3 min-h-[44px] rounded-xl text-sm"
-          style={{ color: '#f87171' }}
+          style={{ color: 'var(--danger-text)' }}
         >
           Выйти
         </button>
@@ -158,17 +182,17 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="h-dvh flex overflow-hidden" style={{ backgroundColor: '#111111' }}>
+    <div className="h-dvh flex overflow-hidden" style={{ background: 'var(--bg-deep-paint)' }}>
 
       {/* Левое меню (≥ 768px) */}
-      <aside className="hidden md:block w-56 flex-shrink-0" style={{ backgroundColor: '#1a1a1a', borderRight: '1px solid #2e2e2e' }}>
+      <aside className="hidden md:block w-56 flex-shrink-0" style={{ backgroundColor: 'var(--bg)', borderRight: '1px solid var(--border)' }}>
         <SidebarContent {...sidebarProps} />
       </aside>
 
       {/* Выезжающее меню (< 768px) */}
       {menuOpen && (
         <div className="md:hidden fixed inset-0 z-[45] flex">
-          <aside role="dialog" aria-label="Меню" className="w-72 max-w-[85vw] h-full relative" style={{ backgroundColor: '#1a1a1a', borderRight: '1px solid #2e2e2e' }}>
+          <aside role="dialog" aria-label="Меню" className="w-72 max-w-[85vw] h-full relative" style={{ backgroundColor: 'var(--bg)', borderRight: '1px solid var(--border)' }}>
             <button
               type="button"
               aria-label="Закрыть меню"
@@ -185,25 +209,25 @@ export default function AdminLayout() {
 
       <div className="flex-1 min-w-0 flex flex-col">
         {outdated && (
-          <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: '#3b2a12', borderBottom: '1px solid #f59e0b' }}>
-            <span className="flex-1 min-w-0 text-sm" style={{ color: '#fbbf24' }}>Вышла новая версия панели</span>
+          <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: 'var(--warning-tint)', borderBottom: '1px solid var(--warning-strong)' }}>
+            <span className="flex-1 min-w-0 text-sm" style={{ color: 'var(--warning-text)' }}>Вышла новая версия панели</span>
             <button
               type="button"
               onClick={() => window.location.reload()}
               className="min-h-[36px] px-4 rounded-xl text-sm font-medium"
-              style={{ backgroundColor: '#f59e0b', color: '#111111' }}
+              style={{ backgroundColor: 'var(--warning-strong)', color: '#111111' }}
             >
               Обновить
             </button>
           </div>
         )}
         {me.company?.status === 'pending' && (
-          <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: '#2e1f28', borderBottom: '1px solid #db2777' }}>
+          <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: 'var(--accent-tint)', borderBottom: '1px solid var(--accent)' }}>
             <span className="flex-1 min-w-0 text-sm text-gray-200">
               Подтвердите email{me.email ? ` (${me.email})` : ''} — до этого клиенты не видят сайт записи.
             </span>
             {isManager && (
-              <Link to="/admin-panel/start" className="min-h-[36px] px-4 rounded-xl text-sm font-medium inline-flex items-center" style={{ backgroundColor: '#db2777', color: '#fff' }}>
+              <Link to="/admin-panel/start" className="min-h-[36px] px-4 rounded-xl text-sm font-medium inline-flex items-center" style={{ backgroundColor: 'var(--accent)', color: 'var(--text)' }}>
                 Подробнее
               </Link>
             )}
@@ -212,7 +236,7 @@ export default function AdminLayout() {
         {/* Шапка: название салона и бейдж новых записей */}
         <header
           className="flex items-center gap-2 px-3 md:px-5 h-14 flex-shrink-0"
-          style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}
+          style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
         >
           <button
             type="button"
@@ -228,8 +252,8 @@ export default function AdminLayout() {
             onClick={() => setNewListOpen(true)}
             className="min-h-[44px] px-3 rounded-xl text-sm font-medium flex-shrink-0 flex items-center gap-2"
             style={{
-              backgroundColor: pendingCount ? 'rgba(245, 158, 11, 0.15)' : '#242424',
-              color: pendingCount ? '#f59e0b' : '#9ca3af',
+              backgroundColor: pendingCount ? 'rgba(245, 158, 11, 0.15)' : 'var(--surface-2)',
+              color: pendingCount ? 'var(--warning-text)' : 'var(--text-muted)',
             }}
           >
             Новые: {pendingCount ?? '…'}

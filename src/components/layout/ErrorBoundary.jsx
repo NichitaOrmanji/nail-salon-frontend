@@ -25,14 +25,14 @@ export default class ErrorBoundary extends Component {
     const tr = this.props.homeLabel ? text => text : t
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: '#1a1a1a' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: 'transparent' }}>
         <h2 className="text-white text-xl font-bold mb-2">{tr('Что-то пошло не так')}</h2>
         <p className="text-gray-500 text-sm mb-2">{tr('Попробуйте вернуться на главную.')}</p>
         <p className="text-gray-600 text-xs mb-8 break-all">{this.state.error.message}</p>
         <button
           onClick={this.handleReset}
           className="px-10 py-4 rounded-2xl text-white font-semibold active:scale-95"
-          style={{ backgroundColor: '#db2777' }}
+          style={{ backgroundColor: 'var(--accent)' }}
         >
           {this.props.homeLabel || tr('На главную')}
         </button>

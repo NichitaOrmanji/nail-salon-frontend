@@ -31,7 +31,7 @@ export default function ResetPasswordPage() {
   return (
     <AuthCard title="Новый пароль" onSubmit={done ? undefined : handleSubmit}>
       {done ? (
-        <p className="text-sm text-center" style={{ color: '#34d399' }}>
+        <p className="text-sm text-center" style={{ color: 'var(--success-text)' }}>
           Пароль изменён. Войдите с новым паролем (логин: {done.username}).
         </p>
       ) : (
@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
           </Button>
         </>
       )}
-      <Link to="/admin-panel/login" className="block text-center text-sm underline" style={{ color: '#f472b6' }}>
+      <Link to="/admin-panel/login" className="block text-center text-sm underline" style={{ color: 'var(--accent-text)' }}>
         {done ? 'Войти' : 'Ко входу'}
       </Link>
       {error && !done && (

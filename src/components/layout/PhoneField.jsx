@@ -65,9 +65,9 @@ export default function PhoneField({ value, onChange, inputId, inputLabel, inval
     <div
       className="flex items-center gap-2 px-4 py-4 relative transition-colors"
       style={{
-        borderBottom: '1px solid #2e2e2e',
+        borderBottom: '1px solid var(--border)',
         // Рамка внутри строки, чтобы не сдвигать соседние поля
-        boxShadow: invalid ? 'inset 0 0 0 1.5px #f87171' : 'none',
+        boxShadow: invalid ? 'inset 0 0 0 1.5px var(--danger-text)' : 'none',
         backgroundColor: invalid ? 'rgba(248, 113, 113, 0.08)' : undefined
       }}
     >
@@ -84,7 +84,7 @@ export default function PhoneField({ value, onChange, inputId, inputLabel, inval
       </button>
 
       {/* Разделитель */}
-      <div className="w-px h-5 flex-shrink-0" style={{ backgroundColor: '#3a3a3a' }} />
+      <div className="w-px h-5 flex-shrink-0" style={{ backgroundColor: 'var(--surface-4)' }} />
 
       {/* Номер */}
       <input
@@ -104,8 +104,8 @@ export default function PhoneField({ value, onChange, inputId, inputLabel, inval
         <div
           className="absolute top-full left-0 z-50 rounded-2xl overflow-y-auto shadow-xl"
           style={{
-            backgroundColor: '#1e1e1e',
-            border: '1px solid #2e2e2e',
+            backgroundColor: 'var(--surface-1)',
+            border: '1px solid var(--border)',
             minWidth: '220px',
             maxHeight: '240px'
           }}
@@ -116,7 +116,7 @@ export default function PhoneField({ value, onChange, inputId, inputLabel, inval
               onClick={() => handleCountrySelect(country)}
               className="w-full flex items-center gap-3 px-4 py-3 transition-all"
               style={{
-                backgroundColor: selectedCountry.code === country.code ? '#2e2e2e' : 'transparent'
+                backgroundColor: selectedCountry.code === country.code ? 'var(--surface-3)' : 'transparent'
               }}
               type="button"
             >

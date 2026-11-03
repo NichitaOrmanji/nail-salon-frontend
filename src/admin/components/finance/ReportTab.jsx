@@ -25,11 +25,11 @@ export default function ReportTab({ range }) {
   return (
     <div>
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <Stat label="Выручка" value={formatMoney(data.revenue)} hint={`${data.visits} визитов`} color="#34d399" />
+        <Stat label="Выручка" value={formatMoney(data.revenue)} hint={`${data.visits} визитов`} color="var(--success-text)" />
         <Stat label="Средний чек" value={formatMoney(data.average_check)} hint={`скидки ${formatMoney(data.discounts)}`} />
-        <Stat label="Расходы" value={formatMoney(data.expenses)} hint={`из них зарплаты ${formatMoney(data.salaries)}`} color="#f87171" />
+        <Stat label="Расходы" value={formatMoney(data.expenses)} hint={`из них зарплаты ${formatMoney(data.salaries)}`} color="var(--danger-text)" />
         <Stat label="Прочие приходы" value={formatMoney(data.other_income)} />
-        <Stat label="Прибыль" value={formatMoney(data.profit)} hint="выручка + приходы − расходы" color={Number(data.profit) < 0 ? '#f87171' : '#f472b6'} />
+        <Stat label="Прибыль" value={formatMoney(data.profit)} hint="выручка + приходы − расходы" color={Number(data.profit) < 0 ? 'var(--danger-text)' : 'var(--accent-text)'} />
       </div>
 
       {(data.unpaid_visits > 0 || data.no_shows > 0) && (

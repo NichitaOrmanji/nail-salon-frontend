@@ -23,7 +23,7 @@ export default function FinancePage() {
     <div className="px-4 md:px-6 py-5 max-w-6xl">
       <PageHeader title="Финансы" subtitle="Видит только владелец салона" />
       <div className="flex flex-wrap items-center gap-3 mb-5">
-        <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }} role="tablist">
+        <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }} role="tablist">
           {TABS.map(t => (
             <button
               key={t.key}
@@ -32,7 +32,7 @@ export default function FinancePage() {
               aria-selected={tab === t.key}
               onClick={() => setSearchParams({ tab: t.key }, { replace: true })}
               className="min-h-[44px] px-4 text-sm font-medium"
-              style={{ backgroundColor: tab === t.key ? '#db2777' : '#242424', color: tab === t.key ? '#ffffff' : '#9ca3af' }}
+              style={{ backgroundColor: tab === t.key ? 'var(--accent)' : 'var(--surface-2)', color: tab === t.key ? 'var(--text)' : 'var(--text-muted)' }}
             >
               {t.label}
             </button>

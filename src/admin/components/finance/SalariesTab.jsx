@@ -151,7 +151,7 @@ export default function SalariesTab({ range }) {
           { key: 'revenue', label: 'Выручка', align: 'right', render: r => formatMoney(r.revenue) },
           { key: 'accrued', label: 'Начислено', align: 'right', render: r => formatMoney(r.accrued) },
           { key: 'paid', label: 'Выплачено', align: 'right', render: r => formatMoney(r.paid) },
-          { key: 'due', label: 'К выплате', align: 'right', render: r => <span style={{ color: Number(r.due) > 0 ? '#f472b6' : '#9ca3af' }}>{formatMoney(r.due)}</span> },
+          { key: 'due', label: 'К выплате', align: 'right', render: r => <span style={{ color: Number(r.due) > 0 ? 'var(--accent-text)' : 'var(--text-muted)' }}>{formatMoney(r.due)}</span> },
           { key: 'actions', label: '', align: 'right', render: r => <Button onClick={() => setModal({ type: 'payout', row: r })}>Выплатить</Button> },
         ]}
       />

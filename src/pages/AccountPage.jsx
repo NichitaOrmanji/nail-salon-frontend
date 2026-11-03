@@ -27,11 +27,11 @@ function IconLogout() {
 }
 
 const STATUS_LABELS = {
-  pending: { label: 'Ожидает', color: '#f59e0b' },
-  confirmed: { label: 'Подтверждена', color: '#34d399' },
-  cancelled: { label: 'Отменена', color: '#f87171' },
-  completed: { label: 'Завершена', color: '#9ca3af' },
-  no_show: { label: 'Не пришёл', color: '#f87171' },
+  pending: { label: 'Ожидает', color: 'var(--warning-text)' },
+  confirmed: { label: 'Подтверждена', color: 'var(--success-text)' },
+  cancelled: { label: 'Отменена', color: 'var(--danger-text)' },
+  completed: { label: 'Завершена', color: 'var(--text-muted)' },
+  no_show: { label: 'Не пришёл', color: 'var(--danger-text)' },
 }
 
 export default function AccountPage() {
@@ -123,15 +123,15 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#1a1a1a' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
 
       {/* Шапка */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
+      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
         <button
           aria-label={t('Назад')}
           onClick={() => navigate(-1)}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-          style={{ backgroundColor: '#242424' }}
+          style={{ backgroundColor: 'var(--surface-2)' }}
         >
           <IconBack />
         </button>
@@ -142,7 +142,7 @@ export default function AccountPage() {
           aria-label={t('Выйти')}
           onClick={handleLogout}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-          style={{ backgroundColor: '#242424' }}
+          style={{ backgroundColor: 'var(--surface-2)' }}
         >
           <IconLogout />
         </button>
@@ -157,7 +157,7 @@ export default function AccountPage() {
         </div>
 
         {Number(debt?.debt) > 0 && (
-          <div className="rounded-2xl px-4 py-3 mb-4 text-sm" style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171', color: '#fca5a5' }}>
+          <div className="rounded-2xl px-4 py-3 mb-4 text-sm" style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid var(--danger-text)', color: 'var(--danger-soft)' }}>
             {t('У вас неоплаченный штраф {amount} L за пропущенную или поздно отменённую запись. Его нужно оплатить в салоне при следующем визите.',
               { amount: Number(debt.debt) })}
           </div>
@@ -175,7 +175,7 @@ export default function AccountPage() {
                 load()
               }}
               className="px-6 py-3 rounded-2xl text-white text-sm font-medium active:scale-95"
-              style={{ backgroundColor: '#242424' }}
+              style={{ backgroundColor: 'var(--surface-2)' }}
             >
               {t('Попробовать снова')}
             </button>
@@ -189,7 +189,7 @@ export default function AccountPage() {
             <button
               onClick={() => navigate('/')}
               className="mt-2 px-8 py-4 rounded-2xl text-white font-semibold active:scale-95"
-              style={{ backgroundColor: '#db2777' }}
+              style={{ backgroundColor: 'var(--accent)' }}
             >
               {t('Записаться')}
             </button>
@@ -202,17 +202,17 @@ export default function AccountPage() {
               <p className="text-red-400 text-sm text-center">{cancelError}</p>
             )}
             {appointments.map(a => {
-              const status = STATUS_LABELS[a.status] || { label: a.status, color: '#9ca3af' }
+              const status = STATUS_LABELS[a.status] || { label: a.status, color: 'var(--text-muted)' }
               const statusLabel = t(status.label)
               return (
-                <div key={a.id} className="rounded-2xl p-5" style={{ backgroundColor: '#242424' }}>
+                <div key={a.id} className="rounded-2xl p-5" style={{ backgroundColor: 'var(--surface-2)' }}>
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <div className="text-white text-sm font-semibold">{a.service}</div>
                       <div className="text-gray-500 text-xs mt-0.5">{a.master}</div>
                     </div>
                     <span className="text-xs font-medium px-2 py-1 rounded-lg"
-                      style={{ backgroundColor: '#2e2e2e', color: status.color }}>
+                      style={{ backgroundColor: 'var(--surface-3)', color: status.color }}>
                       {statusLabel}
                     </span>
                   </div>
@@ -224,7 +224,7 @@ export default function AccountPage() {
                   {tooLateToCancel(a) && (
                     <p className="mt-4 text-xs text-gray-500">
                       {t('Отменить онлайн можно не позже чем за {hours} ч до визита.', { hours: company.cancel_hours })}{' '}
-                      {company.phone && <a href={`tel:${company.phone.replace(/\s/g, '')}`} style={{ color: '#f472b6' }}>{t('Позвонить в салон')}</a>}
+                      {company.phone && <a href={`tel:${company.phone.replace(/\s/g, '')}`} style={{ color: 'var(--accent-text)' }}>{t('Позвонить в салон')}</a>}
                     </p>
                   )}
                   {canCancel(a) && (
@@ -232,7 +232,7 @@ export default function AccountPage() {
                       onClick={() => handleCancel(a)}
                       disabled={cancellingId === a.id}
                       className="mt-4 w-full py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95"
-                      style={{ backgroundColor: '#2e2e2e', color: '#f87171', opacity: cancellingId === a.id ? 0.5 : 1 }}
+                      style={{ backgroundColor: 'var(--surface-3)', color: 'var(--danger-text)', opacity: cancellingId === a.id ? 0.5 : 1 }}
                     >
                       {cancellingId === a.id ? t('Отменяем...') : t('Отменить запись')}
                     </button>
@@ -243,8 +243,8 @@ export default function AccountPage() {
           </div>
         )}
 
-        <div className="mt-10 pt-6 text-center" style={{ borderTop: '1px solid #242424' }}>
-          <button onClick={handleDeleteAccount} className="text-xs underline" style={{ color: '#9ca3af' }}>
+        <div className="mt-10 pt-6 text-center" style={{ borderTop: '1px solid var(--border)' }}>
+          <button onClick={handleDeleteAccount} className="text-xs underline" style={{ color: 'var(--text-muted)' }}>
             {t('Удалить аккаунт')}
           </button>
           {deleteError && <p className="text-red-400 text-xs mt-2">{deleteError}</p>}

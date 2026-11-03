@@ -21,7 +21,7 @@ function ClientRow({ client: c, onOpen }) {
       type="button"
       onClick={() => onOpen(c.phone)}
       className="w-full text-left rounded-2xl px-4 py-3 transition-all active:scale-[0.99]"
-      style={{ backgroundColor: '#242424', border: c.blacklist ? '1px solid #f87171' : '1px solid transparent' }}
+      style={{ backgroundColor: 'var(--surface-2)', border: c.blacklist ? '1px solid var(--danger-text)' : '1px solid transparent' }}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <span className="text-white text-sm font-semibold break-words">{c.name || 'Без имени'}</span>
@@ -31,10 +31,10 @@ function ClientRow({ client: c, onOpen }) {
         <span className="text-gray-400">Визитов: {c.visits}</span>
         {c.paid !== '0.00' && <span className="text-gray-400">Оплачено: {formatMoney(c.paid)}</span>}
         {c.last_visit && <span className="text-gray-500">Был(а): {clientDate(c.last_visit)}</span>}
-        {c.next_visit && <span style={{ color: '#34d399' }}>Запись: {clientDate(c.next_visit)}</span>}
-        {c.no_shows > 0 && <span style={{ color: '#f87171' }}>Не пришёл: {c.no_shows}</span>}
+        {c.next_visit && <span style={{ color: 'var(--success-text)' }}>Запись: {clientDate(c.next_visit)}</span>}
+        {c.no_shows > 0 && <span style={{ color: 'var(--danger-text)' }}>Не пришёл: {c.no_shows}</span>}
         {c.blacklist && (
-          <span className="font-semibold" style={{ color: '#f87171' }}>
+          <span className="font-semibold" style={{ color: 'var(--danger-text)' }}>
             ⛔ Чёрный список{Number(c.blacklist.debt) > 0 ? ` · долг ${formatMoney(c.blacklist.debt)}` : ''}
           </span>
         )}
@@ -121,7 +121,7 @@ export default function ClientsPage() {
         <Button
           aria-pressed={onlyBlacklist}
           onClick={() => setOnlyBlacklist(v => !v)}
-          style={onlyBlacklist ? { backgroundColor: '#f87171', color: '#fff' } : { color: '#f87171' }}
+          style={onlyBlacklist ? { backgroundColor: 'var(--danger-strong)', color: '#111111' } : { color: 'var(--danger-text)' }}
         >
           ⛔ Чёрный список
         </Button>

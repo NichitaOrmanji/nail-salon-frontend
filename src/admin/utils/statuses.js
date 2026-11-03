@@ -1,10 +1,11 @@
-// Статусы записи: подпись и цвет
+// Статусы записи: подпись и цвет. Цвета — переменные темы (src/theme.css, --st-*):
+// оттенок по смыслу один во всех темах, яркость подобрана под фон темы
 export const STATUSES = {
-  pending: { label: 'Ожидает', color: '#f59e0b' },
-  confirmed: { label: 'Подтверждена', color: '#34d399' },
-  completed: { label: 'Пришёл', color: '#9ca3af' },
-  no_show: { label: 'Не пришёл', color: '#f87171' },
-  cancelled: { label: 'Отменена', color: '#9098a4' },
+  pending: { label: 'Ожидает', color: 'var(--st-amber)' },
+  confirmed: { label: 'Подтверждена', color: 'var(--st-green)' },
+  completed: { label: 'Пришёл', color: 'var(--st-gray)' },
+  no_show: { label: 'Не пришёл', color: 'var(--st-red)' },
+  cancelled: { label: 'Отменена', color: 'var(--st-gray2)' },
 }
 
 // Статусы, которые занимают время мастера (как BUSY_STATUSES на бэке)
@@ -13,17 +14,17 @@ export const BUSY_STATUSES = ['pending', 'confirmed', 'completed']
 export const ACTIVE_STATUSES = ['pending', 'confirmed']
 
 export function statusInfo(status) {
-  return STATUSES[status] || { label: status || '—', color: '#9ca3af' }
+  return STATUSES[status] || { label: status || '—', color: 'var(--st-gray)' }
 }
 
 // Цвет записи в журнале: откуда пришла и чем закончилась (легенда — в том же порядке)
 export const KINDS = {
-  online_confirmed: { label: 'Онлайн, подтверждена', color: '#34d399' },
-  online_pending: { label: 'Онлайн, ждёт подтверждения', color: '#f59e0b' },
-  staff: { label: 'Записал администратор', color: '#60a5fa' },
-  completed: { label: 'Визит состоялся', color: '#9ca3af' },
-  no_show: { label: 'Не пришёл', color: '#f87171' },
-  cancelled: { label: 'Отменена', color: '#9098a4' },
+  online_confirmed: { label: 'Онлайн, подтверждена', color: 'var(--st-green)' },
+  online_pending: { label: 'Онлайн, ждёт подтверждения', color: 'var(--st-amber)' },
+  staff: { label: 'Записал администратор', color: 'var(--st-blue)' },
+  completed: { label: 'Визит состоялся', color: 'var(--st-gray)' },
+  no_show: { label: 'Не пришёл', color: 'var(--st-red)' },
+  cancelled: { label: 'Отменена', color: 'var(--st-gray2)' },
 }
 
 export function appointmentKind(a) {

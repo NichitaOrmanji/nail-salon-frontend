@@ -125,8 +125,8 @@ export default function ConfirmationPage() {
   // Экран успеха
   if (sent) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ backgroundColor: '#1a1a1a' }}>
-        <div className="mb-6" style={{ color: '#f472b6' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ backgroundColor: 'transparent' }}>
+        <div className="mb-6" style={{ color: 'var(--accent-text)' }}>
           <IconSuccess />
         </div>
         <h2 className="text-white text-2xl font-bold mb-2 tracking-tight">
@@ -139,7 +139,7 @@ export default function ConfirmationPage() {
         </p>
         <p className="text-gray-500 text-xs text-center mb-8 max-w-xs">
           {t('Не можете прийти — отмените запись в личном кабинете или позвоните в салон.')}{' '}
-          <Link to="/rules" className="underline" style={{ color: '#f472b6' }}>{t('Правила салона')}</Link>
+          <Link to="/rules" className="underline" style={{ color: 'var(--accent-text)' }}>{t('Правила салона')}</Link>
         </p>
         {telegramUrl && (
           <>
@@ -153,7 +153,7 @@ export default function ConfirmationPage() {
               target="_blank"
               rel="noreferrer"
               className="w-full max-w-xs py-4 rounded-2xl text-white font-semibold text-center transition-all active:scale-95 mb-3"
-              style={{ backgroundColor: '#1479a8' }}
+              style={{ backgroundColor: '#1479a8', color: '#ffffff' }}
             >
               {confirmed ? t('Напоминания в Telegram') : t('Подтвердить в Telegram')}
             </a>
@@ -162,7 +162,7 @@ export default function ConfirmationPage() {
         <button
           onClick={() => navigate('/')}
           className="w-full max-w-xs py-4 rounded-2xl font-semibold transition-all active:scale-95"
-          style={telegramUrl ? { backgroundColor: '#242424', color: '#d1d5db' } : { backgroundColor: '#db2777', color: '#fff' }}
+          style={telegramUrl ? { backgroundColor: 'var(--surface-2)', color: 'var(--text-soft)' } : { backgroundColor: 'var(--accent)', color: 'var(--text)' }}
         >
           {t('На главную')}
         </button>
@@ -176,7 +176,7 @@ export default function ConfirmationPage() {
   }
 
   return (
-    <div className="min-h-screen pb-10" style={{ backgroundColor: '#1a1a1a' }}>
+    <div className="min-h-screen pb-10" style={{ backgroundColor: 'transparent' }}>
 
       <SalonHeader />
 
@@ -189,24 +189,24 @@ export default function ConfirmationPage() {
         </div>
 
         {/* Карточка итога */}
-        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#242424' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
 
-          <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
+          <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
             <span className="text-gray-500 text-sm">{t('Специалист')}</span>
             <span className="text-white text-sm font-medium">{master.id ? master.name : t('Любой свободный')}</span>
           </div>
 
-          <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
+          <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
             <span className="text-gray-500 text-sm">{t('Услуга')}</span>
             <span className="text-white text-sm font-medium text-right">{service.name}</span>
           </div>
 
-          <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
+          <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
             <span className="text-gray-500 text-sm">{t('Дата и время')}</span>
             <span className="text-white text-sm font-medium">{formatDisplayDate(date, { lang: getLang() })}, {time}</span>
           </div>
 
-          <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
+          <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
             <span className="text-gray-500 text-sm">{t('Длительность')}</span>
             <span className="text-white text-sm font-medium">{formatDuration(service.duration, getLang())}</span>
           </div>
@@ -222,7 +222,7 @@ export default function ConfirmationPage() {
         <div>
           <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">{t('Ваши данные')}</p>
           {/* Без overflow-hidden: иначе обрезается список стран в PhoneField */}
-          <div className="rounded-2xl relative" style={{ backgroundColor: '#242424' }}>
+          <div className="rounded-2xl relative" style={{ backgroundColor: 'var(--surface-2)' }}>
 
             <input
               type="text"
@@ -230,7 +230,7 @@ export default function ConfirmationPage() {
               value={name}
               onChange={e => setName(e.target.value)}
               className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none text-sm rounded-t-2xl"
-              style={{ backgroundColor: '#242424', borderBottom: '1px solid #2e2e2e' }}
+              style={{ backgroundColor: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}
             />
             <PhoneField
               value={phone}
@@ -244,7 +244,7 @@ export default function ConfirmationPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none text-sm"
-              style={{ backgroundColor: '#242424', borderBottom: '1px solid #2e2e2e' }}
+              style={{ backgroundColor: 'var(--surface-2)', borderBottom: '1px solid var(--border)' }}
             />
             <textarea
               placeholder={t('Комментарий (необязательно)')}
@@ -252,12 +252,12 @@ export default function ConfirmationPage() {
               onChange={e => setNotes(e.target.value)}
               rows={3}
               className="w-full px-5 py-4 text-white placeholder-gray-600 outline-none resize-none text-sm rounded-b-2xl"
-              style={{ backgroundColor: '#242424' }}
+              style={{ backgroundColor: 'var(--surface-2)' }}
             />
 
           </div>
           {phone && !phoneValid && (
-            <p className="text-xs mt-2 px-1" style={{ color: phoneInvalid ? '#f87171' : '#9098a4' }}>
+            <p className="text-xs mt-2 px-1" style={{ color: phoneInvalid ? 'var(--danger-text)' : 'var(--text-faint)' }}>
               {t('Проверьте номер телефона')}
             </p>
           )}
@@ -271,7 +271,7 @@ export default function ConfirmationPage() {
                 { hours: company.late_cancel_hours, percent: company.penalty_percent })
               : t('Если вы не придёте на запись, при следующем визите нужно будет оплатить штраф {percent}% стоимости пропущенной услуги. Оплата — на месте в салоне.',
                 { percent: company.penalty_percent })}{' '}
-            <Link to="/rules" className="underline" style={{ color: '#f472b6' }}>{t('Правила салона')}</Link>
+            <Link to="/rules" className="underline" style={{ color: 'var(--accent-text)' }}>{t('Правила салона')}</Link>
           </p>
         )}
 
@@ -289,7 +289,7 @@ export default function ConfirmationPage() {
           />
           <span className="text-gray-400 text-xs leading-relaxed">
             {t('Согласен(на) на обработку моих персональных данных для записи и напоминаний —')}{' '}
-            <Link to="/privacy" className="underline" style={{ color: '#f472b6' }}>{t('политика конфиденциальности')}</Link>
+            <Link to="/privacy" className="underline" style={{ color: 'var(--accent-text)' }}>{t('политика конфиденциальности')}</Link>
           </span>
         </label>
 
@@ -304,7 +304,7 @@ export default function ConfirmationPage() {
           disabled={!canSubmit || submitting}
           className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"
           style={{
-            backgroundColor: '#db2777',
+            backgroundColor: 'var(--accent)',
             opacity: canSubmit && !submitting ? 1 : 0.4
           }}
         >

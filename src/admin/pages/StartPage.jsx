@@ -48,14 +48,14 @@ function ShareCard({ url, name, ready }) {
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
 
   return (
-    <section className="rounded-2xl p-4 mb-5" style={{ backgroundColor: '#1f1f1f', border: `1px solid ${ready ? '#db2777' : '#2e2e2e'}` }}>
+    <section className="rounded-2xl p-4 mb-5" style={{ backgroundColor: 'var(--surface-1)', border: `1px solid ${ready ? 'var(--accent)' : 'var(--border)'}` }}>
       <h2 className="text-white text-base font-semibold mb-1">Ваша ссылка для записи</h2>
       {!ready && (
         <p className="text-gray-400 text-xs mb-2">
           Клиенты смогут записаться, когда вы подтвердите email и добавите мастера с услугой и графиком.
         </p>
       )}
-      <a href={url} target="_blank" rel="noreferrer" className="block text-sm font-medium underline break-all mb-3" style={{ color: '#f472b6' }}>
+      <a href={url} target="_blank" rel="noreferrer" className="block text-sm font-medium underline break-all mb-3" style={{ color: 'var(--accent-text)' }}>
         {url}
       </a>
       <div className="flex flex-wrap gap-2 mb-4">
@@ -72,7 +72,7 @@ function ShareCard({ url, name, ready }) {
         <div className="space-y-2 text-sm text-gray-300">
           <div>
             <div className="text-gray-400 text-xs mb-1">Текст для публикации</div>
-            <p className="rounded-xl p-3 text-sm break-words" style={{ backgroundColor: '#242424' }}>{post}</p>
+            <p className="rounded-xl p-3 text-sm break-words" style={{ backgroundColor: 'var(--surface-2)' }}>{post}</p>
             <div className="mt-2"><CopyButton text={post} label="Скопировать текст" /></div>
           </div>
           <ul className="text-gray-400 text-xs space-y-1 list-disc pl-4">
@@ -118,7 +118,7 @@ export default function StartPage() {
     <div className="px-4 md:px-6 py-5 max-w-3xl">
       <PageHeader title="Начало работы" subtitle={trialEnds ? `Пробный период — до ${trialEnds}` : 'Настройка салона и ссылка для клиентов'} />
       {location.state?.welcome && (
-        <div className="rounded-2xl p-4 mb-5 text-sm" style={{ backgroundColor: '#2e1f28', border: '1px solid #db2777' }}>
+        <div className="rounded-2xl p-4 mb-5 text-sm" style={{ backgroundColor: 'var(--accent-tint)', border: '1px solid var(--accent)' }}>
           <div className="text-white font-semibold mb-1">Салон «{me?.company?.name}» создан 🎉</div>
           <div className="text-gray-300">
             Пройдите шаги ниже — это займёт 10–15 минут. {location.state?.emailSent !== false
@@ -135,9 +135,9 @@ export default function StartPage() {
           {data.ready && <ShareCard url={data.public_url} name={me?.company?.name || ''} ready />}
 
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#242424' }}
+            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}
               role="progressbar" aria-valuemin={0} aria-valuemax={data.total} aria-valuenow={data.done} aria-label="Настройка салона">
-              <div className="h-full rounded-full" style={{ width: `${(data.done / data.total) * 100}%`, backgroundColor: '#34d399' }} />
+              <div className="h-full rounded-full" style={{ width: `${(data.done / data.total) * 100}%`, backgroundColor: 'var(--success-strong)' }} />
             </div>
             <span className="text-gray-400 text-xs">{data.done} из {data.total}</span>
           </div>
@@ -147,9 +147,9 @@ export default function StartPage() {
               const info = STEPS[step.key] || { title: step.key, text: '' }
               return (
                 <li key={step.key} className="rounded-2xl p-4 flex flex-wrap items-start gap-3"
-                  style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+                  style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border)' }}>
                   <span aria-hidden="true" className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                    style={step.done ? { backgroundColor: '#34d399', color: '#111' } : { border: '2px solid #4b4b4b' }}>
+                    style={step.done ? { backgroundColor: 'var(--success-strong)', color: '#111' } : { border: '2px solid var(--border-strong)' }}>
                     {step.done ? '✓' : ''}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -160,7 +160,7 @@ export default function StartPage() {
                     {step.key === 'email' && !step.done && (
                       <div className="text-xs mt-2">
                         <span className="text-gray-300">Письмо на {me?.email}. </span>
-                        <button type="button" onClick={sendAgain} disabled={resend === 'sending'} className="underline" style={{ color: '#f472b6' }}>
+                        <button type="button" onClick={sendAgain} disabled={resend === 'sending'} className="underline" style={{ color: 'var(--accent-text)' }}>
                           Отправить ещё раз
                         </button>
                         {resend && resend !== 'sending' && <div className="text-gray-400 mt-1">{resend}</div>}

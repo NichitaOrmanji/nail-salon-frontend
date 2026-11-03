@@ -270,17 +270,17 @@ export default function JournalPage() {
     <div className="h-full flex flex-col">
 
       {/* Панель дня */}
-      <div ref={toolbarRef} className="flex-shrink-0 px-3 md:px-5 py-3 flex flex-wrap items-center gap-2" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}>
+      <div ref={toolbarRef} className="flex-shrink-0 px-3 md:px-5 py-3 flex flex-wrap items-center gap-2" style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center gap-1">
           <Button aria-label={view === 'week' ? 'Предыдущая неделя' : 'Предыдущий день'} className="w-11 px-0" onClick={() => goToDate(addDays(date, -step))}>
             <IconChevronLeft />
           </Button>
-          <Button onClick={() => goToDate(todayString())} style={isToday ? { color: '#f472b6' } : undefined}>Сегодня</Button>
+          <Button onClick={() => goToDate(todayString())} style={isToday ? { color: 'var(--accent-text)' } : undefined}>Сегодня</Button>
           <Button aria-label={view === 'week' ? 'Следующая неделя' : 'Следующий день'} className="w-11 px-0" onClick={() => goToDate(addDays(date, step))}>
             <IconChevronRight />
           </Button>
         </div>
-        <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }} role="group" aria-label="Вид журнала">
+        <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }} role="group" aria-label="Вид журнала">
           {[['week', 'Неделя'], ['day', 'День']].map(([key, label]) => (
             <button
               key={key}
@@ -288,7 +288,7 @@ export default function JournalPage() {
               aria-pressed={view === key}
               onClick={() => changeView(key)}
               className="min-h-[44px] px-3 text-sm font-medium"
-              style={{ backgroundColor: view === key ? '#db2777' : '#242424', color: view === key ? '#ffffff' : '#9ca3af' }}
+              style={{ backgroundColor: view === key ? 'var(--accent)' : 'var(--surface-2)', color: view === key ? 'var(--text)' : 'var(--text-muted)' }}
             >
               {label}
             </button>
@@ -300,7 +300,7 @@ export default function JournalPage() {
           value={date}
           onChange={e => goToDate(e.target.value)}
           className="min-h-[44px] px-3 rounded-xl text-white text-sm outline-none"
-          style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e', colorScheme: 'dark' }}
+          style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)', colorScheme: 'dark' }}
         />
         {view === 'week' && isManager && current && (
           <div className="w-44">
@@ -327,10 +327,15 @@ export default function JournalPage() {
       )}
 
       {/* Легенда цветов */}
-      <div className="flex-shrink-0 px-3 md:px-5 py-2 flex flex-wrap gap-x-4 gap-y-1" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}>
+      <div className="flex-shrink-0 px-3 md:px-5 py-2 flex flex-wrap gap-x-4 gap-y-1" style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
         {Object.entries(KINDS).filter(([key]) => key !== 'cancelled' || showCancelled).map(([key, kind]) => (
           <span key={key} className="inline-flex items-center gap-1.5 text-xs text-gray-400">
-            <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: kind.color }} />
+            {/* Образец — как запись в журнале: заливка, рамка и полоса цвета статуса */}
+            <span className="w-3.5 h-3.5 rounded-sm flex-shrink-0 box-border" style={{
+              backgroundColor: `color-mix(in srgb, ${kind.color} var(--appt-tint), var(--appt-base))`,
+              border: `max(var(--appt-border-w), 1px) solid ${kind.color}`,
+              borderLeft: `max(var(--appt-stripe-w) / 2, 3px) solid ${kind.color}`,
+            }} />
             {kind.label}
           </span>
         ))}

@@ -75,8 +75,8 @@ function ClientApp() {
     <AuthProvider>
       <CompanyProvider>
         <BookingProvider>
-          <div style={{ backgroundColor: '#111111' }} className="min-h-screen">
-            <div className={`mx-auto w-full ${PAGE_WIDTH} min-h-screen relative`} style={{ backgroundColor: '#1a1a1a' }}>
+          <div style={{ background: 'var(--bg-deep-paint)' }} className="min-h-screen">
+            <div className={`mx-auto w-full ${PAGE_WIDTH} min-h-screen relative`} style={{ background: 'var(--bg-page)' }}>
               <ErrorBoundary key={lang}>
                 <Suspense fallback={pageFallback}>
                 <Routes>
@@ -112,7 +112,7 @@ export default function App() {
             <ErrorBoundary homePath="/admin-panel" homeLabel="В панель салона">
               <Suspense
                 fallback={
-                  <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#111111' }}>
+                  <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-deep-paint)' }}>
                     <Spinner />
                   </div>
                 }

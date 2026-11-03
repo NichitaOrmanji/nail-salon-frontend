@@ -72,9 +72,9 @@ export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
                 onClick={() => setMethod(m.key)}
                 className="min-h-[44px] rounded-xl text-sm font-medium"
                 style={{
-                  backgroundColor: method === m.key ? '#db2777' : '#242424',
-                  color: method === m.key ? '#ffffff' : '#d1d5db',
-                  border: '1px solid #2e2e2e',
+                  backgroundColor: method === m.key ? 'var(--accent)' : 'var(--surface-2)',
+                  color: method === m.key ? 'var(--text)' : 'var(--text-soft)',
+                  border: '1px solid var(--border)',
                 }}
               >
                 {m.label}
@@ -83,16 +83,16 @@ export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
           </div>
         </div>
         {debt > 0 && (
-          <div className="rounded-xl px-3 py-2" style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171' }}>
+          <div className="rounded-xl px-3 py-2" style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid var(--danger-text)' }}>
             <Checkbox
               checked={payDebt}
               onChange={setPayDebt}
-              label={<span style={{ color: '#fca5a5' }}>Штраф из чёрного списка: {formatMoney(debt)}</span>}
+              label={<span style={{ color: 'var(--danger-soft)' }}>Штраф из чёрного списка: {formatMoney(debt)}</span>}
             />
             <p className="text-xs text-gray-400 mt-1">Клиент не пришёл или поздно отменил прошлую запись — штраф оплачивается сейчас.</p>
           </div>
         )}
-        <div className="flex justify-between items-baseline pt-2" style={{ borderTop: '1px solid #2e2e2e' }}>
+        <div className="flex justify-between items-baseline pt-2" style={{ borderTop: '1px solid var(--border)' }}>
           <span className="text-gray-400 text-sm">К оплате</span>
           <span className="text-white text-2xl font-bold">{formatMoney(totalAmount)}</span>
         </div>

@@ -27,7 +27,7 @@ function Stars({ count }) {
   return (
     <span>
       {[1,2,3,4,5].map(i => (
-        <span key={i} style={{ color: i <= Math.round(count) ? '#f59e0b' : '#374151' }}>★</span>
+        <span key={i} style={{ color: i <= Math.round(count) ? 'var(--warning-text)' : 'var(--text-disabled)' }}>★</span>
       ))}
     </span>
   )
@@ -86,7 +86,7 @@ export default function MastersPage() {
   ]
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#1a1a1a' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
 
       <SalonHeader />
 
@@ -107,7 +107,7 @@ export default function MastersPage() {
           <button
             onClick={retry}
             className="px-6 py-3 rounded-2xl text-white text-sm font-medium transition-all active:scale-95"
-            style={{ backgroundColor: '#242424' }}
+            style={{ backgroundColor: 'var(--surface-2)' }}
           >
             {t('Попробовать снова')}
           </button>
@@ -131,13 +131,13 @@ export default function MastersPage() {
                 key={m.id ?? 'any'}
                 onClick={() => handleSelect(m)}
                 className="w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all active:scale-95"
-                style={{ backgroundColor: isSelected ? '#242424' : 'transparent' }}
+                style={{ backgroundColor: isSelected ? 'var(--surface-2)' : 'transparent' }}
               >
                 <div className="flex items-center gap-4">
                   {/* Аватар */}
                   <div
                     className="w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden flex-shrink-0"
-                    style={{ backgroundColor: '#242424', color: '#9098a4' }}
+                    style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text-faint)' }}
                   >
                     <MasterPhoto src={m.photo} name={m.name} />
                   </div>
@@ -160,10 +160,10 @@ export default function MastersPage() {
                 {/* Радио */}
                 <div
                   className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                  style={{ borderColor: isSelected ? '#f472b6' : '#374151' }}
+                  style={{ borderColor: isSelected ? 'var(--accent)' : 'var(--border-strong)' }}
                 >
                   {isSelected && (
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#db2777' }} />
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />
                   )}
                 </div>
               </button>

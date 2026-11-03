@@ -25,7 +25,7 @@ import StartPage from './pages/StartPage'
 export default function AdminApp() {
   return (
     <StaffAuthProvider>
-      <div className="min-h-dvh text-white" style={{ backgroundColor: '#111111' }}>
+      <div className="min-h-dvh text-white" style={{ background: 'var(--bg-deep-paint)' }}>
         <Routes>
           <Route path="login" element={<LoginPage />} />
           {/* Без входа: регистрация салона, подтверждение email, восстановление пароля, условия */}

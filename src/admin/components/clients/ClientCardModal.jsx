@@ -13,9 +13,9 @@ import Spinner from '../../../components/layout/Spinner'
 
 function Stat({ label, value, color }) {
   return (
-    <div className="rounded-xl px-3 py-2" style={{ backgroundColor: '#242424' }}>
+    <div className="rounded-xl px-3 py-2" style={{ backgroundColor: 'var(--surface-2)' }}>
       <div className="text-gray-500 text-[11px]">{label}</div>
-      <div className="text-sm font-semibold break-words" style={{ color: color || '#ffffff' }}>{value}</div>
+      <div className="text-sm font-semibold break-words" style={{ color: color || 'var(--text)' }}>{value}</div>
     </div>
   )
 }
@@ -86,12 +86,12 @@ function BlacklistSection({ card, onChanged }) {
   }
 
   return (
-    <div className="rounded-2xl p-3 space-y-2" style={{ backgroundColor: 'rgba(248, 113, 113, 0.08)', border: '1px solid #f87171' }}>
+    <div className="rounded-2xl p-3 space-y-2" style={{ backgroundColor: 'rgba(248, 113, 113, 0.08)', border: '1px solid var(--danger-text)' }}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="font-semibold text-sm" style={{ color: '#f87171' }}>
+        <span className="font-semibold text-sm" style={{ color: 'var(--danger-text)' }}>
           {card.blacklist ? '⛔ Чёрный список' : 'Штрафы (все прощены)'}
         </span>
-        {debt > 0 && <span className="text-sm" style={{ color: '#fca5a5' }}>Долг {formatMoney(debt)}</span>}
+        {debt > 0 && <span className="text-sm" style={{ color: 'var(--danger-soft)' }}>Долг {formatMoney(debt)}</span>}
       </div>
       {debt > 0 && (
         <p className="text-xs text-gray-400">
@@ -100,7 +100,7 @@ function BlacklistSection({ card, onChanged }) {
         </p>
       )}
       {card.penalties.map(p => (
-        <div key={p.id} className="rounded-xl px-3 py-2 text-sm" style={{ backgroundColor: '#1f1f1f' }}>
+        <div key={p.id} className="rounded-xl px-3 py-2 text-sm" style={{ backgroundColor: 'var(--surface-1)' }}>
           <div className="flex flex-wrap justify-between gap-2">
             <span className="text-white">{clientDate(p.date)}, {p.time} · {PENALTY_KIND[p.kind]}</span>
             <span style={{ color: PENALTY_STATUS[p.status]?.color }}>{formatMoney(p.amount)} · {PENALTY_STATUS[p.status]?.label}</span>
@@ -152,7 +152,7 @@ function ForgetSection({ phone, onForgotten }) {
   }
 
   return (
-    <div className="pt-4" style={{ borderTop: '1px solid #2e2e2e' }}>
+    <div className="pt-4" style={{ borderTop: '1px solid var(--border)' }}>
       <Button variant="danger" onClick={() => setAsking(true)} disabled={busy}>
         {busy ? 'Удаляем...' : 'Удалить данные клиента'}
       </Button>
@@ -194,17 +194,17 @@ export default function ClientCardModal({ phone, onClose, onRebook, onForgotten 
       {card && (
         <div className="space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <a href={`tel:${card.phone}`} className="text-sm font-medium" style={{ color: '#f472b6' }}>{card.phone}</a>
+            <a href={`tel:${card.phone}`} className="text-sm font-medium" style={{ color: 'var(--accent-text)' }}>{card.phone}</a>
             <Button variant="primary" onClick={() => onRebook(card)}>Записать снова</Button>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <Stat label="Визитов" value={card.visits} />
-            <Stat label="Не пришёл" value={card.no_shows} color={card.no_shows ? '#f87171' : undefined} />
+            <Stat label="Не пришёл" value={card.no_shows} color={card.no_shows ? 'var(--danger-text)' : undefined} />
             <Stat label="Отменено" value={card.cancelled} />
             <Stat label="Оплачено" value={formatMoney(card.paid)} />
             <Stat label="Средний чек" value={card.average_check ? formatMoney(card.average_check) : '—'} />
-            <Stat label="Следующая запись" value={card.next_visit ? clientDate(card.next_visit) : '—'} color={card.next_visit ? '#34d399' : undefined} />
+            <Stat label="Следующая запись" value={card.next_visit ? clientDate(card.next_visit) : '—'} color={card.next_visit ? 'var(--success-text)' : undefined} />
             <Stat label="Последний визит" value={card.last_visit ? clientDate(card.last_visit) : '—'} />
             <Stat label="Любимый мастер" value={card.top_master || '—'} />
             <Stat label="Чаще всего" value={card.top_service || '—'} />
@@ -218,14 +218,14 @@ export default function ClientCardModal({ phone, onClose, onRebook, onForgotten 
             <div className="text-gray-400 text-xs font-medium mb-2">История ({card.total})</div>
             <div className="space-y-2">
               {card.appointments.map(a => (
-                <div key={a.id} className="rounded-xl px-3 py-2" style={{ backgroundColor: '#242424' }}>
+                <div key={a.id} className="rounded-xl px-3 py-2" style={{ backgroundColor: 'var(--surface-2)' }}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="text-white text-sm font-medium">{clientDate(a.date)}, {a.start_time}</span>
                     <StatusBadge status={a.status} />
                   </div>
                   <div className="text-gray-400 text-xs mt-1 break-words">
                     {a.service || 'Услуга не указана'}{a.master ? ` · ${a.master}` : ''}
-                    {a.paid ? <span style={{ color: '#34d399' }}> · оплачено {formatMoney(a.paid)}</span> : ''}
+                    {a.paid ? <span style={{ color: 'var(--success-text)' }}> · оплачено {formatMoney(a.paid)}</span> : ''}
                   </div>
                   {a.notes && <div className="text-gray-500 text-xs mt-1 whitespace-pre-line break-words">{a.notes}</div>}
                 </div>

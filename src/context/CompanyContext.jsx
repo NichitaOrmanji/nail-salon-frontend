@@ -26,7 +26,7 @@ const CompanyContext = createContext(FALLBACK)
 // Салона с таким адресом нет или он ещё не открыл запись (не подтвердил email) — вместо пустой главной
 function SalonNotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: '#1a1a1a' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: 'transparent' }}>
       <h1 className="text-white text-xl font-bold mb-2">{t('Салон не найден')}</h1>
       <p className="text-gray-400 text-sm max-w-xs">
         {t('Проверьте ссылку. Если салон только что зарегистрировался, онлайн-запись откроется после подтверждения его email.')}

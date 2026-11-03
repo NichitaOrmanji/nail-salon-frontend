@@ -145,7 +145,7 @@ export default function SettingsPage() {
       <ErrorText className="mb-3">{loadError}</ErrorText>
       {!form && !loadError && <Spinner />}
       {photos && (
-        <section className="rounded-2xl p-4 mb-5 space-y-5" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+        <section className="rounded-2xl p-4 mb-5 space-y-5" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border)' }}>
           <PhotoField
             label="Главное фото салона"
             hint="Шапка сайта записи. Лучше горизонтальное. Сохраняется сразу."
@@ -199,7 +199,7 @@ export default function SettingsPage() {
           >
             <TextInput inputMode="numeric" value={form.cancel_hours} onChange={e => set('cancel_hours', e.target.value.replace(/\D/g, ''))} placeholder="0" />
           </Field>
-          <label className="flex items-start gap-3 rounded-2xl p-4 cursor-pointer" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+          <label className="flex items-start gap-3 rounded-2xl p-4 cursor-pointer" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border)' }}>
             <input
               type="checkbox"
               className="mt-1 w-4 h-4 accent-pink-500"
@@ -215,7 +215,7 @@ export default function SettingsPage() {
               </span>
             </span>
           </label>
-          <div className="rounded-2xl p-4 space-y-3" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border)' }}>
             <div className="text-white text-sm font-semibold">Чёрный список</div>
             <p className="text-gray-500 text-xs">
               Клиент, который не пришёл или отменил запись слишком поздно, попадает в чёрный список. Штраф он
@@ -230,7 +230,7 @@ export default function SettingsPage() {
           </div>
           <ErrorText>{error}</ErrorText>
           <div className="flex items-center justify-end gap-3">
-            {done && <span className="text-xs" style={{ color: '#34d399' }}>Сохранено</span>}
+            {done && <span className="text-xs" style={{ color: 'var(--success-text)' }}>Сохранено</span>}
             <Button type="submit" variant="primary" disabled={saving}>{saving ? 'Сохраняем...' : 'Сохранить'}</Button>
           </div>
         </form>

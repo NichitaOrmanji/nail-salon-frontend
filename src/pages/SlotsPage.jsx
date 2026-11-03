@@ -124,7 +124,7 @@ export default function SlotsPage() {
     : t('Выберите удобный день')
 
   return (
-    <div className="min-h-screen pb-32" style={{ backgroundColor: '#1a1a1a' }}>
+    <div className="min-h-screen pb-32" style={{ backgroundColor: 'transparent' }}>
 
       <SalonHeader />
 
@@ -147,7 +147,7 @@ export default function SlotsPage() {
               disabled={isCurrentMonth}
               aria-label={t('Предыдущий месяц')}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-              style={{ backgroundColor: '#242424', opacity: isCurrentMonth ? 0.3 : 1 }}
+              style={{ backgroundColor: 'var(--surface-2)', opacity: isCurrentMonth ? 0.3 : 1 }}
             >
               <IconChevronLeft />
             </button>
@@ -155,7 +155,7 @@ export default function SlotsPage() {
               onClick={() => changeMonth(1)}
               aria-label={t('Следующий месяц')}
               className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-              style={{ backgroundColor: '#242424' }}
+              style={{ backgroundColor: 'var(--surface-2)' }}
             >
               <IconChevronRight />
             </button>
@@ -186,8 +186,8 @@ export default function SlotsPage() {
                 disabled={isPast}
                 className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl text-sm transition-all active:scale-90"
                 style={{
-                  backgroundColor: isSelected ? '#db2777' : todayMark ? '#242424' : 'transparent',
-                  color: isPast ? '#374151' : '#ffffff',
+                  backgroundColor: isSelected ? 'var(--accent)' : todayMark ? 'var(--surface-2)' : 'transparent',
+                  color: isPast ? 'var(--text-disabled)' : 'var(--text)',
                   fontWeight: todayMark ? '700' : '400',
                 }}
               >
@@ -209,7 +209,7 @@ export default function SlotsPage() {
                 <button
                   onClick={() => selectDate(selectedDate)}
                   className="px-6 py-3 rounded-2xl text-white text-sm font-medium active:scale-95"
-                  style={{ backgroundColor: '#242424' }}
+                  style={{ backgroundColor: 'var(--surface-2)' }}
                 >
                   {t('Попробовать снова')}
                 </button>
@@ -228,8 +228,8 @@ export default function SlotsPage() {
                       onClick={() => selectSlot(slot)}
                       className="py-3 rounded-xl text-sm font-medium transition-all active:scale-95"
                       style={{
-                        backgroundColor: selectedSlot === slot ? '#db2777' : '#242424',
-                        color: selectedSlot === slot ? '#ffffff' : '#9ca3af'
+                        backgroundColor: selectedSlot === slot ? 'var(--accent)' : 'var(--surface-2)',
+                        color: selectedSlot === slot ? 'var(--text)' : 'var(--text-muted)'
                       }}
                     >
                       {slot}
@@ -251,11 +251,11 @@ export default function SlotsPage() {
 
       {/* Кнопка далее */}
       {selectedSlot && (
-        <div className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} p-4`} style={{ backgroundColor: '#1a1a1a' }}>
+        <div className={`fixed bottom-0 left-0 right-0 mx-auto w-full ${PAGE_WIDTH} p-4`} style={{ backgroundColor: 'var(--bg)' }}>
           <button
             onClick={() => navigate(getNextRoute('slots'))}
             className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"
-            style={{ backgroundColor: '#db2777' }}
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             <div className="text-sm font-semibold">{t('Далее')}</div>
             <div className="text-xs opacity-75 mt-0.5">{t('{date} в {time}', { date: formatDisplayDate(selectedDate, { withYear: false, lang: getLang() }), time: selectedSlot })}</div>

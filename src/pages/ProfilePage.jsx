@@ -65,15 +65,15 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#1a1a1a' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'transparent' }}>
 
       {/* Шапка */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
+      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
         <button
           aria-label={t('Назад')}
           onClick={() => navigate(-1)}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-          style={{ backgroundColor: '#242424' }}
+          style={{ backgroundColor: 'var(--surface-2)' }}
         >
           <IconBack />
         </button>
@@ -87,7 +87,7 @@ export default function ProfilePage() {
 
         {/* Логотип */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 rounded-full overflow-hidden bg-white mb-4">
+          <div className="w-20 h-20 rounded-full overflow-hidden bg-[#ffffff] mb-4">
             <SalonLogo salon={company} />
           </div>
           <h1 className="text-white text-xl font-bold">{company.name}</h1>
@@ -100,19 +100,19 @@ export default function ProfilePage() {
           }}
         />
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 h-px" style={{ backgroundColor: '#2e2e2e' }} />
+          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--surface-3)' }} />
           <span className="text-gray-500 text-xs">{t('или по номеру и паролю')}</span>
-          <div className="flex-1 h-px" style={{ backgroundColor: '#2e2e2e' }} />
+          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--surface-3)' }} />
         </div>
 
         {/* Табы */}
-        <div className="flex rounded-2xl p-1 mb-6" style={{ backgroundColor: '#242424' }}>
+        <div className="flex rounded-2xl p-1 mb-6" style={{ backgroundColor: 'var(--surface-2)' }}>
           <button
             onClick={() => { setTab('login'); setError(null) }}
             className="flex-1 py-3 rounded-xl text-sm font-medium transition-all"
             style={{
-              backgroundColor: tab === 'login' ? '#db2777' : 'transparent',
-              color: tab === 'login' ? '#ffffff' : '#9ca3af'
+              backgroundColor: tab === 'login' ? 'var(--accent)' : 'transparent',
+              color: tab === 'login' ? 'var(--text)' : 'var(--text-muted)'
             }}
           >
             {t('Войти')}
@@ -121,8 +121,8 @@ export default function ProfilePage() {
             onClick={() => { setTab('register'); setError(null) }}
             className="flex-1 py-3 rounded-xl text-sm font-medium transition-all"
             style={{
-              backgroundColor: tab === 'register' ? '#db2777' : 'transparent',
-              color: tab === 'register' ? '#ffffff' : '#9ca3af'
+              backgroundColor: tab === 'register' ? 'var(--accent)' : 'transparent',
+              color: tab === 'register' ? 'var(--text)' : 'var(--text-muted)'
             }}
           >
             {t('Регистрация')}
@@ -130,7 +130,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Форма */}
-        <div className="rounded-2xl mb-4 relative" style={{ backgroundColor: '#242424' }}>
+        <div className="rounded-2xl mb-4 relative" style={{ backgroundColor: 'var(--surface-2)' }}>
           {isRegister && (
             <>
               <input
@@ -139,7 +139,7 @@ export default function ProfilePage() {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 className="w-full px-4 py-4 bg-transparent text-white placeholder-gray-600 outline-none text-sm"
-                style={{ borderBottom: '1px solid #2e2e2e' }}
+                style={{ borderBottom: '1px solid var(--border)' }}
               />
               <input
                 type="text"
@@ -147,7 +147,7 @@ export default function ProfilePage() {
                 value={surname}
                 onChange={e => setSurname(e.target.value)}
                 className="w-full px-4 py-4 bg-transparent text-white placeholder-gray-600 outline-none text-sm"
-                style={{ borderBottom: '1px solid #2e2e2e' }}
+                style={{ borderBottom: '1px solid var(--border)' }}
               />
             </>
           )}
@@ -170,7 +170,7 @@ export default function ProfilePage() {
         </div>
 
         {phoneInvalid && (
-          <p className="text-xs -mt-2 mb-4 px-1" style={{ color: '#f87171' }}>{t('Проверьте номер телефона')}</p>
+          <p className="text-xs -mt-2 mb-4 px-1" style={{ color: 'var(--danger-text)' }}>{t('Проверьте номер телефона')}</p>
         )}
 
         {/* Ошибка */}
@@ -184,7 +184,7 @@ export default function ProfilePage() {
           disabled={!canSubmit || loading}
           className="w-full py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
           style={{
-            backgroundColor: '#db2777',
+            backgroundColor: 'var(--accent)',
             opacity: canSubmit && !loading ? 1 : 0.4
           }}
         >

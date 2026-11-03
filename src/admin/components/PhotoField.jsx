@@ -45,7 +45,7 @@ export default function PhotoField({ label, hint, url, shape = 'square', maxSide
       <div className={`flex gap-3 ${shape === 'wide' ? 'flex-col' : 'items-center'}`}>
         <div
           className={`${SHAPES[shape]} overflow-hidden shrink-0 flex items-center justify-center`}
-          style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e' }}
+          style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)' }}
         >
           {url
             ? <img src={url} alt={label || 'Фото'} className="w-full h-full object-cover" />

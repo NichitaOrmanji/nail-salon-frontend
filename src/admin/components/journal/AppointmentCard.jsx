@@ -18,7 +18,7 @@ import { formatDuration, formatPrice } from '../../../utils/format'
 
 function Row({ label, children }) {
   return (
-    <div className="flex justify-between gap-4 py-3" style={{ borderBottom: '1px solid #2e2e2e' }}>
+    <div className="flex justify-between gap-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
       <span className="text-gray-500 text-sm flex-shrink-0">{label}</span>
       <span className="text-white text-sm text-right min-w-0 break-words">{children}</span>
     </div>
@@ -137,11 +137,11 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
     <div
       ref={panelRef}
       className={`fixed inset-0 sm:left-auto sm:top-[var(--card-top,0px)] sm:w-[360px] lg:w-[400px] z-40 flex-col shadow-2xl ${hidden ? 'hidden' : 'flex'}`}
-      style={{ backgroundColor: '#1a1a1a', borderLeft: '1px solid #2e2e2e' }}
+      style={{ backgroundColor: 'var(--bg)', borderLeft: '1px solid var(--border)' }}
       role="dialog"
       aria-label="Карточка записи"
     >
-      <div className="flex items-center gap-3 pl-5 pr-2 py-2 flex-shrink-0" style={{ borderBottom: '1px solid #2e2e2e' }}>
+      <div className="flex items-center gap-3 pl-5 pr-2 py-2 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
         <div className="flex-1 min-w-0">
           <div className="text-white text-base font-semibold truncate">{a.client_name || 'Без имени'}</div>
           <div className="text-gray-500 text-xs">{formatShortDate(a.date)}, {a.start_time}–{a.end_time}</div>
@@ -160,8 +160,8 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
       <div className="flex-1 min-h-0 overflow-y-auto px-5 py-2">
         {a.blacklist && (
           <div className="rounded-xl px-3 py-2 my-2 text-sm" role="alert"
-            style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171', color: '#fca5a5' }}>
-            <div className="font-semibold" style={{ color: '#f87171' }}>⛔ Клиент в чёрном списке</div>
+            style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid var(--danger-text)', color: 'var(--danger-soft)' }}>
+            <div className="font-semibold" style={{ color: 'var(--danger-text)' }}>⛔ Клиент в чёрном списке</div>
             {Number(a.blacklist.debt) > 0
               ? <div>Долг {formatMoney(a.blacklist.debt)} — получить при оплате этого визита</div>
               : <div>Долгов нет, нарушений: {a.blacklist.count}</div>}
@@ -169,7 +169,7 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
         )}
         <Row label="Телефон">
           {a.client_phone
-            ? <a href={`tel:${a.client_phone}`} style={{ color: '#f472b6' }}>{a.client_phone}</a>
+            ? <a href={`tel:${a.client_phone}`} style={{ color: 'var(--accent-text)' }}>{a.client_phone}</a>
             : '—'}
           {isManager && a.client_phone && (
             <Link
@@ -196,7 +196,7 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
         <Row label="Цена">{a.service ? formatPrice(a.service.price) : '—'}</Row>
         <Row label="Оплата">
           {paid ? (
-            <span style={{ color: '#34d399' }}>
+            <span style={{ color: 'var(--success-text)' }}>
               {formatMoney(a.payment.amount)} · {methodLabel(a.payment.method)}
               {Number(a.payment.discount) > 0 && <span className="text-gray-500"> (скидка {formatMoney(a.payment.discount)})</span>}
             </span>
@@ -227,7 +227,7 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
       {/* Низ закреплён: ошибка действия видна над кнопками даже на маленьком экране.
           Нет ни кнопок, ни ошибки — пустую полосу не показываем */}
       {(hasActions || error) && (
-        <div className="flex-shrink-0 px-5 py-3 flex flex-wrap gap-2" style={{ borderTop: '1px solid #2e2e2e' }}>
+        <div className="flex-shrink-0 px-5 py-3 flex flex-wrap gap-2" style={{ borderTop: '1px solid var(--border)' }}>
           {error && <p role="alert" className="basis-full text-red-400 text-sm">{error}</p>}
           {canPay && (
             <Button variant="primary" disabled={busy} onClick={() => setCheckoutOpen(true)}>Оплата</Button>
@@ -240,8 +240,8 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
           )}
           {canMarkVisit && (
             <>
-              <Button disabled={busy} style={{ color: '#60a5fa' }} onClick={() => patch({ status: 'completed' })}>Пришёл</Button>
-              <Button disabled={busy} style={{ color: '#f87171' }}
+              <Button disabled={busy} style={{ color: 'var(--info-text)' }} onClick={() => patch({ status: 'completed' })}>Пришёл</Button>
+              <Button disabled={busy} style={{ color: 'var(--danger-text)' }}
                 onClick={() => (fee > 0 ? setPenaltyAsk('no_show') : patch({ status: 'no_show' }))}>Не пришёл</Button>
             </>
           )}

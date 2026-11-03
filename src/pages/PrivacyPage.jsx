@@ -22,13 +22,13 @@ export default function PrivacyPage() {
   const company = useCompany()
 
   return (
-    <div className="min-h-screen pb-10" style={{ backgroundColor: '#1a1a1a' }}>
-      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
+    <div className="min-h-screen pb-10" style={{ backgroundColor: 'transparent' }}>
+      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
         <button
           onClick={() => navigate(-1)}
           aria-label={t('Назад')}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400"
-          style={{ backgroundColor: '#242424' }}
+          style={{ backgroundColor: 'var(--surface-2)' }}
         >
           ‹
         </button>

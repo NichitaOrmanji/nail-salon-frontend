@@ -15,7 +15,7 @@ function Section({ title, children }) {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-dvh px-4 py-8" style={{ backgroundColor: '#111111' }}>
+    <div className="min-h-dvh px-4 py-8" style={{ background: 'var(--bg-deep-paint)' }}>
       <div className="max-w-2xl mx-auto">
         <h1 className="text-white text-2xl font-bold mb-1">Условия сервиса TimePoint</h1>
         <p className="text-gray-500 text-xs mb-6">Редакция от {UPDATED}</p>
@@ -68,7 +68,7 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Link to="/admin-panel/signup" className="text-sm underline" style={{ color: '#f472b6' }}>← К регистрации</Link>
+        <Link to="/admin-panel/signup" className="text-sm underline" style={{ color: 'var(--accent-text)' }}>← К регистрации</Link>
       </div>
     </div>
   )

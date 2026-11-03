@@ -28,7 +28,7 @@ function LeaveDialog({ onSave, onDiscard, onCancel }) {
         aria-modal="true"
         aria-labelledby="leave-title"
         className="w-full max-w-sm rounded-3xl p-6"
-        style={{ backgroundColor: '#1e1e1e', border: '1px solid #2e2e2e' }}
+        style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border)' }}
         onClick={e => e.stopPropagation()}
       >
         <h3 id="leave-title" className="text-white text-lg font-bold mb-2">{t('Перейти на главную?')}</h3>
@@ -38,14 +38,14 @@ function LeaveDialog({ onSave, onDiscard, onCancel }) {
             onClick={onSave}
             autoFocus
             className="w-full py-3.5 rounded-2xl text-white font-semibold transition-all active:scale-95"
-            style={{ backgroundColor: '#db2777' }}
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             {t('Сохранить и выйти')}
           </button>
           <button
             onClick={onDiscard}
             className="w-full py-3.5 rounded-2xl font-medium transition-all active:scale-95"
-            style={{ backgroundColor: '#2e2e2e', color: '#f87171' }}
+            style={{ backgroundColor: 'var(--surface-3)', color: 'var(--danger-text)' }}
           >
             {t('Не сохранять')}
           </button>
@@ -74,12 +74,12 @@ export default function SalonHeader() {
   }
 
   return (
-    <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
+    <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
       <button
         onClick={() => navigate(-1)}
         aria-label={t('Назад')}
         className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-        style={{ backgroundColor: '#242424' }}
+        style={{ backgroundColor: 'var(--surface-2)' }}
       >
         <IconBack />
       </button>

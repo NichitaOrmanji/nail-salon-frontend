@@ -122,7 +122,7 @@ function ProfileSection({ master, services, onSaved }) {
         <Checkbox checked={isActive} onChange={v => { setIsActive(v); setDone(false) }} label="Активен (виден на сайте записи)" />
         <ErrorText>{error}</ErrorText>
         <div className="flex items-center justify-end gap-3">
-          {done && <span className="text-xs" style={{ color: '#34d399' }}>Сохранено</span>}
+          {done && <span className="text-xs" style={{ color: 'var(--success-text)' }}>Сохранено</span>}
           <Button type="submit" variant="primary" disabled={saving}>
             {saving ? 'Сохраняем...' : isNew ? 'Создать мастера' : 'Сохранить'}
           </Button>
@@ -262,13 +262,13 @@ export default function MastersPage() {
         type="button"
         onClick={() => setModal({ id: m.id })}
         className="w-full text-left rounded-2xl px-4 py-3 transition-all active:scale-[0.99]"
-        style={{ backgroundColor: '#242424', opacity: m.is_active ? 1 : 0.55 }}
+        style={{ backgroundColor: 'var(--surface-2)', opacity: m.is_active ? 1 : 0.55 }}
       >
         <div className="flex flex-wrap items-center gap-2">
           {m.photo && <img src={m.photo} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />}
           <span className="text-white text-sm font-semibold break-words">{m.name}</span>
-          {!m.is_active && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>скрыт</span>}
-          {m.has_access && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#34d399' }}>доступ в панель</span>}
+          {!m.is_active && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--surface-3)', color: 'var(--text-muted)' }}>скрыт</span>}
+          {m.has_access && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--surface-3)', color: 'var(--success-text)' }}>доступ в панель</span>}
         </div>
         <div className="text-gray-500 text-xs mt-1 break-words">{scheduleSummary(m.schedule)}</div>
         <div className="text-gray-600 text-xs mt-0.5 break-words">
@@ -295,7 +295,7 @@ export default function MastersPage() {
             aria-selected={tab === key}
             onClick={() => setSearchParams(key === 'masters' ? {} : { tab: key }, { replace: true })}
             className="px-4 min-h-[40px] rounded-xl text-sm font-medium"
-            style={tab === key ? { backgroundColor: '#db2777', color: '#fff' } : { backgroundColor: '#242424', color: '#d1d5db' }}
+            style={tab === key ? { backgroundColor: 'var(--accent)', color: 'var(--text)' } : { backgroundColor: 'var(--surface-2)', color: 'var(--text-soft)' }}
           >
             {label}
           </button>

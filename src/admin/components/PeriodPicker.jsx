@@ -1,6 +1,6 @@
 import { PRESETS, presetRange } from '../utils/money'
 
-const inputStyle = { backgroundColor: '#242424', border: '1px solid #2e2e2e', colorScheme: 'dark' }
+const inputStyle = { backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)', colorScheme: 'dark' }
 
 // Период отчёта: быстрые кнопки и две даты. value — { dateFrom, dateTo }
 export default function PeriodPicker({ value, onChange }) {
@@ -11,7 +11,7 @@ export default function PeriodPicker({ value, onChange }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }} role="group" aria-label="Период">
+      <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }} role="group" aria-label="Период">
         {PRESETS.map(p => (
           <button
             key={p.key}
@@ -19,7 +19,7 @@ export default function PeriodPicker({ value, onChange }) {
             aria-pressed={active === p.key}
             onClick={() => onChange(presetRange(p.key))}
             className="min-h-[44px] px-3 text-sm font-medium"
-            style={{ backgroundColor: active === p.key ? '#db2777' : '#242424', color: active === p.key ? '#ffffff' : '#9ca3af' }}
+            style={{ backgroundColor: active === p.key ? 'var(--accent)' : 'var(--surface-2)', color: active === p.key ? 'var(--text)' : 'var(--text-muted)' }}
           >
             {p.label}
           </button>

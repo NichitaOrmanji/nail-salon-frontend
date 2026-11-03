@@ -8,7 +8,7 @@ export default function SalonLogo({ salon, className = '', textClass = 'text-2xl
   }
   return (
     <span className={`w-full h-full flex items-center justify-center font-bold text-white ${textClass}`}
-      style={{ background: 'linear-gradient(135deg, #f472b6, #a855f7)' }}>
+      style={{ background: 'linear-gradient(135deg, var(--accent), #a855f7)' }}>
       {(salon.name || '·').trim().charAt(0).toUpperCase()}
     </span>
   )

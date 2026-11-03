@@ -14,10 +14,10 @@ export default function NotFoundPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ backgroundColor: '#1a1a1a' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ backgroundColor: 'transparent' }}>
 
       <div className="text-center mb-10">
-        <p className="font-bold mb-4" aria-hidden="true" style={{ fontSize: '80px', color: '#6e6e6e' }}>404</p>
+        <p className="font-bold mb-4" aria-hidden="true" style={{ fontSize: '80px', color: 'var(--text-faint)' }}>404</p>
         <h1 className="text-white text-2xl font-bold mb-2 tracking-tight">{t('Страница не найдена')}</h1>
         <p className="text-gray-500 text-sm">{t('Такой страницы не существует или она была удалена')}</p>
       </div>
@@ -25,7 +25,7 @@ export default function NotFoundPage() {
       <button
         onClick={() => navigate('/')}
         className="flex items-center gap-2 px-8 py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
-        style={{ backgroundColor: '#db2777' }}
+        style={{ backgroundColor: 'var(--accent)' }}
       >
         <IconHome />
         {t('На главную')}

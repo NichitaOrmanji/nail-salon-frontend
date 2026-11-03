@@ -19,7 +19,7 @@ const MODES = [
   { key: 'template', label: 'Как в шаблоне' },
 ]
 
-const PINK = '#f472b6'
+const PINK = 'var(--accent-text)'
 
 function monthStart(dateStr) {
   return `${dateStr.slice(0, 7)}-01`
@@ -52,41 +52,41 @@ function DayCell({ day, date, today, selected, readOnly, onToggle }) {
   const past = date < today
   const source = day?.source
   const working = day?.is_working
-  const border = selected ? `2px solid ${PINK}` : source === 'custom' ? '1px solid #9d4b75' : '1px solid #2e2e2e'
+  const border = selected ? `2px solid ${PINK}` : source === 'custom' ? '1px solid var(--custom-day)' : '1px solid var(--border)'
   return (
     <button
       type="button"
       disabled={readOnly || past || !day}
       onClick={() => onToggle(date)}
       aria-pressed={selected}
-      aria-label={formatShortDate(date)}
       className="relative rounded-xl p-1 text-left min-h-[64px] flex flex-col transition-all active:scale-95"
       style={{
-        backgroundColor: selected ? '#3a2430' : working ? '#242424' : '#1a1a1a',
+        backgroundColor: selected ? 'var(--accent-tint-2)' : working ? 'var(--surface-2)' : 'var(--bg)',
         border,
         opacity: past ? 0.4 : 1,
       }}
     >
-      <span className="text-xs font-semibold" style={{ color: date === today ? PINK : '#d1d5db' }}>
+      <span className="sr-only">{formatShortDate(date)}: </span>
+      <span className="text-xs font-semibold" aria-hidden="true" style={{ color: date === today ? PINK : 'var(--text-soft)' }}>
         {Number(date.slice(8))}
       </span>
       {day && working && (
         <>
           <span className="text-[10px] leading-tight text-white">{short(day.start_time)}–{short(day.end_time)}</span>
           {day.break_start && (
-            <span className="text-[10px] leading-tight" style={{ color: '#fbbf24' }}>
+            <span className="text-[10px] leading-tight" style={{ color: 'var(--warning-text)' }}>
               обед {short(day.break_start)}
             </span>
           )}
         </>
       )}
       {day && !working && (
-        <span className="text-[10px] leading-tight" style={{ color: source === 'off' ? '#f87171' : '#9098a4' }}>
+        <span className="text-[10px] leading-tight" style={{ color: source === 'off' ? 'var(--danger-text)' : 'var(--text-faint)' }}>
           {source === 'off' ? 'выходной' : 'не работает'}
         </span>
       )}
       {day?.appointments > 0 && (
-        <span className="absolute top-1 right-1 text-[9px] px-1 rounded" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>
+        <span className="absolute top-1 right-1 text-[9px] px-1 rounded" style={{ backgroundColor: 'var(--surface-3)', color: 'var(--text-muted)' }}>
           {day.appointments}
         </span>
       )}
@@ -123,7 +123,7 @@ function Editor({ selection, days, onApply, onCancel, saving }) {
   }
 
   return (
-    <div className="rounded-2xl p-4 mt-4 space-y-3" style={{ backgroundColor: '#1f1f1f', border: `1px solid ${PINK}` }}>
+    <div className="rounded-2xl p-4 mt-4 space-y-3" style={{ backgroundColor: 'var(--surface-1)', border: `1px solid ${PINK}` }}>
       <div className="text-white text-sm font-semibold">
         Выбрано дней: {selection.length}
         {selection.length <= 3 && <span className="text-gray-400 font-normal"> ({selection.map(formatShortDate).join(', ')})</span>}
@@ -137,7 +137,7 @@ function Editor({ selection, days, onApply, onCancel, saving }) {
             aria-checked={mode === m.key}
             onClick={() => { setMode(m.key); setError(null) }}
             className="px-3 min-h-[40px] rounded-xl text-sm"
-            style={mode === m.key ? { backgroundColor: PINK, color: '#fff' } : { backgroundColor: '#242424', color: '#d1d5db' }}
+            style={mode === m.key ? { backgroundColor: 'var(--accent)', color: 'var(--text)' } : { backgroundColor: 'var(--surface-2)', color: 'var(--text-soft)' }}
           >
             {m.label}
           </button>
@@ -263,7 +263,7 @@ export default function MonthSchedule({ masters, readOnly = false }) {
               aria-checked={m.id === masterId}
               onClick={() => changeMaster(m.id)}
               className="px-3 min-h-[40px] rounded-xl text-sm font-medium"
-              style={m.id === masterId ? { backgroundColor: PINK, color: '#fff' } : { backgroundColor: '#242424', color: '#d1d5db' }}
+              style={m.id === masterId ? { backgroundColor: 'var(--accent)', color: 'var(--text)' } : { backgroundColor: 'var(--surface-2)', color: 'var(--text-soft)' }}
             >
               {m.name}
             </button>
@@ -301,9 +301,9 @@ export default function MonthSchedule({ masters, readOnly = false }) {
             ))}
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-500">
-            <span><span style={{ color: '#9d4b75' }}>▢</span> свои часы на дату</span>
-            <span><span style={{ color: '#f87171' }}>выходной</span> — по дате</span>
-            <span><span style={{ color: '#fbbf24' }}>обед</span> — начало обеда</span>
+            <span><span style={{ color: 'var(--custom-day)' }}>▢</span> свои часы на дату</span>
+            <span><span style={{ color: 'var(--danger-text)' }}>выходной</span> — по дате</span>
+            <span><span style={{ color: 'var(--warning-text)' }}>обед</span> — начало обеда</span>
             <span>цифра в углу — записи</span>
           </div>
           {!readOnly && !selected.length && !result && (
@@ -319,9 +319,9 @@ export default function MonthSchedule({ masters, readOnly = false }) {
 
       {result && (
         <div className="mt-4 space-y-2">
-          <p className="text-xs" style={{ color: '#34d399' }}>Сохранено дней: {result.count}</p>
+          <p className="text-xs" style={{ color: 'var(--success-text)' }}>Сохранено дней: {result.count}</p>
           {result.conflicts.length > 0 && (
-            <div className="text-sm rounded-xl px-3 py-2" style={{ color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
+            <div className="text-sm rounded-xl px-3 py-2" style={{ color: 'var(--warning-text)', backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
               Записи вне нового графика — перенесите или отмените их в журнале:
               <ul className="mt-1 space-y-0.5">
                 {result.conflicts.map(c => (

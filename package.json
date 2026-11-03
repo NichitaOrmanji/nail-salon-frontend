@@ -11,6 +11,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@fontsource-variable/manrope": "5.3.0",
     "@sentry/react": "11.7.0",
     "axios": "1.20.0",
     "libphonenumber-js": "^1.13.5",

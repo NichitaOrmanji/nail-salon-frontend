@@ -7,7 +7,7 @@ import { t } from '../i18n'
 
 function Rule({ icon, title, children }) {
   return (
-    <section className="rounded-2xl p-5 mb-3" style={{ backgroundColor: '#242424' }}>
+    <section className="rounded-2xl p-5 mb-3" style={{ backgroundColor: 'var(--surface-2)' }}>
       <h2 className="text-white text-base font-semibold mb-2">
         <span className="mr-2" aria-hidden="true">{icon}</span>{title}
       </h2>
@@ -24,13 +24,13 @@ export default function RulesPage() {
   const lateHours = Number(company.late_cancel_hours) || 0
 
   return (
-    <div className="min-h-screen pb-10" style={{ backgroundColor: '#1a1a1a' }}>
-      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: '#242424' }}>
+    <div className="min-h-screen pb-10" style={{ backgroundColor: 'transparent' }}>
+      <div className="flex items-center gap-3 px-4 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
         <button
           onClick={() => navigate(-1)}
           aria-label={t('Назад')}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400"
-          style={{ backgroundColor: '#242424' }}
+          style={{ backgroundColor: 'var(--surface-2)' }}
         >
           ‹
         </button>
@@ -80,7 +80,7 @@ export default function RulesPage() {
         <Rule icon="🔒" title={t('Ваши данные')}>
           <p>
             {t('Имя и телефон нужны только для записи и напоминаний.')}{' '}
-            <Link to="/privacy" className="underline" style={{ color: '#f472b6' }}>{t('Политика конфиденциальности')}</Link>
+            <Link to="/privacy" className="underline" style={{ color: 'var(--accent-text)' }}>{t('Политика конфиденциальности')}</Link>
           </p>
           <p>{t('Удалить свои данные можно в личном кабинете («Удалить аккаунт») или попросив салон.')}</p>
         </Rule>
@@ -88,7 +88,7 @@ export default function RulesPage() {
         {company.phone && (
           <p className="text-gray-500 text-sm text-center mt-6">
             {t('Вопросы — по телефону салона:')}{' '}
-            <a href={`tel:${company.phone.replace(/[^\d+]/g, '')}`} className="underline" style={{ color: '#f472b6' }}>{company.phone}</a>
+            <a href={`tel:${company.phone.replace(/[^\d+]/g, '')}`} className="underline" style={{ color: 'var(--accent-text)' }}>{company.phone}</a>
           </p>
         )}
       </div>

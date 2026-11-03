@@ -6,10 +6,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Сайт тёмный: стандартные gray-500/600 на фонах #1a1a1a–#2e2e2e дают контраст 2–3,6,
-        // а нужно не меньше 4,5 (WCAG AA) — вспомогательный текст плохо читается на телефоне.
-        // Эти оттенки дают ≥ 4,6 на всех фонах сайта; проверяется в e2e/a11y.spec.js
-        gray: { ...defaultColors.gray, 500: '#9098a4', 600: '#8b929e' },
+        // Цвета текста — из темы (src/theme.css): classic / «Море» светлая / «Море» тёмная.
+        // Контраст ≥ 4,5 на всех поверхностях каждой темы — проверяется в e2e/a11y.spec.js
+        white: 'var(--text)',
+        gray: {
+          ...defaultColors.gray,
+          200: 'var(--text-soft)',
+          300: 'var(--text-soft)',
+          400: 'var(--text-muted)',
+          500: 'var(--text-faint)',
+          600: 'var(--text-faint-2)',
+          700: 'var(--text-disabled)',
+        },
+        red: { ...defaultColors.red, 400: 'var(--danger-text)' },
+        pink: { ...defaultColors.pink, 400: 'var(--accent-text)', 500: 'var(--accent)' },
       },
     },
   },

@@ -1,0 +1,171 @@
+/* Цветовые темы сайта и панели. Компоненты берут цвета только отсюда (var(--…)).
+ *
+ * classic  — прежняя тёмная тема, значения 1:1 как были в коде. Аварийный откат:
+ *            переменная окружения VITE_UI_THEME=classic (Vercel → Redeploy) — см. src/theme.js.
+ * sea      — «Море», светлая: сиренево-голубой фон, коралловый акцент.
+ * sea-dark — «Море», тёмная: графит без синевы, коралловый акцент.
+ *
+ * Контраст текста проверен: не ниже 4,5:1 на всех поверхностях темы (e2e/a11y.spec.js, axe).
+ * Текст на акцентной кнопке = обычный текст темы (подобрано так, что читается в каждой теме).
+ */
+
+:root,
+:root[data-theme='classic'] {
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Фон страницы (с подсветкой) и поверхности — от глубокой к выпуклой */
+  --bg-deep: #111111;
+  --bg-deep-paint: #111111;
+  --bg: #1a1a1a;
+  --bg-page: #1a1a1a;
+  --surface-sunken: #141414;
+  --surface-1: #1f1f1f;
+  --surface-2: #242424;
+  --surface-3: #2e2e2e;
+  --surface-4: #3a3a3a;
+  --border: #2e2e2e;
+  --border-strong: #4b4b4b;
+  /* Текст: основной → приглушённый */
+  --text: #ffffff;
+  --text-soft: #d1d5db;
+  --text-muted: #9ca3af;
+  --text-faint: #9098a4;
+  --text-faint-2: #8b929e;
+  --text-disabled: #374151;
+  /* Акцент: фон кнопок; акцентный текст и ссылки; подложки */
+  --accent: #db2777;
+  --accent-text: #f472b6;
+  --accent-tint: #2e1f28;
+  --accent-tint-2: #3a2430;
+  --danger-text: #f87171;
+  --danger-soft: #fca5a5;
+  --danger-tint: #3a2a2a;
+  --success-text: #34d399;
+  --warning-text: #fbbf24;
+  --warning-strong: #f59e0b;
+  --warning-tint: #3b2a12;
+  --info-text: #60a5fa;
+  /* Статусы записей в журнале — та же логика цветов во всех темах */
+  --st-green: #34d399;
+  --st-amber: #f59e0b;
+  --st-blue: #60a5fa;
+  --st-gray: #9ca3af;
+  --st-red: #f87171;
+  --st-gray2: #9098a4;
+  /* Блок записи: доля цвета статуса в заливке, база заливки, рамка и полоса слева */
+  --appt-tint: 20%;
+  --appt-base: #141414;
+  --appt-border-w: 0px;
+  --appt-stripe-w: 3px;
+  --appt-text: #ffffff;
+  --appt-shadow: none;
+  --hour-line: #2e2e2e;
+  --success-strong: #34d399;
+  --danger-strong: #f87171;
+  --custom-day: #9d4b75;
+  --half-hour-line: #222222;
+  color-scheme: dark;
+}
+
+:root[data-theme='sea'] {
+  --font: 'Manrope Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --bg-deep: #c7cef2;
+  --bg-deep-paint: radial-gradient(circle at 8% -5%, #9ea9ec 0, transparent 42%),
+    radial-gradient(circle at 105% 30%, #93d3cc 0, transparent 38%), #c7cef2;
+  --bg: #dce1f8;
+  --bg-page: rgba(232, 236, 252, 0.72);
+  --surface-sunken: #bcc4ec;
+  --surface-1: #e4e8fa;
+  --surface-2: #eef1fd;
+  --surface-3: #d3d9f5;
+  --surface-4: #c2c9ee;
+  --border: #b4bce6;
+  --border-strong: #8f99d4;
+  --text: #161b3a;
+  --text-soft: #2a3157;
+  --text-muted: #363d6b;
+  --text-faint: #454c7c;
+  --text-faint-2: #454c7c;
+  --text-disabled: #7a80a8;
+  --accent: #ff7a59;
+  --accent-text: #8e2d18;
+  --accent-tint: #ffd9cc;
+  --accent-tint-2: #ffc9b8;
+  --danger-text: #9a1b12;
+  --danger-soft: #9a1b12;
+  --danger-tint: #ffd8d2;
+  --success-text: #0a6142;
+  --warning-text: #6f4206;
+  --warning-strong: #f59e0b;
+  --warning-tint: #ffe7c2;
+  --info-text: #174c94;
+  --st-green: #0a6142;
+  --st-amber: #7a4708;
+  --st-blue: #174c94;
+  --st-gray: #4a505e;
+  --st-red: #9a1b12;
+  --st-gray2: #4e5461;
+  --appt-tint: 14%;
+  --appt-base: #ffffff;
+  --appt-border-w: 2px;
+  --appt-stripe-w: 6px;
+  --appt-text: #161b3a;
+  --appt-shadow: 0 1px 4px rgba(22, 27, 58, 0.18);
+  --hour-line: #8f99d4;
+  --success-strong: #4cc290;
+  --danger-strong: #f28b80;
+  --custom-day: #8e2d18;
+  --half-hour-line: #a9b2e2;
+  color-scheme: light;
+}
+
+:root[data-theme='sea-dark'] {
+  --font: 'Manrope Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --bg-deep: #0d0e11;
+  --bg-deep-paint: radial-gradient(circle at 8% -5%, #123a37 0, transparent 40%),
+    radial-gradient(circle at 105% 35%, #3a1c16 0, transparent 36%), #0d0e11;
+  --bg: #14161a;
+  --bg-page: rgba(20, 22, 26, 0.78);
+  --surface-sunken: #111317;
+  --surface-1: #191b20;
+  --surface-2: #1f2228;
+  --surface-3: #2a2d35;
+  --surface-4: #353943;
+  --border: #2e323b;
+  --border-strong: #4a4f5b;
+  --text: #f2f3f5;
+  --text-soft: #dadce1;
+  --text-muted: #c9ccd3;
+  --text-faint: #aeb2bb;
+  --text-faint-2: #aeb2bb;
+  --text-disabled: #5f6470;
+  --accent: #b8412a;
+  --accent-text: #ff9a80;
+  --accent-tint: #3a1c16;
+  --accent-tint-2: #4a231b;
+  --danger-text: #ff8a80;
+  --danger-soft: #ffb3ab;
+  --danger-tint: #3a1e1b;
+  --success-text: #4cc290;
+  --warning-text: #e0a23c;
+  --warning-strong: #f59e0b;
+  --warning-tint: #3a2a10;
+  --info-text: #7fb0f5;
+  --st-green: #4cc290;
+  --st-amber: #e0a23c;
+  --st-blue: #6fa8f5;
+  --st-gray: #a9adb6;
+  --st-red: #ff8a80;
+  --st-gray2: #8e929b;
+  --appt-tint: 26%;
+  --appt-base: #1a1c21;
+  --appt-border-w: 2px;
+  --appt-stripe-w: 6px;
+  --appt-text: #f2f3f5;
+  --appt-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  --hour-line: #262931;
+  --success-strong: #4cc290;
+  --danger-strong: #ff8a80;
+  --custom-day: #d68aa8;
+  --half-hour-line: #1c1e24;
+  color-scheme: dark;
+}

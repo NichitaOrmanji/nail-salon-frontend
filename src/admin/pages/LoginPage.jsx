@@ -44,16 +44,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center px-4 py-10" style={{ backgroundColor: '#111111' }}>
+    <div className="min-h-dvh flex items-center justify-center px-4 py-10" style={{ background: 'var(--bg-deep-paint)' }}>
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-2xl p-6 space-y-4"
-        style={{ backgroundColor: '#1a1a1a', border: '1px solid #2e2e2e' }}
+        style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
       >
         <div className="flex flex-col items-center mb-2">
           {/* Панель общая для всех салонов — без логотипа конкретного салона */}
           <div className="w-16 h-16 rounded-2xl mb-3 flex items-center justify-center text-white text-xl font-bold"
-            style={{ background: 'linear-gradient(135deg, #f472b6, #a855f7)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--accent), #a855f7)' }}>
             TP
           </div>
           <h1 className="text-white text-xl font-bold">Панель салона</h1>
@@ -84,13 +84,13 @@ export default function LoginPage() {
         </Button>
 
         {config?.password_reset && (
-          <Link to="/admin-panel/forgot-password" className="block text-center text-sm underline" style={{ color: '#f472b6' }}>
+          <Link to="/admin-panel/forgot-password" className="block text-center text-sm underline" style={{ color: 'var(--accent-text)' }}>
             Забыли пароль?
           </Link>
         )}
         {config?.signup && (
           <p className="text-center text-gray-400 text-sm">
-            Новый салон? <Link to="/admin-panel/signup" className="underline" style={{ color: '#f472b6' }}>Создать за 2 минуты</Link>
+            Новый салон? <Link to="/admin-panel/signup" className="underline" style={{ color: 'var(--accent-text)' }}>Создать за 2 минуты</Link>
           </p>
         )}
         <a href="/" className="block text-center text-gray-500 text-xs py-2">Сайт записи ↗</a>

@@ -41,7 +41,7 @@ function OperationModal({ date, categories, onClose, onSaved }) {
               aria-pressed={kind === key}
               onClick={() => { setKind(key); setCategory('') }}
               className="min-h-[44px] rounded-xl text-sm font-medium"
-              style={{ backgroundColor: kind === key ? (key === 'expense' ? '#f87171' : '#34d399') : '#242424', color: kind === key ? '#111111' : '#d1d5db' }}
+              style={{ backgroundColor: kind === key ? (key === 'expense' ? 'var(--danger-strong)' : 'var(--success-strong)') : 'var(--surface-2)', color: kind === key ? '#111111' : 'var(--text-soft)' }}
             >
               {label}
             </button>
@@ -127,7 +127,7 @@ export default function CashTab() {
           value={date}
           onChange={e => e.target.value && setDate(e.target.value)}
           className="min-h-[44px] px-3 rounded-xl text-white text-sm outline-none"
-          style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e', colorScheme: 'dark' }}
+          style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)', colorScheme: 'dark' }}
         />
         <span className="text-white font-semibold ml-1">{formatDayTitle(date)}</span>
         <Button variant="primary" className="ml-auto" onClick={() => setAdding(true)}>+ Приход / расход</Button>
@@ -139,9 +139,9 @@ export default function CashTab() {
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
             <Stat label="Наличные на начало дня" value={formatMoney(data.opening)} />
-            <Stat label="Приход наличными" value={formatMoney(data.cash_in)} color="#34d399" />
-            <Stat label="Расход наличными" value={formatMoney(data.cash_out)} color="#f87171" />
-            <Stat label="Наличные на конец дня" value={formatMoney(data.closing)} color="#f472b6" />
+            <Stat label="Приход наличными" value={formatMoney(data.cash_in)} color="var(--success-text)" />
+            <Stat label="Расход наличными" value={formatMoney(data.cash_out)} color="var(--danger-text)" />
+            <Stat label="Наличные на конец дня" value={formatMoney(data.closing)} color="var(--accent-text)" />
           </div>
           <p className="text-gray-500 text-xs mt-2">
             Оплаты за день: {METHODS.map(m => `${m.label.toLowerCase()} ${formatMoney(data.by_method[m.key])}`).join(' · ')}
@@ -167,7 +167,7 @@ export default function CashTab() {
               rows={data.operations}
               empty="Операций нет"
               columns={[
-                { key: 'kind', label: '', render: r => <span style={{ color: r.kind === 'income' ? '#34d399' : '#f87171' }}>{r.kind === 'income' ? 'Приход' : 'Расход'}</span> },
+                { key: 'kind', label: '', render: r => <span style={{ color: r.kind === 'income' ? 'var(--success-text)' : 'var(--danger-text)' }}>{r.kind === 'income' ? 'Приход' : 'Расход'}</span> },
                 { key: 'category', label: 'Категория' },
                 { key: 'comment', label: 'Комментарий', render: r => r.comment || '—' },
                 { key: 'method', label: 'Способ', render: r => methodLabel(r.method) },

@@ -25,8 +25,8 @@ const OFF_STYLE = {
 // Линии сетки: час — заметнее, полчаса — тоньше
 const GRID_LINES = {
   backgroundImage: [
-    `repeating-linear-gradient(to bottom, #2e2e2e 0, #2e2e2e 1px, transparent 1px, transparent ${SLOT_PX * 2}px)`,
-    `repeating-linear-gradient(to bottom, #222222 0, #222222 1px, transparent 1px, transparent ${SLOT_PX}px)`,
+    `repeating-linear-gradient(to bottom, var(--hour-line) 0, var(--hour-line) 1px, transparent 1px, transparent ${SLOT_PX * 2}px)`,
+    `repeating-linear-gradient(to bottom, var(--half-hour-line) 0, var(--half-hour-line) 1px, transparent 1px, transparent ${SLOT_PX}px)`,
   ].join(', '),
 }
 
@@ -88,7 +88,7 @@ function ColumnMenu({ anchorRef, onClose, children }) {
         ref={menuRef}
         role="menu"
         className="fixed z-50 rounded-xl overflow-hidden shadow-xl"
-        style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e', maxWidth: `calc(100vw - ${SCREEN_GUTTER_PX * 2}px)` }}
+        style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)', maxWidth: `calc(100vw - ${SCREEN_GUTTER_PX * 2}px)` }}
       >
         {children}
       </div>
@@ -106,21 +106,21 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
   return (
     <div
       className="sticky top-0 z-20 flex items-start gap-1 pl-3 pr-0.5 py-1 min-w-0"
-      style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e', borderLeft: '1px solid #2e2e2e' }}
+      style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)' }}
     >
       <div className="flex-1 min-w-0 py-1">
         <div className="flex items-center gap-1.5 min-w-0">
           <span
             className="text-sm font-semibold truncate"
-            style={{ opacity: col.hidden ? 0.6 : 1, color: col.week && col.isToday ? '#f472b6' : '#ffffff' }}
+            style={{ opacity: col.hidden ? 0.6 : 1, color: col.week && col.isToday ? 'var(--accent-text)' : 'var(--text)' }}
           >
             {col.week ? formatWeekDay(col.date) : col.master ? col.master.name : 'Без мастера'}
           </span>
           {col.hidden && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>скрыт</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: 'var(--surface-3)', color: 'var(--text-muted)' }}>скрыт</span>
           )}
         </div>
-        <div className="text-xs truncate" style={{ color: col.work.working || !col.master ? '#9ca3af' : '#9098a4' }}>
+        <div className="text-xs truncate" style={{ color: col.work.working || !col.master ? 'var(--text-muted)' : 'var(--text-faint)' }}>
           {columnHours(col)}
         </div>
         {col.laneNames?.length > 1 && (
@@ -187,16 +187,21 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, showMa
         height: height - 2,
         left: `calc(${lane * width}% + 2px)`,
         width: `calc(${width}% - 4px)`,
-        backgroundColor: `${info.color}${muted ? '1f' : '33'}`,
-        borderLeft: `3px solid ${info.color}`,
-        outline: selected ? '2px solid #f472b6' : 'none',
+        // Цвет статуса (KINDS) — заливка, рамка и полоса слева; насыщенность и толщина — из темы (theme.css)
+        backgroundColor: `color-mix(in srgb, ${info.color} ${muted ? 'calc(var(--appt-tint) / 2)' : 'var(--appt-tint)'}, var(--appt-base))`,
+        border: `var(--appt-border-w) solid ${info.color}`,
+        borderLeft: `var(--appt-stripe-w) solid ${info.color}`,
+        boxShadow: 'var(--appt-shadow)',
+        color: 'var(--appt-text)',
+        outline: selected ? '3px solid var(--accent)' : 'none',
+        outlineOffset: selected ? 1 : 0,
         opacity: muted ? 0.6 : 1,
         zIndex: selected ? 6 : 5,
       }}
       title={`${a.start_time}–${a.end_time} ${a.blacklist ? '⛔ чёрный список · ' : ''}${a.client_name}${a.master ? ' · ' + a.master.name : ''}${a.service ? ' · ' + a.service.name : ''} — ${info.label}`}
     >
       {/* Время не переносится по символам, имя и услуга обрезаются многоточием */}
-      <div className={`min-w-0 text-[11px] leading-tight text-white ${muted ? 'line-through' : ''}`}>
+      <div className={`min-w-0 text-[11px] leading-tight ${muted ? 'line-through' : ''}`}>
         {height < COMPACT_BLOCK_PX ? (
           <div className="truncate">
             <span className="font-semibold">{a.start_time}</span> {a.blacklist && <span title="Чёрный список">⛔</span>}{a.client_name}
@@ -206,8 +211,8 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, showMa
             {/* В узкой подколонке — только начало (конец виден по высоте блока) */}
             <div className="font-semibold whitespace-nowrap truncate">{lanes >= 3 ? a.start_time : `${a.start_time}–${a.end_time}`}</div>
             <div className="truncate">{a.blacklist && <span title="Чёрный список">⛔ </span>}{a.client_name}</div>
-            {showMaster && a.master && height >= 44 && <div className="truncate text-gray-300">{a.master.name}</div>}
-            {a.service && height >= (showMaster ? 68 : 56) && <div className="truncate text-gray-300">{a.service.name}</div>}
+            {showMaster && a.master && height >= 44 && <div className="truncate opacity-90">{a.master.name}</div>}
+            {a.service && height >= (showMaster ? 68 : 56) && <div className="truncate opacity-90">{a.service.name}</div>}
           </>
         )}
       </div>
@@ -274,7 +279,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
     // Прокручиваемая сетка: фокус с клавиатуры (Tab) и стрелки для прокрутки, подпись для экранного диктора
     <div ref={scrollRef} tabIndex={0} role="region" aria-label="Сетка журнала"
       className="flex-1 min-h-0 overflow-auto overscroll-contain focus:outline-none focus-visible:ring-1 focus-visible:ring-pink-400"
-      style={{ backgroundColor: '#141414' }}>
+      style={{ backgroundColor: 'var(--surface-sunken)' }}>
       <div
         className="grid"
         style={{
@@ -283,25 +288,25 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
         }}
       >
         {/* Угол над колонкой времени */}
-        <div className="sticky top-0 left-0 z-30" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }} />
+        <div className="sticky top-0 left-0 z-30" style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)' }} />
 
         {columns.map(col => (
           <ColumnHeader key={col.key} col={col} canManage={canManage} onToggleDayOff={onToggleDayOff} />
         ))}
 
         {/* Колонка времени */}
-        <div className="sticky left-0 z-10" style={{ height: totalPx, backgroundColor: '#1a1a1a' }}>
+        <div className="sticky left-0 z-10" style={{ height: totalPx, backgroundColor: 'var(--bg)' }}>
           {slots.map((m, i) => (
             <div
               key={m}
               className="absolute right-2 text-[11px] leading-none"
-              style={{ top: i === 0 ? 4 : i * SLOT_PX - 5, color: m % 60 === 0 ? '#9ca3af' : '#8b929e' }}
+              style={{ top: i === 0 ? 4 : i * SLOT_PX - 5, color: m % 60 === 0 ? 'var(--text-muted)' : 'var(--text-faint-2)' }}
             >
               {minToTime(m)}
             </div>
           ))}
           {nowVisible && (
-            <div className="absolute right-0 w-2 h-2 rounded-full" style={{ top: nowTop - 4, backgroundColor: '#db2777' }} />
+            <div className="absolute right-0 w-2 h-2 rounded-full" style={{ top: nowTop - 4, backgroundColor: 'var(--accent)' }} />
           )}
         </div>
 
@@ -312,7 +317,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
             <div
               key={col.key}
               className="relative cursor-pointer"
-              style={{ height: totalPx, borderLeft: '1px solid #2e2e2e', ...GRID_LINES }}
+              style={{ height: totalPx, borderLeft: '1px solid var(--border)', ...GRID_LINES }}
               onClick={e => handleColumnClick(e, col)}
             >
               {/* Нерабочие часы */}
@@ -333,7 +338,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
                     height: Math.max(0, Math.min(work.breakEnd, range.end) - Math.max(work.breakStart, range.start)) * PX_PER_MIN,
                   }}
                 >
-                  <span className="text-[10px] mt-0.5" style={{ color: '#fbbf24' }}>обед</span>
+                  <span className="text-[10px] mt-0.5" style={{ color: 'var(--warning-text)' }}>обед</span>
                 </div>
               )}
 
@@ -351,7 +356,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
               ))}
 
               {nowVisible && col.isToday && (
-                <div className="absolute inset-x-0 pointer-events-none" style={{ top: nowTop, height: 2, backgroundColor: '#db2777', zIndex: 7 }} />
+                <div className="absolute inset-x-0 pointer-events-none" style={{ top: nowTop, height: 2, backgroundColor: 'var(--accent)', zIndex: 7 }} />
               )}
             </div>
           )

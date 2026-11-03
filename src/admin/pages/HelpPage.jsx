@@ -6,7 +6,7 @@ import { PageHeader } from '../components/ui'
 
 function Topic({ title, open, onToggle, children }) {
   return (
-    <section className="rounded-2xl mb-2" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+    <section className="rounded-2xl mb-2" style={{ backgroundColor: 'var(--surface-1)', border: '1px solid var(--border)' }}>
       <button
         type="button"
         onClick={onToggle}

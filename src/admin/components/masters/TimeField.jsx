@@ -1,4 +1,4 @@
-const timeInputStyle = { backgroundColor: '#242424', border: '1px solid #2e2e2e', colorScheme: 'dark' }
+const timeInputStyle = { backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)', colorScheme: 'dark' }
 
 // Поле времени ЧЧ:ММ с шагом 15 минут; clearable — крестик, чтобы оставить пустым (обед)
 export default function TimeField({ value, onChange, label, disabled, clearable }) {
@@ -16,7 +16,7 @@ export default function TimeField({ value, onChange, label, disabled, clearable 
       />
       {clearable && value && !disabled && (
         <button type="button" onClick={() => onChange(null)} aria-label={`Очистить: ${label}`}
-          className="w-7 h-7 rounded-lg text-gray-400 text-sm" style={{ backgroundColor: '#242424' }}>
+          className="w-7 h-7 rounded-lg text-gray-400 text-sm" style={{ backgroundColor: 'var(--surface-2)' }}>
           ×
         </button>
       )}
