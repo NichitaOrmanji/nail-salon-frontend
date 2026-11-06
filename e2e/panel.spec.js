@@ -17,7 +17,7 @@ test('оплата визита из журнала', async ({ page }) => {
   await staffLogin(page)
   await openJournalDay(page, -1)
   await page.getByTitle(/Оплата Тест/).first().click()
-  await page.getByRole('button', { name: 'Оплата', exact: true }).click()
+  await page.getByRole('button', { name: 'Оплатить', exact: true }).click()
   await page.getByRole('button', { name: 'Оплачено' }).click()
   await expect(page.getByRole('button', { name: 'Отменить оплату' })).toBeVisible()
 })

@@ -68,3 +68,27 @@ export async function fetchStaffMonthLoad({ month, master }) {
   const response = await staffApi.get('/calendar/', { params })
   return Object.fromEntries(expectArray(response.data?.days).map(d => [d.date, d]))
 }
+
+// Карточка записи: история изменений [{ id, at, action, actor, user, details }]
+export async function fetchAppointmentHistory(id) {
+  const response = await staffApi.get(`/appointments/${id}/history/`)
+  return expectArray(response.data)
+}
+
+// Повторить запись каждые everyDays дней count раз → { created: [...], skipped: [{ date, reason }] }
+export async function repeatAppointment(id, { everyDays, count }) {
+  const response = await staffApi.post(`/appointments/${id}/repeat/`, { every_days: everyDays, count })
+  return response.data
+}
+
+// Напомнить клиенту сейчас → { channel: 'telegram' | 'email' }
+export async function remindAppointment(id) {
+  const response = await staffApi.post(`/appointments/${id}/remind/`)
+  return response.data
+}
+
+// Ещё одна услуга в визите (сразу после последней) → новая запись
+export async function addServiceToVisit(id, data) {
+  const response = await staffApi.post(`/appointments/${id}/add-service/`, data)
+  return response.data
+}
