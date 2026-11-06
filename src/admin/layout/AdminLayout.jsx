@@ -69,9 +69,9 @@ function SidebarCalendar({ onNavigate }) {
   function select(day) {
     onNavigate()
     if (onJournal && journalNav.goToDate) {
-      journalNav.goToDate(day)
+      journalNav.goToDate(day, 'day')
     } else {
-      navigate(`${JOURNAL_PATH}?date=${day}`)
+      navigate(`${JOURNAL_PATH}?view=day&date=${day}`)
     }
   }
 

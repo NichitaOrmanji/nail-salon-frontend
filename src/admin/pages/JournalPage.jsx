@@ -153,11 +153,12 @@ export default function JournalPage() {
     }
   }
 
-  function goToDate(value) {
+  // nextView: 'day' — календарь загруженности открывает выбранный день, а не неделю
+  function goToDate(value, nextView) {
     if (!isValidDateString(value)) return
     if (!confirmLeaveCard()) return
     setActionError(null)
-    setParams({ date: value, open: null }, { state: null })
+    setParams({ date: value, open: null, ...(nextView ? { view: nextView } : {}) }, { state: null })
   }
 
   function changeView(next) {
@@ -173,7 +174,7 @@ export default function JournalPage() {
   const goToDateRef = useRef(goToDate)
   useEffect(() => { goToDateRef.current = goToDate })
   useEffect(() => {
-    journalNav.goToDate = day => goToDateRef.current(day)
+    journalNav.goToDate = (day, nextView) => goToDateRef.current(day, nextView)
     return () => { journalNav.goToDate = null }
   }, [])
 
@@ -282,11 +283,11 @@ export default function JournalPage() {
       {/* Панель дня */}
       <div ref={toolbarRef} className="flex-shrink-0 px-3 md:px-5 py-3 flex flex-wrap items-center gap-2" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}>
         <div className="flex items-center gap-1">
-          <Button aria-label={t(view === 'week' ? t('Предыдущая неделя') : t('Предыдущий день'))} className="w-11 px-0" onClick={() => goToDate(addDays(date, -step))}>
+          <Button aria-label={t(view === 'week' ? 'Предыдущая неделя' : 'Предыдущий день')} className="w-11 px-0" onClick={() => goToDate(addDays(date, -step))}>
             <IconChevronLeft />
           </Button>
           <Button onClick={() => goToDate(todayString())} style={isToday ? { color: '#f472b6' } : undefined}>{t('Сегодня')}</Button>
-          <Button aria-label={t(view === 'week' ? t('Следующая неделя') : t('Следующий день'))} className="w-11 px-0" onClick={() => goToDate(addDays(date, step))}>
+          <Button aria-label={t(view === 'week' ? 'Следующая неделя' : 'Следующий день')} className="w-11 px-0" onClick={() => goToDate(addDays(date, step))}>
             <IconChevronRight />
           </Button>
         </div>
