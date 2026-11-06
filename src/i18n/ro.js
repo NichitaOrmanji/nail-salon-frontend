@@ -281,4 +281,12 @@ export default {
   'Утро': 'Dimineața',
   'День': 'Ziua',
   'Вечер': 'Seara',
+  'За сутки': 'Cu o zi înainte',
+  'За 2 часа': 'Cu 2 ore înainte',
+  'За 6 часов': 'Cu 6 ore înainte',
+  'За 2 дня': 'Cu 2 zile înainte',
+  'Не напоминать': 'Fără memento',
+  'Напоминание': 'Memento',
+  'Укажите email — пришлём подтверждение со ссылкой для переноса и напоминание.': 'Indicați emailul — vă trimitem confirmarea cu link pentru mutare și un memento.',
+  'Напомним в Telegram, если подключите его, или на email.': 'Vă reamintim în Telegram, dacă îl conectați, sau pe email.',
 }
