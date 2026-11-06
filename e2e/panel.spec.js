@@ -75,8 +75,11 @@ test('администратор не видит финансы, мастер �
 
   await page.evaluate(() => localStorage.clear())
   await staffLogin(page, 'e2e_master')
-  for (const path of ['/admin-panel/clients', '/admin-panel/settings']) {
-    await page.goto(path)
-    await expect(page).toHaveURL(/\/admin-panel(\?|$)/)
-  }
+  await page.goto('/admin-panel/clients')
+  await expect(page).toHaveURL(/\/admin-panel(\?|$)/)
+  // В настройках мастеру — только его аккаунт (Telegram, пароль, выход), без данных салона
+  await page.goto('/admin-panel/settings')
+  await expect(page.getByRole('heading', { name: 'Аккаунт' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Сменить пароль' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Салон' })).toHaveCount(0)
 })

@@ -243,7 +243,6 @@ function SidebarContent({ me, isManager, onNavigate, onHide, hideLabel, inlineMe
       <Link
         to="/admin-panel/settings"
         onClick={onNavigate}
-        aria-label={`Аккаунт и настройки: ${me.name || me.username}`}
         className="flex items-center gap-3 px-5 py-3 flex-shrink-0"
         style={{ borderTop: '1px solid #2e2e2e' }}
       >
