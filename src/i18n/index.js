@@ -1,32 +1,42 @@
 import { useSyncExternalStore } from 'react'
 import RO from './ro'
 
-// Язык сайта записи: ru (основной) или ro. Тексты в коде — по-русски, t() берёт
-// румынский перевод из ro.js по русскому тексту. Панель салона не переводится.
-// Выбор запоминается в браузере; без выбора — язык браузера.
+// Язык: ru (основной) или ro. Тексты в коде — по-русски, t() берёт румынский перевод
+// из ro.js по русскому тексту. У сайта записи и панели салона (/admin-panel) языки свои:
+// клиент выбирает язык сайта, сотрудник — язык панели в «Настройках».
+// Выбор запоминается в браузере; сайт без выбора — язык браузера, панель — русский.
 const KEY = 'lang'
+const ADMIN_KEY = 'admin_lang'
 export const LANGS = ['ru', 'ro']
 
-function detect() {
-  try {
-    const saved = localStorage.getItem(KEY)
-    if (LANGS.includes(saved)) return saved
-  } catch { /* хранилище недоступно */ }
-  return (navigator.language || '').toLowerCase().startsWith('ro') ? 'ro' : 'ru'
+function isAdmin() {
+  return typeof window !== 'undefined' && window.location.pathname.startsWith('/admin-panel')
 }
 
-let lang = detect()
+function read(key, fallback) {
+  try {
+    const saved = localStorage.getItem(key)
+    if (LANGS.includes(saved)) return saved
+  } catch { /* хранилище недоступно */ }
+  return fallback
+}
+
+const langs = {
+  site: read(KEY, typeof navigator !== 'undefined' && (navigator.language || '').toLowerCase().startsWith('ro') ? 'ro' : 'ru'),
+  admin: read(ADMIN_KEY, 'ru'),
+}
 const listeners = new Set()
-if (typeof document !== 'undefined') document.documentElement.lang = lang
+if (typeof document !== 'undefined') document.documentElement.lang = getLang()
 
 export function getLang() {
-  return lang
+  return isAdmin() ? langs.admin : langs.site
 }
 
 export function setLang(next) {
-  if (!LANGS.includes(next) || next === lang) return
-  lang = next
-  try { localStorage.setItem(KEY, next) } catch { /* хранилище недоступно */ }
+  const area = isAdmin() ? 'admin' : 'site'
+  if (!LANGS.includes(next) || next === langs[area]) return
+  langs[area] = next
+  try { localStorage.setItem(area === 'admin' ? ADMIN_KEY : KEY, next) } catch { /* хранилище недоступно */ }
   document.documentElement.lang = next
   listeners.forEach(listener => listener())
 }
@@ -44,7 +54,7 @@ export function useLang() {
 // t('Свободны в {time}', { time }) — перевод на текущий язык с подстановками
 export function t(text, params) {
   let out = text
-  if (lang === 'ro') {
+  if (getLang() === 'ro') {
     out = RO[text]
     if (out === undefined) {
       if (import.meta.env.DEV) console.warn('[i18n] нет перевода:', text)

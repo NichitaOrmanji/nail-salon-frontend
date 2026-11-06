@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 import { toDateString } from '../../utils/format'
 
 export { toDateString }
@@ -82,19 +83,19 @@ export function weekdayIndex(dateStr) {
 // '2026-10-20' -> 'Вторник, 20 октября'
 export function formatDayTitle(dateStr) {
   const d = parseDate(dateStr)
-  return `${WEEKDAYS[weekdayIndex(dateStr)]}, ${d.getDate()} ${MONTHS_GENITIVE[d.getMonth()]}`
+  return `${t(WEEKDAYS[weekdayIndex(dateStr)])}, ${d.getDate()} ${t(MONTHS_GENITIVE[d.getMonth()])}`
 }
 
 // '2026-10-20' -> 'Вт, 20 октября'
 export function formatShortDate(dateStr) {
   const d = parseDate(dateStr)
-  return `${WEEKDAYS_SHORT[weekdayIndex(dateStr)]}, ${d.getDate()} ${MONTHS_GENITIVE[d.getMonth()]}`
+  return `${t(WEEKDAYS_SHORT[weekdayIndex(dateStr)])}, ${d.getDate()} ${t(MONTHS_GENITIVE[d.getMonth()])}`
 }
 
 // '2026-10-26' -> 'Пн, 26 окт' (заголовок дня в недельном журнале)
 export function formatWeekDay(dateStr) {
   const d = parseDate(dateStr)
-  return `${WEEKDAYS_SHORT[weekdayIndex(dateStr)]}, ${d.getDate()} ${MONTHS_GENITIVE[d.getMonth()].slice(0, 3)}`
+  return `${t(WEEKDAYS_SHORT[weekdayIndex(dateStr)])}, ${d.getDate()} ${t(MONTHS_GENITIVE[d.getMonth()]).slice(0, 3)}`
 }
 
 // Минуты от полуночи сейчас (по времени салона)
@@ -110,6 +111,6 @@ export function normalizeDecimal(value) {
 // '2026-10-20' -> '20 окт'; другого года — '20 окт 2025' (клиентская база)
 export function clientDate(dateStr) {
   const d = parseDate(dateStr)
-  const text = `${d.getDate()} ${MONTHS_GENITIVE[d.getMonth()].slice(0, 3)}`
+  const text = `${d.getDate()} ${t(MONTHS_GENITIVE[d.getMonth()]).slice(0, 3)}`
   return d.getFullYear() === parseDate(todayString()).getFullYear() ? text : `${text} ${d.getFullYear()}`
 }

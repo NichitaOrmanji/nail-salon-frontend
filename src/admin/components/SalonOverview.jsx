@@ -3,9 +3,10 @@ import { Link, useLocation } from 'react-router-dom'
 import { fetchOnboarding, resendVerification } from '../api/signup'
 import { fetchStaffCompany } from '../api/company'
 import { useStaffAuth } from '../context/StaffAuthContext'
-import TelegramModal from '../components/TelegramModal'
-import { Button, ButtonLink, ErrorText, PageHeader } from '../components/ui'
+import TelegramModal from './TelegramModal'
+import { Button, ButtonLink, ErrorText } from './ui'
 import Spinner from '../../components/layout/Spinner'
+import { t } from '../../i18n'
 
 const STEPS = {
   email: { title: 'Подтвердите email', text: 'Пока email не подтверждён, клиенты не видят сайт записи.' },
@@ -110,14 +111,14 @@ function SalonCard({ company }) {
           </dl>
           {company.description && <p className="text-gray-400 text-sm mt-2 whitespace-pre-line break-words">{company.description}</p>}
         </div>
-        <ButtonLink to="/admin-panel/settings" className="flex-shrink-0">Изменить</ButtonLink>
       </div>
     </section>
   )
 }
 
-// «О салоне»: карточка салона, ссылка и QR для клиентов; шаги настройки — пока она не закончена
-export default function StartPage() {
+// «О салоне» (правая колонка настроек): карточка салона, ссылка и QR для клиентов;
+// шаги настройки — пока она не закончена
+export default function SalonOverview() {
   const { me, refreshMe } = useStaffAuth()
   const location = useLocation()
   const [data, setData] = useState(null)
@@ -147,8 +148,9 @@ export default function StartPage() {
     : null
 
   return (
-    <div className="px-4 md:px-6 py-5 max-w-3xl">
-      <PageHeader title="О салоне" subtitle={trialEnds ? `Пробный период — до ${trialEnds}` : 'Как вас видят клиенты и ссылка для записи'} />
+    <section aria-labelledby="salon-overview-title">
+      <h2 id="salon-overview-title" className="text-white text-xl font-bold tracking-tight">{t('О салоне')}</h2>
+      <p className="text-gray-500 text-sm mb-4">{trialEnds ? t('Пробный период — до {date}', { date: trialEnds }) : t('Как вас видят клиенты и ссылка для записи')}</p>
       {location.state?.welcome && (
         <div className="rounded-2xl p-4 mb-5 text-sm" style={{ backgroundColor: '#2e1f28', border: '1px solid #db2777' }}>
           <div className="text-white font-semibold mb-1">Салон «{me?.company?.name}» создан 🎉</div>
@@ -217,12 +219,12 @@ export default function StartPage() {
           </>
           )}
           <p className="text-gray-500 text-xs mt-4">
-            Подробные инструкции — в разделе <Link to="/admin-panel/help" className="underline">Помощь</Link>.
+            Подробные инструкции — в разделе <Link to="/admin-panel/help" className="underline">Помощь</Link>. Данные салона меняются в форме «Салон».
           </p>
           {!data.ready && <div className="mt-5"><ShareCard url={data.public_url} name={me?.company?.name || ''} ready={false} /></div>}
         </>
       )}
       {telegramOpen && <TelegramModal onClose={() => { setTelegramOpen(false); load() }} />}
-    </div>
+    </section>
   )
 }

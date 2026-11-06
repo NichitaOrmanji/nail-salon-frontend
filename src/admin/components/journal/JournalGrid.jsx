@@ -1,3 +1,4 @@
+import { t } from '../../../i18n'
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { timeToMin, minToTime, nowMinutes, formatWeekDay } from '../../utils/time'
@@ -42,8 +43,8 @@ function useNowMinutes(enabled) {
 }
 
 function columnHours(col) {
-  if (!col.master && !col.week) return 'Записи без мастера'
-  if (!col.master && !col.work.working) return 'Никто не работает'
+  if (!col.master && !col.week) return t('Записи без мастера')
+  if (!col.master && !col.work.working) return t('Никто не работает')
   if (col.work.dayOff) return 'Выходной (по дате)'
   if (!col.work.working) return 'Выходной'
   return `${minToTime(col.work.start)}–${minToTime(col.work.end)}`
@@ -97,6 +98,20 @@ function ColumnMenu({ anchorRef, onClose, children }) {
   )
 }
 
+function MasterAvatar({ master, dim }) {
+  return master.photo ? (
+    <img src={master.photo} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0 mt-1 mr-1" style={{ opacity: dim ? 0.6 : 1 }} />
+  ) : (
+    <span
+      aria-hidden="true"
+      className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 mt-1 mr-1"
+      style={{ backgroundColor: '#2e1f28', color: '#f472b6', opacity: dim ? 0.6 : 1 }}
+    >
+      {(master.name || '?').trim().charAt(0).toUpperCase()}
+    </span>
+  )
+}
+
 function ColumnHeader({ col, canManage, onToggleDayOff }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const buttonRef = useRef(null)
@@ -108,16 +123,18 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
       className="sticky top-0 z-20 flex items-start gap-1 pl-3 pr-0.5 py-1 min-w-0"
       style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e', borderLeft: '1px solid #2e2e2e' }}
     >
+      {/* День: фото и имя мастера, как в карточках журнала Altegio */}
+      {!col.week && col.master && <MasterAvatar master={col.master} dim={col.hidden} />}
       <div className="flex-1 min-w-0 py-1">
         <div className="flex items-center gap-1.5 min-w-0">
           <span
             className="text-sm font-semibold truncate"
             style={{ opacity: col.hidden ? 0.6 : 1, color: col.week && col.isToday ? '#f472b6' : '#ffffff' }}
           >
-            {col.week ? formatWeekDay(col.date) : col.master ? col.master.name : 'Без мастера'}
+            {col.week ? formatWeekDay(col.date) : col.master ? col.master.name : t('Без мастера')}
           </span>
           {col.hidden && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>скрыт</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>{t('скрыт')}</span>
           )}
         </div>
         <div className="text-xs truncate" style={{ color: col.work.working || !col.master ? '#9ca3af' : '#9098a4' }}>

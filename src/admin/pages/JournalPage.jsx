@@ -15,14 +15,15 @@ import AppointmentFormModal from '../components/journal/AppointmentFormModal'
 import { Button, Checkbox, ErrorText, Select } from '../components/ui'
 import { IconChevronLeft, IconChevronRight } from '../components/Icons'
 import Spinner from '../../components/layout/Spinner'
+import { t } from '../../i18n'
 
-const MONTHS_SHORT = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+const MONTHS_SHORT = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'].map(m => () => t(m))
 
 // '2026-10-26' → '26 окт – 1 ноя'
 function weekTitle(start) {
   const a = parseDate(start)
   const b = parseDate(addDays(start, 6))
-  return `${a.getDate()} ${MONTHS_SHORT[a.getMonth()]} – ${b.getDate()} ${MONTHS_SHORT[b.getMonth()]}`
+  return `${a.getDate()} ${MONTHS_SHORT[a.getMonth()]()} – ${b.getDate()} ${MONTHS_SHORT[b.getMonth()]()}`
 }
 
 // Журнал записей: неделя (по умолчанию) или день.
@@ -281,15 +282,15 @@ export default function JournalPage() {
       {/* Панель дня */}
       <div ref={toolbarRef} className="flex-shrink-0 px-3 md:px-5 py-3 flex flex-wrap items-center gap-2" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}>
         <div className="flex items-center gap-1">
-          <Button aria-label={view === 'week' ? 'Предыдущая неделя' : 'Предыдущий день'} className="w-11 px-0" onClick={() => goToDate(addDays(date, -step))}>
+          <Button aria-label={t(view === 'week' ? 'Предыдущая неделя' : 'Предыдущий день')} className="w-11 px-0" onClick={() => goToDate(addDays(date, -step))}>
             <IconChevronLeft />
           </Button>
-          <Button onClick={() => goToDate(todayString())} style={isToday ? { color: '#f472b6' } : undefined}>Сегодня</Button>
-          <Button aria-label={view === 'week' ? 'Следующая неделя' : 'Следующий день'} className="w-11 px-0" onClick={() => goToDate(addDays(date, step))}>
+          <Button onClick={() => goToDate(todayString())} style={isToday ? { color: '#f472b6' } : undefined}>{t('Сегодня')}</Button>
+          <Button aria-label={t(view === 'week' ? 'Следующая неделя' : 'Следующий день')} className="w-11 px-0" onClick={() => goToDate(addDays(date, step))}>
             <IconChevronRight />
           </Button>
         </div>
-        <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }} role="group" aria-label="Вид журнала">
+        <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }} role="group" aria-label={t('Вид журнала')}>
           {[['week', 'Неделя'], ['day', 'День']].map(([key, label]) => (
             <button
               key={key}
@@ -299,13 +300,13 @@ export default function JournalPage() {
               className="min-h-[44px] px-3 text-sm font-medium"
               style={{ backgroundColor: view === key ? '#db2777' : '#242424', color: view === key ? '#ffffff' : '#9ca3af' }}
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>
         <input
           type="date"
-          aria-label="Дата"
+          aria-label={t('Дата')}
           value={date}
           onChange={e => goToDate(e.target.value)}
           className="min-h-[44px] px-3 rounded-xl text-white text-sm outline-none"
@@ -313,8 +314,8 @@ export default function JournalPage() {
         />
         {view === 'week' && isManager && current && (
           <div className="w-44">
-            <Select aria-label="Мастер" value={masterFilter || ''} onChange={e => changeMaster(Number(e.target.value) || null)}>
-              <option value="">Все мастера</option>
+            <Select aria-label={t('Мастер')} value={masterFilter || ''} onChange={e => changeMaster(Number(e.target.value) || null)}>
+              <option value="">{t('Все мастера')}</option>
               {current.masters.filter(m => m.is_active || m.id === masterFilter).map(m => (
                 <option key={m.id} value={m.id}>{m.name}</option>
               ))}
@@ -324,14 +325,14 @@ export default function JournalPage() {
         <div className="basis-full lg:basis-auto lg:flex-1 min-w-0 text-white text-lg font-semibold truncate lg:pl-2">
           {view === 'week' ? weekTitle(rangeFrom) : formatDayTitle(date)}
         </div>
-        <Checkbox checked={showCancelled} onChange={setShowCancelled} label="Показывать отменённые" className="mr-auto lg:mr-0" />
-        <Button variant="primary" onClick={() => openCreate(null, '')}>+ Запись</Button>
+        <Checkbox checked={showCancelled} onChange={setShowCancelled} label={t('Показывать отменённые')} className="mr-auto lg:mr-0" />
+        <Button variant="primary" onClick={() => openCreate(null, '')}>{t('+ Запись')}</Button>
       </div>
 
       {(loadError || actionError) && (
         <div className="flex-shrink-0 px-4 py-2 flex flex-wrap items-center gap-3" style={{ backgroundColor: 'rgba(248, 113, 113, 0.08)' }}>
           <ErrorText className="flex-1 min-w-0">{actionError || loadError}</ErrorText>
-          {loadError && <Button onClick={load}>Повторить</Button>}
+          {loadError && <Button onClick={load}>{t('Повторить')}</Button>}
         </div>
       )}
 
@@ -340,7 +341,7 @@ export default function JournalPage() {
         {Object.entries(KINDS).filter(([key]) => key !== 'cancelled' || showCancelled).map(([key, kind]) => (
           <span key={key} className="inline-flex items-center gap-1.5 text-xs text-gray-400">
             <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: kind.color }} />
-            {kind.label}
+            {t(kind.label)}
           </span>
         ))}
       </div>
@@ -351,7 +352,7 @@ export default function JournalPage() {
         {current && columns.length === 0 && (
           <div className="flex-1 flex items-center justify-center px-6 text-center">
             <p className="text-gray-500 text-sm">
-              {isManager ? 'Нет активных мастеров. Добавьте мастера в разделе «Мастера».' : 'Нет данных для журнала.'}
+              {t(isManager ? 'Нет активных мастеров. Добавьте мастера в разделе «Мастера».' : 'Нет данных для журнала.')}
             </p>
           </div>
         )}

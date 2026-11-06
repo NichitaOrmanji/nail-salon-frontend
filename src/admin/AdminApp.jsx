@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { StaffAuthProvider } from './context/StaffAuthContext'
+import { useLang } from '../i18n'
 import RequireStaff from './components/RequireStaff'
 import ManagerOnly from './components/ManagerOnly'
 import OwnerOnly from './components/OwnerOnly'
@@ -13,19 +14,19 @@ import FinancePage from './pages/FinancePage'
 import MySalaryPage from './pages/MySalaryPage'
 import ClientsPage from './pages/ClientsPage'
 import HelpPage from './pages/HelpPage'
-import DebtorsPage from './pages/DebtorsPage'
 import SignupPage from './pages/SignupPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import TermsPage from './pages/TermsPage'
-import StartPage from './pages/StartPage'
 
 // Панель салона: /admin-panel/*
 export default function AdminApp() {
+  // Язык интерфейса сменили в настройках — панель перерисовывается целиком
+  const lang = useLang()
   return (
     <StaffAuthProvider>
-      <div className="min-h-dvh text-white" style={{ backgroundColor: '#111111' }}>
+      <div key={lang} className="min-h-dvh text-white" style={{ backgroundColor: '#111111' }}>
         <Routes>
           <Route path="login" element={<LoginPage />} />
           {/* Без входа: регистрация салона, подтверждение email, восстановление пароля, условия */}
@@ -36,10 +37,11 @@ export default function AdminApp() {
           <Route path="terms" element={<TermsPage />} />
           <Route element={<RequireStaff><AdminLayout /></RequireStaff>}>
             <Route index element={<JournalPage />} />
-            <Route path="salon" element={<ManagerOnly><StartPage /></ManagerOnly>} />
-            <Route path="start" element={<Navigate to="/admin-panel/salon" replace />} />
+            {/* «О салоне» и «Начало работы» — теперь правая колонка настроек */}
+            <Route path="salon" element={<Navigate to="/admin-panel/settings" replace />} />
+            <Route path="start" element={<Navigate to="/admin-panel/settings" replace />} />
             <Route path="clients" element={<ManagerOnly><ClientsPage /></ManagerOnly>} />
-            <Route path="debtors" element={<ManagerOnly><DebtorsPage /></ManagerOnly>} />
+            <Route path="debtors" element={<Navigate to="/admin-panel/clients?tab=debtors" replace />} />
             <Route path="services" element={<ServicesPage />} />
             <Route path="masters" element={<MastersPage />} />
             <Route path="settings" element={<SettingsPage />} />

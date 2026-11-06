@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchDebtors } from '../api/penalties'
-import { PENALTY_KIND } from '../utils/blacklist'
-import { formatMoney } from '../utils/money'
-import { REBOOK_KEY } from '../utils/rebook'
-import { clientDate, formatShortDate } from '../utils/time'
-import ClientCardModal from '../components/clients/ClientCardModal'
-import { ErrorText, PageHeader } from '../components/ui'
-import Spinner from '../../components/layout/Spinner'
+import { fetchDebtors } from '../../api/penalties'
+import { PENALTY_KIND } from '../../utils/blacklist'
+import { formatMoney } from '../../utils/money'
+import { REBOOK_KEY } from '../../utils/rebook'
+import { clientDate, formatShortDate } from '../../utils/time'
+import ClientCardModal from './ClientCardModal'
+import { ErrorText } from '../ui'
+import Spinner from '../../../components/layout/Spinner'
 
 function Total({ label, value, color }) {
   return (
@@ -62,7 +62,8 @@ function DebtorRow({ debtor, onOpen }) {
 
 // Должники: у кого неоплаченные штрафы. Сверху — кто придёт скоро (при визите и получаем долг).
 // Оплатить или простить штраф — в карточке клиента
-export default function DebtorsPage() {
+// Вкладка «Должники» в разделе «Клиенты»
+export default function DebtorsView() {
   const navigate = useNavigate()
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
@@ -87,8 +88,8 @@ export default function DebtorsPage() {
   }
 
   return (
-    <div className="px-4 md:px-6 py-5 max-w-3xl">
-      <PageHeader title="Должники" subtitle="Неоплаченные штрафы чёрного списка — получить при визите" />
+    <div>
+      <p className="text-gray-500 text-sm mb-4">Неоплаченные штрафы чёрного списка — получить при визите</p>
       <ErrorText>{error}</ErrorText>
       {!data && !error && <Spinner />}
       {data && (
