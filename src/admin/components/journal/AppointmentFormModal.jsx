@@ -155,7 +155,9 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
   function handleServiceChange(value) {
     setServiceId(value)
     const s = services?.find(x => String(x.id) === value)
-    if (s) setDuration(String(s.duration))
+    // Длительность — как у этого мастера, если она у него своя
+    const own = master?.service_terms?.find(row => row.service === s?.id)
+    if (s) setDuration(String(own?.duration || s.duration))
   }
 
   // Предупреждения: вне графика, выходной, прошедшее время

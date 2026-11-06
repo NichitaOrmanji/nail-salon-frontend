@@ -7,3 +7,9 @@ export async function fetchMasters({ serviceId } = {}) {
   })
   return expectArray(response.data).filter(m => m.is_active !== false)
 }
+
+// Услуги мастера с его ценой и длительностью
+export async function fetchMasterServices(masterId) {
+  const response = await api.get(`/companies/${SLUG}/master/${masterId}/services/`)
+  return expectArray(response.data)
+}
