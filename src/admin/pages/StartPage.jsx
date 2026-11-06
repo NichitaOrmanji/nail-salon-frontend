@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { fetchOnboarding, resendVerification } from '../api/signup'
+import { fetchStaffCompany } from '../api/company'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import TelegramModal from '../components/TelegramModal'
 import { Button, ButtonLink, ErrorText, PageHeader } from '../components/ui'
@@ -86,7 +87,36 @@ function ShareCard({ url, name, ready }) {
   )
 }
 
-// «Начало работы»: шаги настройки салона и ссылка на сайт записи
+// Карточка салона: как его видят клиенты (фото, название, адрес, телефон, описание)
+function SalonCard({ company }) {
+  return (
+    <section className="rounded-2xl overflow-hidden mb-5" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+      {company.main_photo && (
+        <img src={company.main_photo} alt="" className="w-full h-36 object-cover" />
+      )}
+      <div className="p-4 flex items-start gap-3">
+        {company.logo
+          ? <img src={company.logo} alt="" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
+          : (
+            <span className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0" style={{ backgroundColor: '#2e1f28', color: '#f472b6' }}>
+              {(company.name || '?').trim().charAt(0).toUpperCase()}
+            </span>
+          )}
+        <div className="flex-1 min-w-0">
+          <h2 className="text-white text-lg font-semibold break-words">{company.name}</h2>
+          <dl className="mt-1 space-y-0.5 text-sm">
+            <div className="flex gap-2"><dt className="text-gray-500 w-16 flex-shrink-0">Адрес</dt><dd className="text-gray-200 break-words">{company.address || <span className="text-gray-500">не указан</span>}</dd></div>
+            <div className="flex gap-2"><dt className="text-gray-500 w-16 flex-shrink-0">Телефон</dt><dd className="text-gray-200">{company.phone || <span className="text-gray-500">не указан</span>}</dd></div>
+          </dl>
+          {company.description && <p className="text-gray-400 text-sm mt-2 whitespace-pre-line break-words">{company.description}</p>}
+        </div>
+        <ButtonLink to="/admin-panel/settings" className="flex-shrink-0">Изменить</ButtonLink>
+      </div>
+    </section>
+  )
+}
+
+// «О салоне»: карточка салона, ссылка и QR для клиентов; шаги настройки — пока она не закончена
 export default function StartPage() {
   const { me, refreshMe } = useStaffAuth()
   const location = useLocation()
@@ -95,8 +125,10 @@ export default function StartPage() {
   const [telegramOpen, setTelegramOpen] = useState(false)
   const [resend, setResend] = useState(null)
 
+  const [company, setCompany] = useState(null)
   const load = useCallback(() => {
     fetchOnboarding().then(result => { setData(result); setError(null) }).catch(err => setError(err.message))
+    fetchStaffCompany().then(setCompany).catch(() => {})
   }, [])
   useEffect(() => { load() }, [load])
 
@@ -116,7 +148,7 @@ export default function StartPage() {
 
   return (
     <div className="px-4 md:px-6 py-5 max-w-3xl">
-      <PageHeader title="Начало работы" subtitle={trialEnds ? `Пробный период — до ${trialEnds}` : 'Настройка салона и ссылка для клиентов'} />
+      <PageHeader title="О салоне" subtitle={trialEnds ? `Пробный период — до ${trialEnds}` : 'Как вас видят клиенты и ссылка для записи'} />
       {location.state?.welcome && (
         <div className="rounded-2xl p-4 mb-5 text-sm" style={{ backgroundColor: '#2e1f28', border: '1px solid #db2777' }}>
           <div className="text-white font-semibold mb-1">Салон «{me?.company?.name}» создан 🎉</div>
@@ -131,9 +163,15 @@ export default function StartPage() {
       {!data && !error && <Spinner />}
       {data && (
         <>
+          {company && <SalonCard company={company} />}
           {/* Салон готов — сначала ссылка; пока нет — сначала шаги, ссылка ниже */}
           {data.ready && <ShareCard url={data.public_url} name={me?.company?.name || ''} ready />}
 
+          {data.done === data.total ? (
+            <p className="text-sm mb-2" style={{ color: '#34d399' }}>✓ Салон настроен: все шаги выполнены</p>
+          ) : (
+          <>
+          <h2 className="text-white text-base font-semibold mb-2">Настройка салона</h2>
           <div className="flex items-center gap-3 mb-3">
             <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#242424' }}
               role="progressbar" aria-valuemin={0} aria-valuemax={data.total} aria-valuenow={data.done} aria-label="Настройка салона">
@@ -176,6 +214,8 @@ export default function StartPage() {
               )
             })}
           </ol>
+          </>
+          )}
           <p className="text-gray-500 text-xs mt-4">
             Подробные инструкции — в разделе <Link to="/admin-panel/help" className="underline">Помощь</Link>.
           </p>
