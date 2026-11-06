@@ -7,15 +7,15 @@ import { REBOOK_KEY } from '../utils/rebook'
 import ClientCardModal from '../components/clients/ClientCardModal'
 import { Button, ErrorText, PageHeader, Select, TextInput } from '../components/ui'
 import DebtorsView from '../components/clients/DebtorsView'
-import { t } from '../../i18n'
+import { t, tr } from '../../i18n'
 import Spinner from '../../components/layout/Spinner'
 
-const SORTS = [
+const SORTS = tr([
   { key: 'last', label: 'Недавние' },
   { key: 'visits', label: 'Больше визитов' },
   { key: 'paid', label: 'Больше оплатили' },
   { key: 'name', label: 'По имени' },
-]
+])
 
 function ClientRow({ client: c, onOpen }) {
   return (
@@ -26,18 +26,18 @@ function ClientRow({ client: c, onOpen }) {
       style={{ backgroundColor: '#242424', border: c.blacklist ? '1px solid #f87171' : '1px solid transparent' }}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <span className="text-white text-sm font-semibold break-words">{c.name || 'Без имени'}</span>
+        <span className="text-white text-sm font-semibold break-words">{c.name || t('Без имени')}</span>
         <span className="text-gray-400 text-xs">{c.phone}</span>
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs mt-1">
-        <span className="text-gray-400">Визитов: {c.visits}</span>
-        {c.paid !== '0.00' && <span className="text-gray-400">Оплачено: {formatMoney(c.paid)}</span>}
-        {c.last_visit && <span className="text-gray-500">Был(а): {clientDate(c.last_visit)}</span>}
-        {c.next_visit && <span style={{ color: '#34d399' }}>Запись: {clientDate(c.next_visit)}</span>}
-        {c.no_shows > 0 && <span style={{ color: '#f87171' }}>Не пришёл: {c.no_shows}</span>}
+        <span className="text-gray-400">{t('Визитов: {visits}', { visits: c.visits })}</span>
+        {c.paid !== '0.00' && <span className="text-gray-400">{t('Оплачено:')}{' '}{formatMoney(c.paid)}</span>}
+        {c.last_visit && <span className="text-gray-500">{t('Был(а):')}{' '}{clientDate(c.last_visit)}</span>}
+        {c.next_visit && <span style={{ color: '#34d399' }}>{t('Запись:')}{' '}{clientDate(c.next_visit)}</span>}
+        {c.no_shows > 0 && <span style={{ color: '#f87171' }}>{t('Не пришёл: {no_shows}', { no_shows: c.no_shows })}</span>}
         {c.blacklist && (
           <span className="font-semibold" style={{ color: '#f87171' }}>
-            ⛔ Чёрный список{Number(c.blacklist.debt) > 0 ? ` · долг ${formatMoney(c.blacklist.debt)}` : ''}
+            {t('⛔ Чёрный список')}{Number(c.blacklist.debt) > 0 ? t(' · долг {value}', { value: formatMoney(c.blacklist.debt) }) : ''}
           </span>
         )}
       </div>
@@ -111,23 +111,23 @@ function ClientsList() {
 
   return (
     <div>
-      <p className="text-gray-500 text-sm mb-4">{data ? `Всего: ${data.count}` : 'Все, кто записывался в салон'}</p>
+      <p className="text-gray-500 text-sm mb-4">{data ? t('Всего: {count}', { count: data.count }) : t('Все, кто записывался в салон')}</p>
       <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <TextInput
           type="search"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Имя или телефон"
-          aria-label="Поиск клиента"
+          placeholder={t('Имя или телефон')}
+          aria-label={t('Поиск клиента')}
         />
         <Button
           aria-pressed={onlyBlacklist}
           onClick={() => setOnlyBlacklist(v => !v)}
           style={onlyBlacklist ? { backgroundColor: '#f87171', color: '#fff' } : { color: '#f87171' }}
         >
-          ⛔ Чёрный список
+          {t('⛔ Чёрный список')}
         </Button>
-        <Select value={sort} onChange={e => setSort(e.target.value)} aria-label="Сортировка" className="sm:max-w-[200px]">
+        <Select value={sort} onChange={e => setSort(e.target.value)} aria-label={t('Сортировка')} className="sm:max-w-[200px]">
           {SORTS.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
         </Select>
       </div>
@@ -135,7 +135,7 @@ function ClientsList() {
       <ErrorText className="mb-3">{error}</ErrorText>
       {!data && !error && <Spinner />}
       {data && data.results.length === 0 && (
-        <p className="text-gray-500 text-sm">{search || onlyBlacklist ? 'Никого не нашли' : 'Клиенты появятся после первых записей'}</p>
+        <p className="text-gray-500 text-sm">{search || onlyBlacklist ? t('Никого не нашли') : t('Клиенты появятся после первых записей')}</p>
       )}
       {data && (
         <div className="space-y-2">
@@ -144,7 +144,7 @@ function ClientsList() {
       )}
       {data && data.results.length < data.count && (
         <div className="flex justify-center mt-4">
-          <Button disabled={loadingMore} onClick={loadMore}>{loadingMore ? 'Загружаем...' : 'Показать ещё'}</Button>
+          <Button disabled={loadingMore} onClick={loadMore}>{loadingMore ? t('Загружаем...') : t('Показать ещё')}</Button>
         </div>
       )}
 
@@ -153,7 +153,7 @@ function ClientsList() {
   )
 }
 
-const TABS = [['all', 'Все клиенты'], ['debtors', 'Должники']]
+const TABS = tr([['all', 'Все клиенты'], ['debtors', 'Должники']])
 
 // Клиенты: вся база и должники (неоплаченные штрафы) — вкладками; ?tab=debtors
 export default function ClientsPage() {

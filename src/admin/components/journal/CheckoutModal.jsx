@@ -4,6 +4,7 @@ import { Button, Checkbox, ErrorText, Field, TextInput } from '../ui'
 import { checkoutAppointment } from '../../api/finance'
 import { METHODS, formatMoney } from '../../utils/money'
 import { normalizeDecimal } from '../../utils/time'
+import { t } from '../../../i18n'
 
 // Оплата визита: цена услуги, скидка (в леях или %), способ оплаты. Визит отмечается «Пришёл»
 export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
@@ -37,16 +38,16 @@ export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
   }
 
   return (
-    <Modal title="Оплата визита" onClose={onClose}>
+    <Modal title={t('Оплата визита')} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="text-sm text-gray-400">
-          {a.client_name} · {a.service ? a.service.name : 'Без услуги'}
+          {a.client_name} · {a.service ? a.service.name : t('Без услуги')}
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-gray-400">Цена</span>
+          <span className="text-gray-400">{t('Цена')}</span>
           <span className="text-white">{formatMoney(price)}</span>
         </div>
-        <Field label={percent ? 'Скидка, %' : 'Скидка, L'}>
+        <Field label={percent ? t('Скидка, %') : t('Скидка, L')}>
           <div className="flex gap-2">
             <TextInput
               inputMode="decimal"
@@ -55,15 +56,15 @@ export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
               placeholder="0"
               aria-invalid={invalid}
             />
-            <Button onClick={() => setPercent(p => !p)} aria-label="Скидка в процентах или в леях">
+            <Button onClick={() => setPercent(p => !p)} aria-label={t('Скидка в процентах или в леях')}>
               {percent ? '%' : 'L'}
             </Button>
           </div>
         </Field>
-        {invalid && <ErrorText>Скидка не может быть больше цены</ErrorText>}
+        {invalid && <ErrorText>{t('Скидка не может быть больше цены')}</ErrorText>}
         <div>
-          <span className="block text-gray-400 text-xs font-medium mb-1.5">Способ оплаты</span>
-          <div className="grid grid-cols-3 gap-2" role="group" aria-label="Способ оплаты">
+          <span className="block text-gray-400 text-xs font-medium mb-1.5">{t('Способ оплаты')}</span>
+          <div className="grid grid-cols-3 gap-2" role="group" aria-label={t('Способ оплаты')}>
             {METHODS.map(m => (
               <button
                 key={m.key}
@@ -87,20 +88,20 @@ export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
             <Checkbox
               checked={payDebt}
               onChange={setPayDebt}
-              label={<span style={{ color: '#fca5a5' }}>Штраф из чёрного списка: {formatMoney(debt)}</span>}
+              label={<span style={{ color: '#fca5a5' }}>{t('Штраф из чёрного списка:')}{' '}{formatMoney(debt)}</span>}
             />
-            <p className="text-xs text-gray-400 mt-1">Клиент не пришёл или поздно отменил прошлую запись — штраф оплачивается сейчас.</p>
+            <p className="text-xs text-gray-400 mt-1">{t('Клиент не пришёл или поздно отменил прошлую запись — штраф оплачивается сейчас.')}</p>
           </div>
         )}
         <div className="flex justify-between items-baseline pt-2" style={{ borderTop: '1px solid #2e2e2e' }}>
-          <span className="text-gray-400 text-sm">К оплате</span>
+          <span className="text-gray-400 text-sm">{t('К оплате')}</span>
           <span className="text-white text-2xl font-bold">{formatMoney(totalAmount)}</span>
         </div>
         <ErrorText>{error}</ErrorText>
         <div className="flex justify-end gap-2">
-          <Button onClick={onClose}>Отмена</Button>
+          <Button onClick={onClose}>{t('Отмена')}</Button>
           <Button type="submit" variant="primary" disabled={invalid || saving}>
-            {saving ? 'Сохраняем...' : 'Оплачено'}
+            {saving ? t('Сохраняем...') : t('Оплачено')}
           </Button>
         </div>
       </form>

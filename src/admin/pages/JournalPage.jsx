@@ -128,7 +128,7 @@ export default function JournalPage() {
   // Уйти от карточки с несохранённой заметкой — только после подтверждения
   function confirmLeaveCard() {
     if (!openId || !cardDirtyRef.current) return true
-    if (!window.confirm(DISCARD_CONFIRM)) return false
+    if (!window.confirm(t(DISCARD_CONFIRM))) return false
     cardDirtyRef.current = false
     setCardResetKey(k => k + 1)
     return true
@@ -248,7 +248,7 @@ export default function JournalPage() {
         await removeDayOff(m.id, day)
       } else {
         const count = current.appointments.filter(a => a.master?.id === m.id && a.date === day && ACTIVE_STATUSES.includes(a.status)).length
-        if (count > 0 && !window.confirm(`У мастера ${m.name} ${count} записей в этот день. Записи не отменятся сами. Всё равно сделать выходным?`)) return
+        if (count > 0 && !window.confirm(t('У мастера {name} {count} записей в этот день. Записи не отменятся сами. Всё равно сделать выходным?', { name: m.name, count }))) return
         await addDayOff(m.id, day)
       }
       notifyDataChanged()
@@ -282,16 +282,16 @@ export default function JournalPage() {
       {/* Панель дня */}
       <div ref={toolbarRef} className="flex-shrink-0 px-3 md:px-5 py-3 flex flex-wrap items-center gap-2" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}>
         <div className="flex items-center gap-1">
-          <Button aria-label={t(view === 'week' ? 'Предыдущая неделя' : 'Предыдущий день')} className="w-11 px-0" onClick={() => goToDate(addDays(date, -step))}>
+          <Button aria-label={t(view === 'week' ? t('Предыдущая неделя') : t('Предыдущий день'))} className="w-11 px-0" onClick={() => goToDate(addDays(date, -step))}>
             <IconChevronLeft />
           </Button>
           <Button onClick={() => goToDate(todayString())} style={isToday ? { color: '#f472b6' } : undefined}>{t('Сегодня')}</Button>
-          <Button aria-label={t(view === 'week' ? 'Следующая неделя' : 'Следующий день')} className="w-11 px-0" onClick={() => goToDate(addDays(date, step))}>
+          <Button aria-label={t(view === 'week' ? t('Следующая неделя') : t('Следующий день'))} className="w-11 px-0" onClick={() => goToDate(addDays(date, step))}>
             <IconChevronRight />
           </Button>
         </div>
         <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }} role="group" aria-label={t('Вид журнала')}>
-          {[['week', 'Неделя'], ['day', 'День']].map(([key, label]) => (
+          {[['week', t('Неделя')], ['day', t('День')]].map(([key, label]) => (
             <button
               key={key}
               type="button"
@@ -352,7 +352,7 @@ export default function JournalPage() {
         {current && columns.length === 0 && (
           <div className="flex-1 flex items-center justify-center px-6 text-center">
             <p className="text-gray-500 text-sm">
-              {t(isManager ? 'Нет активных мастеров. Добавьте мастера в разделе «Мастера».' : 'Нет данных для журнала.')}
+              {t(isManager ? t('Нет активных мастеров. Добавьте мастера в разделе «Мастера».') : t('Нет данных для журнала.'))}
             </p>
           </div>
         )}

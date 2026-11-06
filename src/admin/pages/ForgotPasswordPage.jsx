@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { requestPasswordReset } from '../api/signup'
 import AuthCard from '../components/AuthCard'
 import { Button, ErrorText, Field, TextInput } from '../components/ui'
+import { t } from '../../i18n'
 
 // «Забыли пароль?» — ссылка для нового пароля на email
 export default function ForgotPasswordPage() {
@@ -26,25 +27,25 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <AuthCard title="Восстановление пароля" subtitle="Пришлём ссылку для нового пароля" onSubmit={handleSubmit}>
+    <AuthCard title={t('Восстановление пароля')} subtitle={t('Пришлём ссылку для нового пароля')} onSubmit={handleSubmit}>
       {message ? (
-        <p className="text-sm text-center" style={{ color: '#34d399' }}>{message}. Проверьте и папку «Спам».</p>
+        <p className="text-sm text-center" style={{ color: '#34d399' }}>{message}{t('. Проверьте и папку «Спам».')}</p>
       ) : (
         <>
-          <Field label="Email, указанный при регистрации">
+          <Field label={t('Email, указанный при регистрации')}>
             <TextInput type="email" autoComplete="email" autoCapitalize="none" value={email}
               onChange={e => setEmail(e.target.value)} autoFocus />
           </Field>
           <ErrorText className="text-center">{error}</ErrorText>
           <Button type="submit" variant="primary" className="w-full" disabled={!email.trim() || busy}>
-            {busy ? 'Отправляем...' : 'Отправить ссылку'}
+            {busy ? t('Отправляем...') : t('Отправить ссылку')}
           </Button>
           <p className="text-gray-500 text-xs text-center">
-            Мастер или администратор без email — попросите владельца салона сменить пароль в карточке мастера.
+            {t('Мастер или администратор без email — попросите владельца салона сменить пароль в карточке мастера.')}
           </p>
         </>
       )}
-      <Link to="/admin-panel/login" className="block text-center text-sm underline" style={{ color: '#f472b6' }}>Ко входу</Link>
+      <Link to="/admin-panel/login" className="block text-center text-sm underline" style={{ color: '#f472b6' }}>{t('Ко входу')}</Link>
     </AuthCard>
   )
 }

@@ -1,3 +1,4 @@
+import { t } from '../i18n'
 const MONTHS_GENITIVE = {
   ru: ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],
   ro: ['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'],
@@ -29,7 +30,7 @@ export function sumPrice(services) {
 export function formatDuration(minutes, lang = 'ru') {
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
-  const [hours, mins] = lang === 'ro' ? ['h', 'min'] : ['ч', 'мин']
+  const [hours, mins] = lang === 'ro' ? ['h', 'min'] : [t('ч'), t('мин')]
   if (h && m) return `${h} ${hours} ${m} ${mins}`
   if (h) return `${h} ${hours}`
   return `${m} ${mins}`

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { t, tr } from '../../i18n'
 
 // API персонала: /api/staff/…; токены хранятся отдельно от клиентских
 const API_ROOT = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api')
@@ -64,7 +65,7 @@ function isAuthUrl(url = '') {
 }
 
 // Подписи полей для ошибок вида { client_phone: ['…'] }
-const FIELD_LABELS = {
+const FIELD_LABELS = tr({
   username: 'Логин',
   password: 'Пароль',
   old_password: 'Старый пароль',
@@ -98,7 +99,7 @@ const FIELD_LABELS = {
   slug: 'Адрес сайта',
   email: 'Email',
   accept_terms: 'Условия',
-}
+})
 
 // Первый текст ошибки внутри значения (строка, массив, вложенный объект)
 function firstText(value) {
@@ -148,7 +149,7 @@ function checkJson(response) {
   const type = response.headers?.['content-type'] || ''
   if (typeof response.data === 'string' && type.includes('text/html')) {
     const url = `${response.config.baseURL || ''}${response.config.url || ''}`
-    return Promise.reject(new Error(`API вернул HTML вместо данных (${url}). Проверьте адрес API.`))
+    return Promise.reject(new Error(t('API вернул HTML вместо данных ({url}). Проверьте адрес API.', { url })))
   }
   return response
 }
@@ -156,7 +157,7 @@ function checkJson(response) {
 // Списки с бэкенда должны быть массивами — иначе страница упадёт на .map()
 export function expectArray(data) {
   if (!Array.isArray(data)) {
-    throw new Error('Сервер вернул данные в неожиданном формате.')
+    throw new Error(t('Сервер вернул данные в неожиданном формате.'))
   }
   return data
 }
@@ -172,7 +173,7 @@ staffApi.interceptors.request.use(config => {
 
 // Сессия завершилась (вышли), пока шёл запрос: ответ не применяем, повторов нет
 function sessionEndedError() {
-  const error = new Error('Сессия завершена. Войдите снова.')
+  const error = new Error(t('Сессия завершена. Войдите снова.'))
   error.sessionEnded = true
   return error
 }
@@ -185,7 +186,7 @@ function refreshAccessToken() {
     const refresh = readStorage(REFRESH_KEY)
     const generation = sessionGeneration
     if (!refresh) {
-      const error = new Error('Нет refresh-токена')
+      const error = new Error(t('Нет refresh-токена'))
       error.refreshRejected = true
       return Promise.reject(error)
     }
@@ -193,7 +194,7 @@ function refreshAccessToken() {
       .then(response => {
         if (generation !== sessionGeneration) throw sessionEndedError()
         const access = response.data?.access
-        if (!access) throw new Error('Ошибка сервера. Попробуйте позже.')
+        if (!access) throw new Error(t('Ошибка сервера. Попробуйте позже.'))
         // Пока шёл запрос, токены уже сменились (смена пароля, другая вкладка) —
         // не перетираем их, повтор возьмёт текущий access-токен
         if (readStorage(REFRESH_KEY) === refresh) {
@@ -225,7 +226,7 @@ staffApi.interceptors.response.use(
   checkJson,
   async error => {
     if (!error.response) {
-      return Promise.reject(new Error('Нет соединения с сервером. Проверьте интернет.'))
+      return Promise.reject(new Error(t('Нет соединения с сервером. Проверьте интернет.')))
     }
     const { status, data } = error.response
     const config = error.config || {}
@@ -245,7 +246,7 @@ staffApi.interceptors.response.use(
           if (refreshError?.sessionEnded) return Promise.reject(refreshError)
           if (!refreshError?.refreshRejected) {
             // Нет сети или ошибка сервера: токены не трогаем, следующий запрос попробует снова
-            return Promise.reject(refreshError instanceof Error ? refreshError : new Error('Ошибка сервера. Попробуйте позже.'))
+            return Promise.reject(refreshError instanceof Error ? refreshError : new Error(t('Ошибка сервера. Попробуйте позже.')))
           }
           // refresh-токен недействителен — ниже выходим из панели
         }
@@ -258,38 +259,38 @@ staffApi.interceptors.response.use(
       }
       // Параллельный запрос уже вывел из панели — второй раз не выходим
       if (config._generation !== sessionGeneration) return Promise.reject(sessionEndedError())
-      const text = 'Сессия истекла. Войдите снова.'
+      const text = t('Сессия истекла. Войдите снова.')
       forceStaffLogout(text)
       return Promise.reject(apiError(text, status, data))
     }
 
     if (status === 403 && (config.url?.startsWith('/me') || NO_ACCESS_MESSAGES.includes(message))) {
-      const text = message || 'У этого аккаунта нет доступа к панели салона'
+      const text = message || t('У этого аккаунта нет доступа к панели салона')
       forceStaffLogout(text)
       return Promise.reject(apiError(text, status, data))
     }
 
     if (status === 400) {
-      return Promise.reject(apiError(message || 'Неверные данные. Проверьте заполненные поля.', status, data))
+      return Promise.reject(apiError(message || t('Неверные данные. Проверьте заполненные поля.'), status, data))
     }
     if (status === 403) {
-      return Promise.reject(apiError(message || 'Недостаточно прав.', status, data))
+      return Promise.reject(apiError(message || t('Недостаточно прав.'), status, data))
     }
     if (status === 404) {
       // Django отдаёт «No Master matches the given query.» по-английски — такое не показываем
-      const text = message && !/matches the given query/i.test(message) ? message : 'Данные не найдены.'
+      const text = message && !/matches the given query/i.test(message) ? message : t('Данные не найдены.')
       return Promise.reject(apiError(text, status, data))
     }
     if (status === 413) {
-      return Promise.reject(apiError('Файл слишком большой.', status, data))
+      return Promise.reject(apiError(t('Файл слишком большой.'), status, data))
     }
     if (status === 429) {
-      return Promise.reject(apiError(message || 'Слишком много попыток. Попробуйте позже.', status, data))
+      return Promise.reject(apiError(message || t('Слишком много попыток. Попробуйте позже.'), status, data))
     }
     if (status >= 500) {
-      return Promise.reject(apiError('Ошибка сервера. Попробуйте позже.', status, data))
+      return Promise.reject(apiError(t('Ошибка сервера. Попробуйте позже.'), status, data))
     }
-    return Promise.reject(apiError(message || 'Что-то пошло не так. Попробуйте ещё раз.', status, data))
+    return Promise.reject(apiError(message || t('Что-то пошло не так. Попробуйте ещё раз.'), status, data))
   }
 )
 

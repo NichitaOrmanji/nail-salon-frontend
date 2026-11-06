@@ -6,18 +6,19 @@ import { WEEKDAYS_SHORT, addDays, formatShortDate, todayString, weekdayIndex } f
 import { Button, ErrorText } from '../ui'
 import Spinner from '../../../components/layout/Spinner'
 import TimeField from './TimeField'
+import { t, tr } from '../../../i18n'
 
 // График мастера по датам: календарь месяца, выбор дней, свои часы и обед / выходной / как в шаблоне
 
-const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+const MONTHS = tr(['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'])
 // Вперёд — на год (как на сервере), назад — до текущего месяца
 const MONTHS_AHEAD = 12
 
-const MODES = [
+const MODES = tr([
   { key: 'custom', label: 'Рабочий день' },
   { key: 'off', label: 'Выходной' },
   { key: 'template', label: 'Как в шаблоне' },
-]
+])
 
 const PINK = '#f472b6'
 
@@ -75,14 +76,14 @@ function DayCell({ day, date, today, selected, readOnly, onToggle }) {
           <span className="text-[10px] leading-tight text-white">{short(day.start_time)}–{short(day.end_time)}</span>
           {day.break_start && (
             <span className="text-[10px] leading-tight" style={{ color: '#fbbf24' }}>
-              обед {short(day.break_start)}
+              {t('обед')}{' '}{short(day.break_start)}
             </span>
           )}
         </>
       )}
       {day && !working && (
         <span className="text-[10px] leading-tight" style={{ color: source === 'off' ? '#f87171' : '#9098a4' }}>
-          {source === 'off' ? 'выходной' : 'не работает'}
+          {source === 'off' ? t('выходной') : t('не работает')}
         </span>
       )}
       {day?.appointments > 0 && (
@@ -125,10 +126,10 @@ function Editor({ selection, days, onApply, onCancel, saving }) {
   return (
     <div className="rounded-2xl p-4 mt-4 space-y-3" style={{ backgroundColor: '#1f1f1f', border: `1px solid ${PINK}` }}>
       <div className="text-white text-sm font-semibold">
-        Выбрано дней: {selection.length}
+        {t('Выбрано дней: {length}', { length: selection.length })}
         {selection.length <= 3 && <span className="text-gray-400 font-normal"> ({selection.map(formatShortDate).join(', ')})</span>}
       </div>
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Что сделать с днями">
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t('Что сделать с днями')}>
         {MODES.map(m => (
           <button
             key={m.key}
@@ -146,27 +147,27 @@ function Editor({ selection, days, onApply, onCancel, saving }) {
       {mode === 'custom' && (
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-gray-400 text-sm w-16">Работа</span>
-            <TimeField label="Начало работы" value={hours.start_time} onChange={v => set({ start_time: v })} />
-            <span className="text-gray-500 text-xs">до</span>
-            <TimeField label="Конец работы" value={hours.end_time} onChange={v => set({ end_time: v })} />
+            <span className="text-gray-400 text-sm w-16">{t('Работа')}</span>
+            <TimeField label={t('Начало работы')} value={hours.start_time} onChange={v => set({ start_time: v })} />
+            <span className="text-gray-500 text-xs">{t('до')}</span>
+            <TimeField label={t('Конец работы')} value={hours.end_time} onChange={v => set({ end_time: v })} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-gray-400 text-sm w-16">Обед</span>
-            <TimeField label="Начало обеда" value={hours.break_start} onChange={v => set({ break_start: v })} />
-            <span className="text-gray-500 text-xs">до</span>
-            <TimeField label="Конец обеда" value={hours.break_end} clearable
+            <span className="text-gray-400 text-sm w-16">{t('Обед')}</span>
+            <TimeField label={t('Начало обеда')} value={hours.break_start} onChange={v => set({ break_start: v })} />
+            <span className="text-gray-500 text-xs">{t('до')}</span>
+            <TimeField label={t('Конец обеда')} value={hours.break_end} clearable
               onChange={v => set(v ? { break_end: v } : { break_start: null, break_end: null })} />
           </div>
-          <p className="text-gray-500 text-xs">Обед необязателен. В это время клиенты не смогут записаться.</p>
+          <p className="text-gray-500 text-xs">{t('Обед необязателен. В это время клиенты не смогут записаться.')}</p>
         </div>
       )}
-      {mode === 'off' && <p className="text-gray-400 text-sm">Мастер не работает в эти дни, на сайте их не будет.</p>}
-      {mode === 'template' && <p className="text-gray-400 text-sm">Убрать особые часы и выходные: дни станут как в недельном шаблоне.</p>}
+      {mode === 'off' && <p className="text-gray-400 text-sm">{t('Мастер не работает в эти дни, на сайте их не будет.')}</p>}
+      {mode === 'template' && <p className="text-gray-400 text-sm">{t('Убрать особые часы и выходные: дни станут как в недельном шаблоне.')}</p>}
       <ErrorText>{error}</ErrorText>
       <div className="flex flex-wrap justify-end gap-2">
-        <Button onClick={onCancel} disabled={saving}>Снять выбор</Button>
-        <Button variant="primary" onClick={apply} disabled={saving}>{saving ? 'Сохраняем...' : 'Применить'}</Button>
+        <Button onClick={onCancel} disabled={saving}>{t('Снять выбор')}</Button>
+        <Button variant="primary" onClick={apply} disabled={saving}>{saving ? t('Сохраняем...') : t('Применить')}</Button>
       </div>
     </div>
   )
@@ -248,13 +249,13 @@ export default function MonthSchedule({ masters, readOnly = false }) {
     }
   }
 
-  if (!activeMasters.length) return <p className="text-gray-500 text-sm">Активных мастеров нет</p>
+  if (!activeMasters.length) return <p className="text-gray-500 text-sm">{t('Активных мастеров нет')}</p>
   const master = activeMasters.find(m => m.id === masterId)
 
   return (
     <div>
       {!readOnly && activeMasters.length > 1 && (
-        <div className="flex flex-wrap gap-2 mb-4" role="radiogroup" aria-label="Мастер">
+        <div className="flex flex-wrap gap-2 mb-4" role="radiogroup" aria-label={t('Мастер')}>
           {activeMasters.map(m => (
             <button
               key={m.id}
@@ -272,19 +273,19 @@ export default function MonthSchedule({ masters, readOnly = false }) {
       )}
 
       <div className="flex items-center justify-between mb-3">
-        <Button onClick={() => changeMonth(-1)} disabled={month <= firstMonth} aria-label="Предыдущий месяц">‹</Button>
+        <Button onClick={() => changeMonth(-1)} disabled={month <= firstMonth} aria-label={t('Предыдущий месяц')}>‹</Button>
         <div className="text-white text-base font-semibold">
           {MONTHS[Number(month.slice(5, 7)) - 1]} {month.slice(0, 4)}
           {master && !readOnly && <span className="text-gray-500 text-sm font-normal"> · {master.name}</span>}
         </div>
-        <Button onClick={() => changeMonth(1)} disabled={month >= lastMonth} aria-label="Следующий месяц">›</Button>
+        <Button onClick={() => changeMonth(1)} disabled={month >= lastMonth} aria-label={t('Следующий месяц')}>›</Button>
       </div>
 
       {!readOnly && (
         <div className="flex flex-wrap gap-2 mb-3">
-          <Button onClick={() => selectWhere(() => true)}>Весь месяц</Button>
-          <Button onClick={() => selectWhere(d => d < 5)}>Будни</Button>
-          <Button onClick={() => selectWhere(d => d >= 5)}>Сб и Вс</Button>
+          <Button onClick={() => selectWhere(() => true)}>{t('Весь месяц')}</Button>
+          <Button onClick={() => selectWhere(d => d < 5)}>{t('Будни')}</Button>
+          <Button onClick={() => selectWhere(d => d >= 5)}>{t('Сб и Вс')}</Button>
         </div>
       )}
 
@@ -301,13 +302,13 @@ export default function MonthSchedule({ masters, readOnly = false }) {
             ))}
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-500">
-            <span><span style={{ color: '#9d4b75' }}>▢</span> свои часы на дату</span>
-            <span><span style={{ color: '#f87171' }}>выходной</span> — по дате</span>
-            <span><span style={{ color: '#fbbf24' }}>обед</span> — начало обеда</span>
-            <span>цифра в углу — записи</span>
+            <span><span style={{ color: '#9d4b75' }}>▢</span>{' '}{t('свои часы на дату')}</span>
+            <span><span style={{ color: '#f87171' }}>{t('выходной')}</span>{' '}{t('— по дате')}</span>
+            <span><span style={{ color: '#fbbf24' }}>{t('обед')}</span>{' '}{t('— начало обеда')}</span>
+            <span>{t('цифра в углу — записи')}</span>
           </div>
           {!readOnly && !selected.length && !result && (
-            <p className="text-gray-500 text-xs mt-3">Нажмите на дни, чтобы задать часы работы, обед или выходной.</p>
+            <p className="text-gray-500 text-xs mt-3">{t('Нажмите на дни, чтобы задать часы работы, обед или выходной.')}</p>
           )}
         </>
       )}
@@ -319,10 +320,10 @@ export default function MonthSchedule({ masters, readOnly = false }) {
 
       {result && (
         <div className="mt-4 space-y-2">
-          <p className="text-xs" style={{ color: '#34d399' }}>Сохранено дней: {result.count}</p>
+          <p className="text-xs" style={{ color: '#34d399' }}>{t('Сохранено дней: {count}', { count: result.count })}</p>
           {result.conflicts.length > 0 && (
             <div className="text-sm rounded-xl px-3 py-2" style={{ color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
-              Записи вне нового графика — перенесите или отмените их в журнале:
+              {t('Записи вне нового графика — перенесите или отмените их в журнале:')}
               <ul className="mt-1 space-y-0.5">
                 {result.conflicts.map(c => (
                   <li key={c.id}>
@@ -340,7 +341,7 @@ export default function MonthSchedule({ masters, readOnly = false }) {
           {dates.filter(d => d >= today && current[d]?.is_working).slice(0, 7).map(d => (
             <div key={d} className="text-sm text-gray-300">
               {formatShortDate(d)}: {hoursLabel(current[d])}
-              {lunchLabel(current[d]) && <span className="text-gray-500"> · обед {lunchLabel(current[d])}</span>}
+              {lunchLabel(current[d]) && <span className="text-gray-500">{' '}{t('· обед')}{' '}{lunchLabel(current[d])}</span>}
             </div>
           ))}
         </div>

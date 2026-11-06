@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { fetchSignupConfig } from '../api/signup'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { Button, Field, TextInput, ErrorText } from '../components/ui'
+import { t } from '../../i18n'
 
 export default function LoginPage() {
   const { me, login, logoutMessage } = useStaffAuth()
@@ -38,7 +39,7 @@ export default function LoginPage() {
       await login(username.trim(), password)
       navigate(from, { replace: true })
     } catch (err) {
-      setError(err.message || 'Не удалось войти')
+      setError(err.message || t('Не удалось войти'))
       setLoading(false)
     }
   }
@@ -56,11 +57,11 @@ export default function LoginPage() {
             style={{ background: 'linear-gradient(135deg, #f472b6, #a855f7)' }}>
             TP
           </div>
-          <h1 className="text-white text-xl font-bold">Панель салона</h1>
-          <p className="text-gray-500 text-sm mt-1">Вход для персонала · TimePoint</p>
+          <h1 className="text-white text-xl font-bold">{t('Панель салона')}</h1>
+          <p className="text-gray-500 text-sm mt-1">{t('Вход для персонала · TimePoint')}</p>
         </div>
 
-        <Field label="Логин, email или телефон">
+        <Field label={t('Логин, email или телефон')}>
           <TextInput
             autoComplete="username"
             autoCapitalize="none"
@@ -68,7 +69,7 @@ export default function LoginPage() {
             onChange={e => setUsername(e.target.value)}
           />
         </Field>
-        <Field label="Пароль">
+        <Field label={t('Пароль')}>
           <TextInput
             type="password"
             autoComplete="current-password"
@@ -80,20 +81,20 @@ export default function LoginPage() {
         <ErrorText className="text-center">{error || logoutMessage}</ErrorText>
 
         <Button type="submit" variant="primary" className="w-full" disabled={!canSubmit}>
-          {loading ? 'Входим...' : 'Войти'}
+          {loading ? t('Входим...') : t('Войти')}
         </Button>
 
         {config?.password_reset && (
           <Link to="/admin-panel/forgot-password" className="block text-center text-sm underline" style={{ color: '#f472b6' }}>
-            Забыли пароль?
+            {t('Забыли пароль?')}
           </Link>
         )}
         {config?.signup && (
           <p className="text-center text-gray-400 text-sm">
-            Новый салон? <Link to="/admin-panel/signup" className="underline" style={{ color: '#f472b6' }}>Создать за 2 минуты</Link>
+            {t('Новый салон?')}{' '}<Link to="/admin-panel/signup" className="underline" style={{ color: '#f472b6' }}>{t('Создать за 2 минуты')}</Link>
           </p>
         )}
-        <a href="/" className="block text-center text-gray-500 text-xs py-2">Сайт записи ↗</a>
+        <a href="/" className="block text-center text-gray-500 text-xs py-2">{t('Сайт записи ↗')}</a>
       </form>
     </div>
   )

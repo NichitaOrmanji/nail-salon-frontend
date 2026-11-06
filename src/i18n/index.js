@@ -28,6 +28,26 @@ const langs = {
 const listeners = new Set()
 if (typeof document !== 'undefined') document.documentElement.lang = getLang()
 
+const CYR = /[А-Яа-яЁё]/
+const proxies = new WeakMap()
+
+// Константы уровня модуля (подписи статусов, вкладок, месяцев): строки переводятся при чтении,
+// поэтому язык берётся в момент отрисовки, а не загрузки модуля. Объекты кэшируются — сравнение
+// KINDS.x === KINDS.x остаётся верным
+export function tr(value) {
+  if (value === null || typeof value !== 'object') return value
+  if (proxies.has(value)) return proxies.get(value)
+  const proxy = new Proxy(value, {
+    get(target, key, receiver) {
+      const v = Reflect.get(target, key, receiver)
+      if (typeof v === 'string') return CYR.test(v) ? t(v) : v
+      return v && typeof v === 'object' ? tr(v) : v
+    },
+  })
+  proxies.set(value, proxy)
+  return proxy
+}
+
 export function getLang() {
   return isAdmin() ? langs.admin : langs.site
 }

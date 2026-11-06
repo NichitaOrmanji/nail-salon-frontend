@@ -11,6 +11,7 @@ import { Section, ScheduleSection, DaysOffSection, AccessSection } from '../comp
 import PhotoField from '../components/PhotoField'
 import MonthSchedule from '../components/masters/MonthSchedule'
 import Spinner from '../../components/layout/Spinner'
+import { t } from '../../i18n'
 
 // Скрыть мастера; при будущих записях бэк отвечает 400 { count } — переспрашиваем
 async function hideWithConfirm(master) {
@@ -20,7 +21,7 @@ async function hideWithConfirm(master) {
   } catch (err) {
     const count = err.data?.count
     if (err.status === 400 && count) {
-      const ok = window.confirm(`У мастера ${count} будущих записей — их нужно перенести или отменить. Всё равно скрыть?`)
+      const ok = window.confirm(t('У мастера {count} будущих записей — их нужно перенести или отменить. Всё равно скрыть?', { count }))
       if (!ok) return false
       await hideMaster(master.id, { force: true })
       return true
@@ -33,7 +34,7 @@ async function hideWithConfirm(master) {
 function scheduleSummary(schedule) {
   if (!Array.isArray(schedule)) return ''
   const working = schedule.filter(s => s.is_working).sort((a, b) => a.day_of_week - b.day_of_week)
-  if (!working.length) return 'Нет рабочих дней'
+  if (!working.length) return t('Нет рабочих дней')
   return working.map(s => `${WEEKDAYS_SHORT[s.day_of_week]} ${s.start_time}–${s.end_time}`).join(', ')
 }
 
@@ -78,9 +79,9 @@ function ProfileSection({ master, services, onSaved }) {
       if (!row) continue
       const price = row.price.trim() === '' ? null : Number(row.price.replace(',', '.'))
       const duration = row.duration.trim() === '' ? null : Number(row.duration)
-      if (price !== null && (!Number.isFinite(price) || price < 0)) throw new Error('Цена — число не меньше 0')
+      if (price !== null && (!Number.isFinite(price) || price < 0)) throw new Error(t('Цена — число не меньше 0'))
       if (duration !== null && (!Number.isInteger(duration) || duration < 5 || duration > 600)) {
-        throw new Error('Длительность — от 5 до 600 минут')
+        throw new Error(t('Длительность — от 5 до 600 минут'))
       }
       if (price !== null || duration !== null) items.push({ service: id, price, duration })
     }
@@ -90,7 +91,7 @@ function ProfileSection({ master, services, onSaved }) {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!name.trim()) {
-      setError('Укажите имя')
+      setError(t('Укажите имя'))
       return
     }
     let serviceTerms
@@ -127,17 +128,17 @@ function ProfileSection({ master, services, onSaved }) {
   }
 
   return (
-    <Section title="Профиль">
+    <Section title={t('Профиль')}>
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
-        <Field label="Имя">
+        <Field label={t('Имя')}>
           <TextInput value={name} onChange={e => { setName(e.target.value); setDone(false) }} />
         </Field>
-        <Field label="Описание">
+        <Field label={t('Описание')}>
           <TextArea value={description} onChange={e => { setDescription(e.target.value); setDone(false) }} />
         </Field>
         <div>
-          <div className="text-gray-400 text-xs font-medium mb-1">Услуги</div>
-          {activeServices.length === 0 && <p className="text-gray-500 text-sm">Активных услуг нет</p>}
+          <div className="text-gray-400 text-xs font-medium mb-1">{t('Услуги')}</div>
+          {activeServices.length === 0 && <p className="text-gray-500 text-sm">{t('Активных услуг нет')}</p>}
           <div className="space-y-1">
             {activeServices.map(s => (
               <div key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -149,7 +150,7 @@ function ProfileSection({ master, services, onSaved }) {
                     <input
                       type="text"
                       inputMode="decimal"
-                      aria-label={`Цена у мастера: ${s.name}`}
+                      aria-label={t('Цена у мастера: {name}', { name: s.name })}
                       placeholder={`${Number(s.price)} L`}
                       value={terms[s.id]?.price || ''}
                       onChange={e => changeTerm(s.id, 'price', e.target.value)}
@@ -159,8 +160,8 @@ function ProfileSection({ master, services, onSaved }) {
                     <input
                       type="text"
                       inputMode="numeric"
-                      aria-label={`Длительность у мастера, минут: ${s.name}`}
-                      placeholder={`${s.duration} мин`}
+                      aria-label={t('Длительность у мастера, минут: {name}', { name: s.name })}
+                      placeholder={t('{duration} мин', { duration: s.duration })}
                       value={terms[s.id]?.duration || ''}
                       onChange={e => changeTerm(s.id, 'duration', e.target.value)}
                       className="w-24 min-h-[40px] px-3 rounded-xl text-white text-sm outline-none"
@@ -172,22 +173,22 @@ function ProfileSection({ master, services, onSaved }) {
             ))}
           </div>
           {activeServices.length > 0 && (
-            <p className="text-gray-500 text-xs mt-2">Цена и длительность у этого мастера — если отличаются от услуги. Пусто — как у услуги.</p>
+            <p className="text-gray-500 text-xs mt-2">{t('Цена и длительность у этого мастера — если отличаются от услуги. Пусто — как у услуги.')}</p>
           )}
           {hiddenLinked.length > 0 && (
             <div className="mt-2">
               {hiddenLinked.map(s => (
-                <Checkbox key={s.id} checked disabled label={<>{s.name} <span className="text-gray-500">· услуга скрыта, связь сохраняется</span></>} />
+                <Checkbox key={s.id} checked disabled label={<>{s.name} <span className="text-gray-500">{t('· услуга скрыта, связь сохраняется')}</span></>} />
               ))}
             </div>
           )}
         </div>
-        <Checkbox checked={isActive} onChange={v => { setIsActive(v); setDone(false) }} label="Активен (виден на сайте записи)" />
+        <Checkbox checked={isActive} onChange={v => { setIsActive(v); setDone(false) }} label={t('Активен (виден на сайте записи)')} />
         <ErrorText>{error}</ErrorText>
         <div className="flex items-center justify-end gap-3">
-          {done && <span className="text-xs" style={{ color: '#34d399' }}>Сохранено</span>}
+          {done && <span className="text-xs" style={{ color: '#34d399' }}>{t('Сохранено')}</span>}
           <Button type="submit" variant="primary" disabled={saving}>
-            {saving ? 'Сохраняем...' : isNew ? 'Создать мастера' : 'Сохранить'}
+            {saving ? t('Сохраняем...') : isNew ? t('Создать мастера') : t('Сохранить')}
           </Button>
         </div>
       </form>
@@ -218,7 +219,7 @@ function MasterModal({ master, services, onClose, onChanged, onCreated }) {
   }
 
   return (
-    <Modal title={master ? master.name : 'Новый мастер'} onClose={onClose} maxWidth="sm:max-w-2xl">
+    <Modal title={master ? master.name : t('Новый мастер')} onClose={onClose} maxWidth="sm:max-w-2xl">
       <div className="space-y-4">
         <ProfileSection
           key={master ? `${master.id}-${master.is_active}` : 'new'}
@@ -228,9 +229,9 @@ function MasterModal({ master, services, onClose, onChanged, onCreated }) {
         />
         {master && (
           <>
-            <Section title="Фото">
+            <Section title={t('Фото')}>
               <PhotoField
-                hint="Показывается клиентам при выборе мастера. Сохраняется сразу."
+                hint={t('Показывается клиентам при выборе мастера. Сохраняется сразу.')}
                 url={master.photo}
                 shape="round"
                 maxSide={800}
@@ -241,15 +242,15 @@ function MasterModal({ master, services, onClose, onChanged, onCreated }) {
             <ScheduleSection key={`schedule-${master.id}`} master={master} onSaved={onChanged} />
             <DaysOffSection master={master} />
             <AccessSection key={`access-${master.id}`} master={master} onChanged={onChanged} />
-            <Section title={master.is_active ? 'Скрыть мастера' : 'Мастер скрыт'}>
+            <Section title={master.is_active ? t('Скрыть мастера') : t('Мастер скрыт')}>
               <p className="text-gray-500 text-xs mb-3">
                 {master.is_active
-                  ? 'Скрытый мастер пропадает с сайта записи и теряет доступ в панель. Записи сохраняются.'
-                  : 'Мастер не виден на сайте записи.'}
+                  ? t('Скрытый мастер пропадает с сайта записи и теряет доступ в панель. Записи сохраняются.')
+                  : t('Мастер не виден на сайте записи.')}
               </p>
               <ErrorText className="mb-3">{error}</ErrorText>
               <Button variant={master.is_active ? 'danger' : 'secondary'} disabled={busy} onClick={handleToggleHidden}>
-                {master.is_active ? 'Скрыть мастера' : 'Вернуть мастера'}
+                {master.is_active ? t('Скрыть мастера') : t('Вернуть мастера')}
               </Button>
             </Section>
           </>
@@ -291,20 +292,20 @@ export default function MastersPage() {
     const self = masters?.[0]
     return (
       <div className="px-4 md:px-6 py-5 max-w-3xl">
-        <PageHeader title="Мой график" subtitle="Изменить график может администратор салона" />
+        <PageHeader title={t('Мой график')} subtitle={t('Изменить график может администратор салона')} />
         <ErrorText className="mb-3">{error}</ErrorText>
         {!masters && !error && <Spinner />}
-        {masters && !self && <p className="text-gray-500 text-sm">Профиль мастера не найден</p>}
+        {masters && !self && <p className="text-gray-500 text-sm">{t('Профиль мастера не найден')}</p>}
         {self && (
           <div className="space-y-4">
             <Section title={self.name}>
               {self.description && <p className="text-gray-400 text-sm mb-2 whitespace-pre-line">{self.description}</p>}
               <p className="text-gray-500 text-xs">
-                Услуги: {(self.services || []).map(serviceNames).filter(Boolean).join(', ') || '—'}
+                {t('Услуги:')}{' '}{(self.services || []).map(serviceNames).filter(Boolean).join(', ') || '—'}
               </p>
             </Section>
             <ScheduleSection key={JSON.stringify(self.schedule)} master={self} readOnly />
-            <Section title="График по датам">
+            <Section title={t('График по датам')}>
               <MonthSchedule masters={[self]} readOnly />
             </Section>
             <DaysOffSection master={self} readOnly />
@@ -330,12 +331,12 @@ export default function MastersPage() {
         <div className="flex flex-wrap items-center gap-2">
           {m.photo && <img src={m.photo} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />}
           <span className="text-white text-sm font-semibold break-words">{m.name}</span>
-          {!m.is_active && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>скрыт</span>}
-          {m.has_access && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#34d399' }}>доступ в панель</span>}
+          {!m.is_active && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>{t('скрыт')}</span>}
+          {m.has_access && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#34d399' }}>{t('доступ в панель')}</span>}
         </div>
         <div className="text-gray-500 text-xs mt-1 break-words">{scheduleSummary(m.schedule)}</div>
         <div className="text-gray-600 text-xs mt-0.5 break-words">
-          {(m.services || []).map(serviceNames).filter(Boolean).join(', ') || 'Нет услуг'}
+          {(m.services || []).map(serviceNames).filter(Boolean).join(', ') || t('Нет услуг')}
         </div>
       </button>
     )
@@ -343,14 +344,14 @@ export default function MastersPage() {
 
   return (
     <div className="px-4 md:px-6 py-5 max-w-4xl">
-      <PageHeader title="Мастера" subtitle="График, выходные и доступ в панель">
+      <PageHeader title={t('Мастера')} subtitle={t('График, выходные и доступ в панель')}>
         {tab === 'masters' && (
-          <Button variant="primary" disabled={!services} onClick={() => setModal({ id: null })}>+ Мастер</Button>
+          <Button variant="primary" disabled={!services} onClick={() => setModal({ id: null })}>{t('+ Мастер')}</Button>
         )}
       </PageHeader>
 
-      <div className="flex gap-2 mb-5" role="tablist" aria-label="Разделы">
-        {[['masters', 'Мастера'], ['schedules', 'Графики']].map(([key, label]) => (
+      <div className="flex gap-2 mb-5" role="tablist" aria-label={t('Разделы')}>
+        {[['masters', t('Мастера')], ['schedules', t('Графики')]].map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -373,12 +374,12 @@ export default function MastersPage() {
       {masters && tab === 'masters' && (
         <div className="space-y-6">
           <div className="space-y-2">
-            {active.length === 0 && <p className="text-gray-500 text-sm">Активных мастеров нет</p>}
+            {active.length === 0 && <p className="text-gray-500 text-sm">{t('Активных мастеров нет')}</p>}
             {active.map(renderCard)}
           </div>
           {hidden.length > 0 && (
             <section>
-              <h2 className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-2">Скрытые</h2>
+              <h2 className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-2">{t('Скрытые')}</h2>
               <div className="space-y-2">{hidden.map(renderCard)}</div>
             </section>
           )}

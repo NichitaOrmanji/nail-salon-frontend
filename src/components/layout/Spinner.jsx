@@ -1,4 +1,5 @@
-export default function Spinner({ text = 'Загрузка...' }) {
+import { t } from '../../i18n'
+export default function Spinner({ text = t('Загрузка...') }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 gap-3">
       <div

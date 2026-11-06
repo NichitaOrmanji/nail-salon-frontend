@@ -6,12 +6,13 @@ import ReportTab from '../components/finance/ReportTab'
 import CashTab from '../components/finance/CashTab'
 import SalariesTab from '../components/finance/SalariesTab'
 import { presetRange } from '../utils/money'
+import { t, tr } from '../../i18n'
 
-const TABS = [
+const TABS = tr([
   { key: 'report', label: 'Отчёт' },
   { key: 'cash', label: 'Касса' },
   { key: 'salaries', label: 'Зарплаты' },
-]
+])
 
 // Финансы салона (только владелец): отчёт за период, касса за день, зарплаты мастеров
 export default function FinancePage() {
@@ -21,7 +22,7 @@ export default function FinancePage() {
 
   return (
     <div className="px-4 md:px-6 py-5 max-w-6xl">
-      <PageHeader title="Финансы" subtitle="Видит только владелец салона" />
+      <PageHeader title={t('Финансы')} subtitle={t('Видит только владелец салона')} />
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }} role="tablist">
           {TABS.map(t => (

@@ -8,6 +8,7 @@ import { clientDate, formatShortDate } from '../../utils/time'
 import ClientCardModal from './ClientCardModal'
 import { ErrorText } from '../ui'
 import Spinner from '../../../components/layout/Spinner'
+import { t } from '../../../i18n'
 
 function Total({ label, value, color }) {
   return (
@@ -29,22 +30,22 @@ function DebtorRow({ debtor, onOpen }) {
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-white text-sm font-semibold break-words">⛔ {debtor.name || 'Без имени'}</div>
+          <div className="text-white text-sm font-semibold break-words">⛔ {debtor.name || t('Без имени')}</div>
           <div className="text-gray-400 text-xs">{debtor.phone}</div>
         </div>
         <div className="text-right">
           <div className="text-base font-bold" style={{ color: '#f87171' }}>{formatMoney(debtor.debt)}</div>
-          <div className="text-gray-500 text-[11px]">долг</div>
+          <div className="text-gray-500 text-[11px]">{t('долг')}</div>
         </div>
       </div>
 
       <div className="mt-2 text-xs">
         {visit ? (
           <span style={{ color: '#34d399' }}>
-            Придёт {formatShortDate(visit.date)}, {visit.time}{visit.master ? ` · ${visit.master}` : ''} — получить при визите
+            {t('Придёт')}{' '}{formatShortDate(visit.date)}, {visit.time}{visit.master ? ` · ${visit.master}` : ''}{' '}{t('— получить при визите')}
           </span>
         ) : (
-          <span className="text-gray-400">Записей нет — можно позвонить</span>
+          <span className="text-gray-400">{t('Записей нет — можно позвонить')}</span>
         )}
       </div>
 
@@ -89,26 +90,25 @@ export default function DebtorsView() {
 
   return (
     <div>
-      <p className="text-gray-500 text-sm mb-4">Неоплаченные штрафы чёрного списка — получить при визите</p>
+      <p className="text-gray-500 text-sm mb-4">{t('Неоплаченные штрафы чёрного списка — получить при визите')}</p>
       <ErrorText>{error}</ErrorText>
       {!data && !error && <Spinner />}
       {data && (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-5">
-            <Total label="Общий долг" value={formatMoney(data.total_debt)} color={Number(data.total_debt) ? '#f87171' : undefined} />
-            <Total label="Должников" value={data.debtors} />
-            <Total label="Оплачено штрафов в этом месяце" value={formatMoney(data.paid_this_month)} color="#34d399" />
+            <Total label={t('Общий долг')} value={formatMoney(data.total_debt)} color={Number(data.total_debt) ? '#f87171' : undefined} />
+            <Total label={t('Должников')} value={data.debtors} />
+            <Total label={t('Оплачено штрафов в этом месяце')} value={formatMoney(data.paid_this_month)} color="#34d399" />
           </div>
           {data.results.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-10">Должников нет</p>
+            <p className="text-gray-400 text-sm text-center py-10">{t('Должников нет')}</p>
           ) : (
             <div className="space-y-2">
               {data.results.map(d => <DebtorRow key={d.phone} debtor={d} onOpen={setOpenPhone} />)}
             </div>
           )}
           <p className="text-gray-500 text-xs mt-4">
-            Нажмите на клиента — откроется карточка: там штраф можно отметить оплаченным или простить.
-            При оплате визита в журнале долг сам добавится к счёту.
+            {t('Нажмите на клиента — откроется карточка: там штраф можно отметить оплаченным или простить. При оплате визита в журнале долг сам добавится к счёту.')}
           </p>
         </>
       )}

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { PHOTO_ACCEPT, shrinkImage } from '../utils/image'
 import { Button, ErrorText } from './ui'
+import { t } from '../../i18n'
 
 const SHAPES = {
   wide: 'w-full max-w-sm aspect-video rounded-xl',
@@ -35,7 +36,7 @@ export default function PhotoField({ label, hint, url, shape = 'square', maxSide
   }
 
   function handleRemove() {
-    if (!window.confirm('Убрать фото?')) return
+    if (!window.confirm(t('Убрать фото?'))) return
     run('remove', onRemove)
   }
 
@@ -48,16 +49,16 @@ export default function PhotoField({ label, hint, url, shape = 'square', maxSide
           style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e' }}
         >
           {url
-            ? <img src={url} alt={label || 'Фото'} className="w-full h-full object-cover" />
-            : <span className="text-gray-600 text-xs px-2 text-center">Нет фото</span>}
+            ? <img src={url} alt={label || t('Фото')} className="w-full h-full object-cover" />
+            : <span className="text-gray-600 text-xs px-2 text-center">{t('Нет фото')}</span>}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button disabled={!!busy} onClick={() => inputRef.current?.click()}>
-            {busy === 'upload' ? 'Загружаем...' : url ? 'Заменить' : 'Загрузить'}
+            {busy === 'upload' ? t('Загружаем...') : url ? t('Заменить') : t('Загрузить')}
           </Button>
           {url && (
             <Button variant="danger" disabled={!!busy} onClick={handleRemove}>
-              {busy === 'remove' ? 'Убираем...' : 'Убрать'}
+              {busy === 'remove' ? t('Убираем...') : t('Убрать')}
             </Button>
           )}
         </div>

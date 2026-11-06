@@ -1,10 +1,11 @@
 import { addDays, todayString, weekdayIndex } from './time'
+import { tr } from '../../i18n'
 
-export const METHODS = [
+export const METHODS = tr([
   { key: 'cash', label: 'Наличные' },
   { key: 'card', label: 'Карта' },
   { key: 'transfer', label: 'Перевод' },
-]
+])
 
 export function methodLabel(key) {
   return METHODS.find(m => m.key === key)?.label || key
@@ -38,9 +39,9 @@ export function presetRange(key, today = todayString()) {
   return { dateFrom: `${y}-${mm}-01`, dateTo: `${y}-${mm}-${String(last).padStart(2, '0')}` }
 }
 
-export const PRESETS = [
+export const PRESETS = tr([
   { key: 'today', label: 'Сегодня' },
   { key: 'yesterday', label: 'Вчера' },
   { key: 'week', label: 'Неделя' },
   { key: 'month', label: 'Месяц' },
-]
+])

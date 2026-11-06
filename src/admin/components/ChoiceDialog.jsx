@@ -1,5 +1,6 @@
 import Modal from './Modal'
 import { Button } from './ui'
+import { t } from '../../i18n'
 
 // Вопрос с несколькими вариантами: choices — [{ value, label, variant }]; onChoose(null) — передумали
 export default function ChoiceDialog({ title, children, choices, onChoose }) {
@@ -10,7 +11,7 @@ export default function ChoiceDialog({ title, children, choices, onChoose }) {
         {choices.map(c => (
           <Button key={c.value} variant={c.variant || 'secondary'} onClick={() => onChoose(c.value)}>{c.label}</Button>
         ))}
-        <Button variant="ghost" onClick={() => onChoose(null)}>Назад</Button>
+        <Button variant="ghost" onClick={() => onChoose(null)}>{t('Назад')}</Button>
       </div>
     </Modal>
   )

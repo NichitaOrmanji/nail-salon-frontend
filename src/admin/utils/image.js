@@ -1,3 +1,4 @@
+import { t } from '../../i18n'
 // Уменьшение фото в браузере перед отправкой: с телефона приходят снимки по 5–10 МБ,
 // а сайту достаточно 1600 px. Сервер всё равно проверяет и пересохраняет файл
 export const PHOTO_ACCEPT = 'image/jpeg,image/png,image/webp'
@@ -23,16 +24,16 @@ async function decode(file) {
 
 // -> Blob (JPEG; PNG — если keepPng и исходник PNG, чтобы логотип не потерял прозрачность)
 export async function shrinkImage(file, maxSide, { keepPng = false } = {}) {
-  if (!file || !file.type?.startsWith('image/')) throw new Error(OPEN_ERROR)
+  if (!file || !file.type?.startsWith('image/')) throw new Error(t(OPEN_ERROR))
   let source
   try {
     source = await decode(file)
   } catch {
-    throw new Error(OPEN_ERROR)
+    throw new Error(t(OPEN_ERROR))
   }
   const width = source.width
   const height = source.height
-  if (!width || !height) throw new Error(OPEN_ERROR)
+  if (!width || !height) throw new Error(t(OPEN_ERROR))
   const scale = Math.min(1, maxSide / Math.max(width, height))
   const canvas = document.createElement('canvas')
   canvas.width = Math.round(width * scale)
@@ -48,6 +49,6 @@ export async function shrinkImage(file, maxSide, { keepPng = false } = {}) {
   source.close?.()
   const type = png ? 'image/png' : 'image/jpeg'
   const blob = await new Promise(resolve => canvas.toBlob(resolve, type, 0.85))
-  if (!blob) throw new Error(OPEN_ERROR)
+  if (!blob) throw new Error(t(OPEN_ERROR))
   return new File([blob], png ? 'photo.png' : 'photo.jpg', { type })
 }

@@ -1,4 +1,5 @@
 import { nowMinutes, parseDate, timeToMin, todayString } from './time'
+import { tr } from '../../i18n'
 
 // Чёрный список: штраф 50 % (настройка салона) за неявку и отмену позже чем за N часов.
 // Правила салона — в me.company: penalty_percent (0 — штрафы выключены), late_cancel_hours
@@ -21,9 +22,9 @@ export function isLateCancel(appointment, company) {
   return hours > 0 && Number(company?.penalty_percent) > 0 && minutesUntil(appointment) < hours * 60
 }
 
-export const PENALTY_KIND = { no_show: 'Не пришёл', late_cancel: 'Поздняя отмена' }
-export const PENALTY_STATUS = {
+export const PENALTY_KIND = tr({ no_show: 'Не пришёл', late_cancel: 'Поздняя отмена' })
+export const PENALTY_STATUS = tr({
   unpaid: { label: 'не оплачен', color: '#f87171' },
   paid: { label: 'оплачен', color: '#34d399' },
   forgiven: { label: 'прощён', color: '#9ca3af' },
-}
+})

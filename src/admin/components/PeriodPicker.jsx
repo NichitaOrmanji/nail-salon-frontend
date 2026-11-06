@@ -1,4 +1,5 @@
 import { PRESETS, presetRange } from '../utils/money'
+import { t } from '../../i18n'
 
 const inputStyle = { backgroundColor: '#242424', border: '1px solid #2e2e2e', colorScheme: 'dark' }
 
@@ -11,7 +12,7 @@ export default function PeriodPicker({ value, onChange }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }} role="group" aria-label="Период">
+      <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }} role="group" aria-label={t('Период')}>
         {PRESETS.map(p => (
           <button
             key={p.key}
@@ -28,7 +29,7 @@ export default function PeriodPicker({ value, onChange }) {
       <div className="flex items-center gap-1">
         <input
           type="date"
-          aria-label="С даты"
+          aria-label={t('С даты')}
           value={value.dateFrom}
           max={value.dateTo}
           onChange={e => e.target.value && onChange({ ...value, dateFrom: e.target.value })}
@@ -38,7 +39,7 @@ export default function PeriodPicker({ value, onChange }) {
         <span className="text-gray-500">—</span>
         <input
           type="date"
-          aria-label="По дату"
+          aria-label={t('По дату')}
           value={value.dateTo}
           min={value.dateFrom}
           onChange={e => e.target.value && onChange({ ...value, dateTo: e.target.value })}
