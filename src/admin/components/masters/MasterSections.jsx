@@ -5,6 +5,7 @@ import { WEEKDAYS_SHORT, todayString, addDays, formatShortDate } from '../../uti
 import { Button, Checkbox, ErrorText, Field, TextInput, WarningText } from '../ui'
 import { dayHoursError, hoursLabel, lunchLabel } from '../../utils/schedule'
 import TimeField from './TimeField'
+import { t } from '../../../i18n'
 
 // Разделы карточки мастера: график, выходные по датам, доступ в панель
 
@@ -81,11 +82,10 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
   const canCopyLunch = rows.some(r => r.is_working && r.break_start && r.break_end)
 
   return (
-    <Section title="График на неделю (шаблон)">
+    <Section title={t('График на неделю (шаблон)')}>
       {!readOnly && (
         <p className="text-gray-500 text-xs mb-3">
-          Действует на все недели. Отдельные даты (другие часы, выходной) — во вкладке «Графики».
-          Обед клиентам не показывается: записаться на это время нельзя.
+          {t('Действует на все недели. Отдельные даты (другие часы, выходной) — во вкладке «Графики». Обед клиентам не показывается: записаться на это время нельзя.')}
         </p>
       )}
       <div className="space-y-2">
@@ -94,25 +94,25 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
             <span className="w-7 text-sm text-gray-400 flex-shrink-0">{WEEKDAYS_SHORT[r.day_of_week]}</span>
             {readOnly ? (
               <span className="text-sm" style={{ color: r.is_working ? '#ffffff' : '#9098a4' }}>
-                {r.is_working ? hoursLabel(r) : 'Выходной'}
-                {r.is_working && lunchLabel(r) && <span className="text-gray-500"> · обед {lunchLabel(r)}</span>}
+                {r.is_working ? hoursLabel(r) : t('Выходной')}
+                {r.is_working && lunchLabel(r) && <span className="text-gray-500">{' '}{t('· обед')}{' '}{lunchLabel(r)}</span>}
               </span>
             ) : (
               <>
-                <Checkbox checked={r.is_working} onChange={v => update(r.day_of_week, { is_working: v })} label="Работает" className="w-32" />
+                <Checkbox checked={r.is_working} onChange={v => update(r.day_of_week, { is_working: v })} label={t('Работает')} className="w-32" />
                 {r.is_working && (
                   <div className="w-full sm:w-auto pl-8 sm:pl-0 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-gray-500 text-xs w-10">с</span>
-                      <TimeField label="Начало" value={r.start_time} onChange={v => update(r.day_of_week, { start_time: v })} />
-                      <span className="text-gray-500 text-xs">до</span>
-                      <TimeField label="Конец" value={r.end_time} onChange={v => update(r.day_of_week, { end_time: v })} />
+                      <span className="text-gray-500 text-xs w-10">{t('с')}</span>
+                      <TimeField label={t('Начало')} value={r.start_time} onChange={v => update(r.day_of_week, { start_time: v })} />
+                      <span className="text-gray-500 text-xs">{t('до')}</span>
+                      <TimeField label={t('Конец')} value={r.end_time} onChange={v => update(r.day_of_week, { end_time: v })} />
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-gray-500 text-xs w-10">обед</span>
-                      <TimeField label="Начало обеда" value={r.break_start} onChange={v => update(r.day_of_week, { break_start: v })} />
-                      <span className="text-gray-500 text-xs">до</span>
-                      <TimeField label="Конец обеда" value={r.break_end} clearable
+                      <span className="text-gray-500 text-xs w-10">{t('обед')}</span>
+                      <TimeField label={t('Начало обеда')} value={r.break_start} onChange={v => update(r.day_of_week, { break_start: v })} />
+                      <span className="text-gray-500 text-xs">{t('до')}</span>
+                      <TimeField label={t('Конец обеда')} value={r.break_end} clearable
                         onChange={v => update(r.day_of_week, v ? { break_end: v } : { break_start: null, break_end: null })} />
                     </div>
                   </div>
@@ -125,10 +125,10 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
       <ErrorText className="mt-3">{error}</ErrorText>
       {!readOnly && (
         <div className="flex flex-wrap items-center justify-end gap-3 mt-3">
-          {done && !changed && <span className="text-xs" style={{ color: '#34d399' }}>Сохранено</span>}
-          {canCopyLunch && <Button onClick={copyLunch}>Обед во все рабочие дни</Button>}
+          {done && !changed && <span className="text-xs" style={{ color: '#34d399' }}>{t('Сохранено')}</span>}
+          {canCopyLunch && <Button onClick={copyLunch}>{t('Обед во все рабочие дни')}</Button>}
           <Button variant="primary" disabled={!changed || saving} onClick={handleSave}>
-            {saving ? 'Сохраняем...' : 'Сохранить график'}
+            {saving ? t('Сохраняем...') : t('Сохранить график')}
           </Button>
         </div>
       )}
@@ -165,7 +165,7 @@ export function DaysOffSection({ master, readOnly }) {
     e.preventDefault()
     if (!newDate) return
     if (newDate < today || newDate > maxDate) {
-      setError(`Выберите дату с ${formatShortDate(today)} по ${formatShortDate(maxDate)}`)
+      setError(t('Выберите дату с {value} по {value2}', { value: formatShortDate(today), value2: formatShortDate(maxDate) }))
       return
     }
     setError(null)
@@ -175,9 +175,9 @@ export function DaysOffSection({ master, readOnly }) {
     try {
       const result = await addDayOff(master.id, newDate)
       const count = Number(result?.appointments_count) || 0
-      setMessage(`Выходной добавлен: ${formatShortDate(newDate)}`)
+      setMessage(t('Выходной добавлен: {value}', { value: formatShortDate(newDate) }))
       if (count > 0) {
-        setWarning(`${formatShortDate(newDate)}: у мастера ${count} записей — перенесите или отмените их`)
+        setWarning(t('{value}: у мастера {count} записей — перенесите или отмените их', { value: formatShortDate(newDate), count }))
       }
       setNewDate('')
       notifyDataChanged()
@@ -206,7 +206,7 @@ export function DaysOffSection({ master, readOnly }) {
   }
 
   return (
-    <Section title="Выходные по датам (на год вперёд)">
+    <Section title={t('Выходные по датам (на год вперёд)')}>
       {!readOnly && (
         <form onSubmit={handleAdd} noValidate className="flex flex-wrap gap-2 mb-3">
           <TextInput
@@ -216,23 +216,23 @@ export function DaysOffSection({ master, readOnly }) {
             value={newDate}
             onChange={e => { setNewDate(e.target.value); setMessage(null) }}
             className="flex-1 min-w-[150px]"
-            aria-label="Дата выходного"
+            aria-label={t('Дата выходного')}
           />
-          <Button type="submit" variant="primary" disabled={!newDate || busy}>Добавить</Button>
+          <Button type="submit" variant="primary" disabled={!newDate || busy}>{t('Добавить')}</Button>
         </form>
       )}
       {message && <p className="text-xs mb-3" style={{ color: '#34d399' }}>{message}</p>}
       <WarningText className="mb-3">{warning}</WarningText>
       <ErrorText className="mb-3">{error}</ErrorText>
-      {items === null && !error && <p className="text-gray-500 text-sm">Загрузка...</p>}
-      {items && items.length === 0 && <p className="text-gray-500 text-sm">Выходных по датам нет</p>}
+      {items === null && !error && <p className="text-gray-500 text-sm">{t('Загрузка...')}</p>}
+      {items && items.length === 0 && <p className="text-gray-500 text-sm">{t('Выходных по датам нет')}</p>}
       {items && items.length > 0 && (
         <div className="space-y-1">
           {items.map(d => (
             <div key={d.id ?? d.date} className="flex items-center justify-between gap-2 min-h-[44px]">
               <span className="text-white text-sm">{formatShortDate(d.date)}</span>
               {!readOnly && (
-                <Button variant="ghost" disabled={busy} onClick={() => handleRemove(d.date)} style={{ color: '#f87171' }}>Удалить</Button>
+                <Button variant="ghost" disabled={busy} onClick={() => handleRemove(d.date)} style={{ color: '#f87171' }}>{t('Удалить')}</Button>
               )}
             </div>
           ))}
@@ -266,7 +266,7 @@ export function AccessSection({ master, onChanged }) {
     e.preventDefault()
     const login = username.trim()
     if (!login || !password) {
-      setError('Укажите логин и пароль')
+      setError(t('Укажите логин и пароль'))
       return
     }
     setError(null)
@@ -276,7 +276,7 @@ export function AccessSection({ master, onChanged }) {
       const result = await setMasterAccess(master.id, login, password)
       setPassword('')
       setChangingPassword(false)
-      setMessage(master.has_access ? 'Сохранено' : `Доступ выдан, логин: ${result?.username || login}`)
+      setMessage(master.has_access ? t('Сохранено') : t('Доступ выдан, логин: {value}', { value: result?.username || login }))
       onChanged()
     } catch (err) {
       setError(err.message)
@@ -286,14 +286,14 @@ export function AccessSection({ master, onChanged }) {
   }
 
   async function handleRevoke() {
-    if (!window.confirm(`Отключить доступ мастера ${master.name} в панель?`)) return
+    if (!window.confirm(t('Отключить доступ мастера {name} в панель?', { name: master.name }))) return
     setError(null)
     setMessage(null)
     setBusy(true)
     try {
       await revokeMasterAccess(master.id)
       setUsername('')
-      setMessage('Доступ отключён')
+      setMessage(t('Доступ отключён'))
       onChanged()
     } catch (err) {
       setError(err.message)
@@ -303,42 +303,42 @@ export function AccessSection({ master, onChanged }) {
   }
 
   return (
-    <Section title="Доступ в панель">
+    <Section title={t('Доступ в панель')}>
       {master.has_access ? (
         <>
           <p className="text-sm text-gray-400 mb-3">
-            Логин: <span className="text-white">{master.user || '—'}</span>
+            {t('Логин:')}{' '}<span className="text-white">{master.user || '—'}</span>
           </p>
           {changingPassword ? (
             <form onSubmit={handleGrant} className="space-y-3">
-              <Field label="Логин">
+              <Field label={t('Логин')}>
                 <TextInput value={username} onChange={e => setUsername(e.target.value)} autoComplete="off" />
               </Field>
-              <Field label="Новый пароль">
+              <Field label={t('Новый пароль')}>
                 <TextInput type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" />
               </Field>
               <div className="flex flex-wrap gap-2">
-                <Button type="submit" variant="primary" disabled={busy}>Сохранить</Button>
-                <Button disabled={busy} onClick={() => { setChangingPassword(false); setPassword(''); setUsername(master.user || ''); setError(null) }}>Отмена</Button>
+                <Button type="submit" variant="primary" disabled={busy}>{t('Сохранить')}</Button>
+                <Button disabled={busy} onClick={() => { setChangingPassword(false); setPassword(''); setUsername(master.user || ''); setError(null) }}>{t('Отмена')}</Button>
               </div>
             </form>
           ) : (
             <div className="flex flex-wrap gap-2">
-              <Button disabled={busy} onClick={() => { setChangingPassword(true); setMessage(null) }}>Сменить пароль</Button>
-              <Button variant="danger" disabled={busy} onClick={handleRevoke}>Отключить доступ</Button>
+              <Button disabled={busy} onClick={() => { setChangingPassword(true); setMessage(null) }}>{t('Сменить пароль')}</Button>
+              <Button variant="danger" disabled={busy} onClick={handleRevoke}>{t('Отключить доступ')}</Button>
             </div>
           )}
         </>
       ) : (
         <form onSubmit={handleGrant} className="space-y-3">
-          <p className="text-gray-500 text-xs">Мастер сможет входить в панель и видеть свои записи.</p>
-          <Field label="Логин">
+          <p className="text-gray-500 text-xs">{t('Мастер сможет входить в панель и видеть свои записи.')}</p>
+          <Field label={t('Логин')}>
             <TextInput value={username} onChange={e => setUsername(e.target.value)} autoComplete="off" autoCapitalize="none" />
           </Field>
-          <Field label="Пароль">
+          <Field label={t('Пароль')}>
             <TextInput type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" />
           </Field>
-          <Button type="submit" variant="primary" disabled={busy}>Дать доступ</Button>
+          <Button type="submit" variant="primary" disabled={busy}>{t('Дать доступ')}</Button>
         </form>
       )}
       <ErrorText className="mt-3">{error}</ErrorText>

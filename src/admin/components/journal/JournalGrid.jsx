@@ -45,8 +45,8 @@ function useNowMinutes(enabled) {
 function columnHours(col) {
   if (!col.master && !col.week) return t('Записи без мастера')
   if (!col.master && !col.work.working) return t('Никто не работает')
-  if (col.work.dayOff) return 'Выходной (по дате)'
-  if (!col.work.working) return 'Выходной'
+  if (col.work.dayOff) return t('Выходной (по дате)')
+  if (!col.work.working) return t('Выходной')
   return `${minToTime(col.work.start)}–${minToTime(col.work.end)}`
 }
 
@@ -153,7 +153,7 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
           <button
             ref={buttonRef}
             type="button"
-            aria-label="Меню колонки"
+            aria-label={t('Меню колонки')}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(o => !o)}
@@ -172,7 +172,7 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
                   onToggleDayOff(col)
                 }}
               >
-                {col.work.dayOff ? 'Снять выходной' : 'Сделать выходным в этот день'}
+                {col.work.dayOff ? t('Снять выходной') : t('Сделать выходным в этот день')}
               </button>
             </ColumnMenu>
           )}
@@ -210,19 +210,19 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, showMa
         opacity: muted ? 0.6 : 1,
         zIndex: selected ? 6 : 5,
       }}
-      title={`${a.start_time}–${a.end_time} ${a.blacklist ? '⛔ чёрный список · ' : ''}${a.client_name}${a.master ? ' · ' + a.master.name : ''}${a.service ? ' · ' + a.service.name : ''} — ${info.label}`}
+      title={`${a.start_time}–${a.end_time} ${a.blacklist ? t('⛔ чёрный список · ') : ''}${a.client_name}${a.master ? ' · ' + a.master.name : ''}${a.service ? ' · ' + a.service.name : ''} — ${info.label}`}
     >
       {/* Время не переносится по символам, имя и услуга обрезаются многоточием */}
       <div className={`min-w-0 text-[11px] leading-tight text-white ${muted ? 'line-through' : ''}`}>
         {height < COMPACT_BLOCK_PX ? (
           <div className="truncate">
-            <span className="font-semibold">{a.start_time}</span> {a.blacklist && <span title="Чёрный список">⛔</span>}{a.client_name}
+            <span className="font-semibold">{a.start_time}</span> {a.blacklist && <span title={t('Чёрный список')}>⛔</span>}{a.client_name}
           </div>
         ) : (
           <>
             {/* В узкой подколонке — только начало (конец виден по высоте блока) */}
             <div className="font-semibold whitespace-nowrap truncate">{lanes >= 3 ? a.start_time : `${a.start_time}–${a.end_time}`}</div>
-            <div className="truncate">{a.blacklist && <span title="Чёрный список">⛔ </span>}{a.client_name}</div>
+            <div className="truncate">{a.blacklist && <span title={t('Чёрный список')}>⛔ </span>}{a.client_name}</div>
             {showMaster && a.master && height >= 44 && <div className="truncate text-gray-300">{a.master.name}</div>}
             {a.service && height >= (showMaster ? 68 : 56) && <div className="truncate text-gray-300">{a.service.name}</div>}
           </>
@@ -289,7 +289,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
 
   return (
     // Прокручиваемая сетка: фокус с клавиатуры (Tab) и стрелки для прокрутки, подпись для экранного диктора
-    <div ref={scrollRef} tabIndex={0} role="region" aria-label="Сетка журнала"
+    <div ref={scrollRef} tabIndex={0} role="region" aria-label={t('Сетка журнала')}
       className="flex-1 min-h-0 overflow-auto overscroll-contain focus:outline-none focus-visible:ring-1 focus-visible:ring-pink-400"
       style={{ backgroundColor: '#141414' }}>
       <div
@@ -350,7 +350,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
                     height: Math.max(0, Math.min(work.breakEnd, range.end) - Math.max(work.breakStart, range.start)) * PX_PER_MIN,
                   }}
                 >
-                  <span className="text-[10px] mt-0.5" style={{ color: '#fbbf24' }}>обед</span>
+                  <span className="text-[10px] mt-0.5" style={{ color: '#fbbf24' }}>{t('обед')}</span>
                 </div>
               )}
 

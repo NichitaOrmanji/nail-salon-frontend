@@ -6,6 +6,7 @@ import { Button, ErrorText, Field, Select, TextInput } from '../ui'
 import Modal from '../Modal'
 import Stat, { Section, Table } from './Stat'
 import Spinner from '../../../components/layout/Spinner'
+import { t } from '../../../i18n'
 
 function OperationModal({ date, categories, onClose, onSaved }) {
   const [kind, setKind] = useState('expense')
@@ -31,10 +32,10 @@ function OperationModal({ date, categories, onClose, onSaved }) {
   }
 
   return (
-    <Modal title="Операция по кассе" onClose={onClose}>
+    <Modal title={t('Операция по кассе')} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-2" role="group" aria-label="Тип операции">
-          {[['expense', 'Расход'], ['income', 'Приход']].map(([key, label]) => (
+        <div className="grid grid-cols-2 gap-2" role="group" aria-label={t('Тип операции')}>
+          {[['expense', t('Расход')], ['income', t('Приход')]].map(([key, label]) => (
             <button
               key={key}
               type="button"
@@ -47,28 +48,28 @@ function OperationModal({ date, categories, onClose, onSaved }) {
             </button>
           ))}
         </div>
-        <Field label="Сумма, L">
+        <Field label={t('Сумма, L')}>
           <TextInput inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0" required />
         </Field>
-        <Field label="Категория">
-          <TextInput list="cash-categories" value={category} onChange={e => setCategory(e.target.value)} placeholder="Выберите или впишите" required />
+        <Field label={t('Категория')}>
+          <TextInput list="cash-categories" value={category} onChange={e => setCategory(e.target.value)} placeholder={t('Выберите или впишите')} required />
           <datalist id="cash-categories">
             {options.map(c => <option key={c} value={c} />)}
           </datalist>
         </Field>
-        <Field label="Способ">
+        <Field label={t('Способ')}>
           <Select value={method} onChange={e => setMethod(e.target.value)}>
             {METHODS.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
           </Select>
         </Field>
-        <Field label="Комментарий">
+        <Field label={t('Комментарий')}>
           <TextInput value={comment} onChange={e => setComment(e.target.value)} />
         </Field>
         <ErrorText>{error}</ErrorText>
         <div className="flex justify-end gap-2">
-          <Button onClick={onClose}>Отмена</Button>
+          <Button onClick={onClose}>{t('Отмена')}</Button>
           <Button type="submit" variant="primary" disabled={saving || !amount || !category.trim()}>
-            {saving ? 'Сохраняем...' : 'Сохранить'}
+            {saving ? t('Сохраняем...') : t('Сохранить')}
           </Button>
         </div>
       </form>
@@ -106,7 +107,7 @@ export default function CashTab() {
   }, [])
 
   async function remove(op) {
-    if (!window.confirm(`Удалить операцию «${op.category}» на ${formatMoney(op.amount)}?`)) return
+    if (!window.confirm(t('Удалить операцию «{category}» на {value}?', { category: op.category, value: formatMoney(op.amount) }))) return
     try {
       await deleteOperation(op.id)
       load()
@@ -118,19 +119,19 @@ export default function CashTab() {
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
-        <Button aria-label="Предыдущий день" className="w-11 px-0" onClick={() => setDate(d => addDays(d, -1))}>‹</Button>
-        <Button onClick={() => setDate(todayString())}>Сегодня</Button>
-        <Button aria-label="Следующий день" className="w-11 px-0" onClick={() => setDate(d => addDays(d, 1))}>›</Button>
+        <Button aria-label={t('Предыдущий день')} className="w-11 px-0" onClick={() => setDate(d => addDays(d, -1))}>‹</Button>
+        <Button onClick={() => setDate(todayString())}>{t('Сегодня')}</Button>
+        <Button aria-label={t('Следующий день')} className="w-11 px-0" onClick={() => setDate(d => addDays(d, 1))}>›</Button>
         <input
           type="date"
-          aria-label="Дата"
+          aria-label={t('Дата')}
           value={date}
           onChange={e => e.target.value && setDate(e.target.value)}
           className="min-h-[44px] px-3 rounded-xl text-white text-sm outline-none"
           style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e', colorScheme: 'dark' }}
         />
         <span className="text-white font-semibold ml-1">{formatDayTitle(date)}</span>
-        <Button variant="primary" className="ml-auto" onClick={() => setAdding(true)}>+ Приход / расход</Button>
+        <Button variant="primary" className="ml-auto" onClick={() => setAdding(true)}>{t('+ Приход / расход')}</Button>
       </div>
 
       <ErrorText className="mt-3">{error}</ErrorText>
@@ -138,45 +139,45 @@ export default function CashTab() {
       {data && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-            <Stat label="Наличные на начало дня" value={formatMoney(data.opening)} />
-            <Stat label="Приход наличными" value={formatMoney(data.cash_in)} color="#34d399" />
-            <Stat label="Расход наличными" value={formatMoney(data.cash_out)} color="#f87171" />
-            <Stat label="Наличные на конец дня" value={formatMoney(data.closing)} color="#f472b6" />
+            <Stat label={t('Наличные на начало дня')} value={formatMoney(data.opening)} />
+            <Stat label={t('Приход наличными')} value={formatMoney(data.cash_in)} color="#34d399" />
+            <Stat label={t('Расход наличными')} value={formatMoney(data.cash_out)} color="#f87171" />
+            <Stat label={t('Наличные на конец дня')} value={formatMoney(data.closing)} color="#f472b6" />
           </div>
           <p className="text-gray-500 text-xs mt-2">
-            Оплаты за день: {METHODS.map(m => `${m.label.toLowerCase()} ${formatMoney(data.by_method[m.key])}`).join(' · ')}
+            {t('Оплаты за день:')}{' '}{METHODS.map(m => `${m.label.toLowerCase()} ${formatMoney(data.by_method[m.key])}`).join(' · ')}
           </p>
 
-          <Section title="Оплаты визитов">
+          <Section title={t('Оплаты визитов')}>
             <Table
               rows={data.payments}
-              empty="За этот день оплат нет"
+              empty={t('За этот день оплат нет')}
               columns={[
-                { key: 'time', label: 'Время' },
-                { key: 'client_name', label: 'Клиент' },
-                { key: 'master', label: 'Мастер', render: r => r.master || '—' },
-                { key: 'method', label: 'Способ', render: r => methodLabel(r.method) },
-                { key: 'discount', label: 'Скидка', align: 'right', render: r => (Number(r.discount) ? formatMoney(r.discount) : '—') },
-                { key: 'amount', label: 'Сумма', align: 'right', render: r => formatMoney(r.amount) },
+                { key: 'time', label: t('Время') },
+                { key: 'client_name', label: t('Клиент') },
+                { key: 'master', label: t('Мастер'), render: r => r.master || '—' },
+                { key: 'method', label: t('Способ'), render: r => methodLabel(r.method) },
+                { key: 'discount', label: t('Скидка'), align: 'right', render: r => (Number(r.discount) ? formatMoney(r.discount) : '—') },
+                { key: 'amount', label: t('Сумма'), align: 'right', render: r => formatMoney(r.amount) },
               ]}
             />
           </Section>
 
-          <Section title="Приходы и расходы">
+          <Section title={t('Приходы и расходы')}>
             <Table
               rows={data.operations}
-              empty="Операций нет"
+              empty={t('Операций нет')}
               columns={[
-                { key: 'kind', label: '', render: r => <span style={{ color: r.kind === 'income' ? '#34d399' : '#f87171' }}>{r.kind === 'income' ? 'Приход' : 'Расход'}</span> },
-                { key: 'category', label: 'Категория' },
-                { key: 'comment', label: 'Комментарий', render: r => r.comment || '—' },
-                { key: 'method', label: 'Способ', render: r => methodLabel(r.method) },
-                { key: 'amount', label: 'Сумма', align: 'right', render: r => formatMoney(r.amount) },
+                { key: 'kind', label: '', render: r => <span style={{ color: r.kind === 'income' ? '#34d399' : '#f87171' }}>{r.kind === 'income' ? t('Приход') : t('Расход')}</span> },
+                { key: 'category', label: t('Категория') },
+                { key: 'comment', label: t('Комментарий'), render: r => r.comment || '—' },
+                { key: 'method', label: t('Способ'), render: r => methodLabel(r.method) },
+                { key: 'amount', label: t('Сумма'), align: 'right', render: r => formatMoney(r.amount) },
                 {
                   key: 'actions', label: '', align: 'right',
                   render: r => (r.salary_payout
-                    ? <span className="text-gray-500 text-xs">в «Зарплатах»</span>
-                    : <button type="button" className="text-red-400 text-xs min-h-[32px]" onClick={() => remove(r)}>Удалить</button>),
+                    ? <span className="text-gray-500 text-xs">{t('в «Зарплатах»')}</span>
+                    : <button type="button" className="text-red-400 text-xs min-h-[32px]" onClick={() => remove(r)}>{t('Удалить')}</button>),
                 },
               ]}
             />

@@ -9,6 +9,7 @@ import { notifyDataChanged } from '../../utils/events'
 import { formatShortDate, timeToMin, todayString, nowMinutes } from '../../utils/time'
 import { formatMoney } from '../../utils/money'
 import { DISCARD_CONFIRM } from '../../utils/journal'
+import { t } from '../../../i18n'
 
 function isValidTime(value) {
   return /^\d{2}:\d{2}$/.test(value || '')
@@ -163,24 +164,24 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
   // Предупреждения: вне графика, выходной, прошедшее время
   const warnings = []
   if (freeData && isValidTime(time)) {
-    const t = timeToMin(time)
-    const end = t + (durationNum || 0)
+    const startMin = timeToMin(time)
+    const end = startMin + (durationNum || 0)
     const sched = freeData.schedule
     if (freeData.day_off) {
-      warnings.push('Вне графика мастера: выходной в этот день')
+      warnings.push(t('Вне графика мастера: выходной в этот день'))
     } else if (!freeData.working || !sched) {
-      warnings.push('Вне графика мастера: по графику не работает')
-    } else if (t < timeToMin(sched.start_time) || end > timeToMin(sched.end_time)) {
-      warnings.push(`Вне графика мастера (работает ${sched.start_time}–${sched.end_time})`)
-    } else if (sched.break_start && sched.break_end && t < timeToMin(sched.break_end) && end > timeToMin(sched.break_start)) {
-      warnings.push(`Попадает на обед мастера (${sched.break_start}–${sched.break_end})`)
+      warnings.push(t('Вне графика мастера: по графику не работает'))
+    } else if (startMin < timeToMin(sched.start_time) || end > timeToMin(sched.end_time)) {
+      warnings.push(t('Вне графика мастера (работает {start_time}–{end_time})', { start_time: sched.start_time, end_time: sched.end_time }))
+    } else if (sched.break_start && sched.break_end && startMin < timeToMin(sched.break_end) && end > timeToMin(sched.break_start)) {
+      warnings.push(t('Попадает на обед мастера ({break_start}–{break_end})', { break_start: sched.break_start, break_end: sched.break_end }))
     }
   }
   const whenChanged = !isEdit || date !== start.date || time !== start.time
   if (whenChanged && date && isValidTime(time)) {
     const today = todayString()
     if (date < today || (date === today && timeToMin(time) < nowMinutes())) {
-      warnings.push('Это время уже прошло')
+      warnings.push(t('Это время уже прошло'))
     }
   }
 
@@ -189,7 +190,7 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
   const freeTimes = freeData && Array.isArray(freeData.times) ? freeData.times : null
   const timeEdited = !isEdit || date !== start.date || time !== start.time || duration !== start.duration || serviceId !== start.serviceId || masterId !== start.masterId
   if (timeEdited && freeTimes && isValidTime(time) && !warnings.length && !freeTimes.includes(time)) {
-    warnings.push('Это время занято или вне графика')
+    warnings.push(t('Это время занято или вне графика'))
   }
 
   const masterChanged = masterId !== start.masterId
@@ -198,13 +199,13 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
   const slotChanged = date !== start.date || time !== start.time || duration !== start.duration || serviceId !== start.serviceId
   const masterRequired = !isEdit || masterChanged || slotChanged
   const validationError =
-    (!isEdit || phone !== start.phone) && !phoneValid ? 'Укажите корректный телефон'
-      : !name.trim() ? 'Укажите имя клиента'
-        : masterRequired && !masterId ? 'Укажите мастера'
-          : serviceRequired && !serviceId ? 'Выберите услугу'
-            : !durationNum && (serviceRequired || duration !== start.duration) ? 'Длительность — от 5 до 600 минут'
-              : !date ? 'Укажите дату'
-                : !isValidTime(time) ? 'Укажите время'
+    (!isEdit || phone !== start.phone) && !phoneValid ? t('Укажите корректный телефон')
+      : !name.trim() ? t('Укажите имя клиента')
+        : masterRequired && !masterId ? t('Укажите мастера')
+          : serviceRequired && !serviceId ? t('Выберите услугу')
+            : !durationNum && (serviceRequired || duration !== start.duration) ? t('Длительность — от 5 до 600 минут')
+              : !date ? t('Укажите дату')
+                : !isValidTime(time) ? t('Укажите время')
                   : null
 
   // Есть несохранённый ввод — закрытие (Escape, крестик, «Отмена») переспрашивает
@@ -213,7 +214,7 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
 
   function requestClose() {
     if (saving) return
-    if (dirty && !window.confirm(DISCARD_CONFIRM)) return
+    if (dirty && !window.confirm(t(DISCARD_CONFIRM))) return
     onClose()
   }
 
@@ -277,69 +278,69 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
       {error && (
         <p role="alert" className="basis-full text-red-400 text-sm">{error}</p>
       )}
-      <Button onClick={requestClose}>Отмена</Button>
+      <Button onClick={requestClose}>{t('Отмена')}</Button>
       <Button variant="primary" type="submit" form="appointment-form" disabled={saving}>
-        {saving ? 'Сохраняем...' : isEdit ? 'Сохранить' : 'Создать запись'}
+        {saving ? t('Сохраняем...') : isEdit ? t('Сохранить') : t('Создать запись')}
       </Button>
     </>
   )
 
   return (
-    <Modal title={isEdit ? 'Изменить запись' : 'Новая запись'} onClose={requestClose} footer={footer}>
+    <Modal title={isEdit ? t('Изменить запись') : t('Новая запись')} onClose={requestClose} footer={footer}>
       <form id="appointment-form" onSubmit={handleSubmit} noValidate className="space-y-4">
 
         {/* Не <label>-обёртка: иначе подпись относится к кнопке выбора страны, а не к полю номера */}
         <div>
-          <label htmlFor="appointment-phone" className="block text-gray-400 text-xs font-medium mb-1.5">Телефон</label>
+          <label htmlFor="appointment-phone" className="block text-gray-400 text-xs font-medium mb-1.5">{t('Телефон')}</label>
           {/* Без overflow-hidden: иначе обрезается список стран */}
           <div className="rounded-xl relative" style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e' }}>
-            <PhoneField value={phone} onChange={setPhone} inputId="appointment-phone" inputLabel="Телефон" />
+            <PhoneField value={phone} onChange={setPhone} inputId="appointment-phone" inputLabel={t('Телефон')} />
           </div>
         </div>
-        {phone && !phoneValid && <p className="text-gray-500 text-xs -mt-2">Проверьте номер телефона</p>}
+        {phone && !phoneValid && <p className="text-gray-500 text-xs -mt-2">{t('Проверьте номер телефона')}</p>}
         {clientInfo && (
           <p className="text-xs -mt-2">
             {clientInfo.data ? (
               <>
-                <span className="text-gray-400">Визитов: {clientInfo.data.visits ?? 0}</span>
+                <span className="text-gray-400">{t('Визитов:')}{' '}{clientInfo.data.visits ?? 0}</span>
                 <span className="text-gray-600"> · </span>
                 <span style={{ color: clientInfo.data.no_shows > 0 ? '#f87171' : '#9ca3af' }}>
-                  Не пришёл: {clientInfo.data.no_shows ?? 0}
+                  {t('Не пришёл:')}{' '}{clientInfo.data.no_shows ?? 0}
                 </span>
               </>
             ) : (
-              <span className="text-gray-500">Новый клиент</span>
+              <span className="text-gray-500">{t('Новый клиент')}</span>
             )}
           </p>
         )}
         {clientInfo?.data?.blacklist && (
           <div className="rounded-xl px-3 py-2 text-sm -mt-1" role="alert"
             style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171', color: '#fca5a5' }}>
-            <div className="font-semibold" style={{ color: '#f87171' }}>⛔ Клиент в чёрном списке</div>
+            <div className="font-semibold" style={{ color: '#f87171' }}>{t('⛔ Клиент в чёрном списке')}</div>
             {Number(clientInfo.data.blacklist.debt) > 0 ? (
               <>
-                <div>Долг {formatMoney(clientInfo.data.blacklist.debt)} — оплатит при визите</div>
+                <div>{t('Долг')}{' '}{formatMoney(clientInfo.data.blacklist.debt)}{' '}{t('— оплатит при визите')}</div>
                 {(clientInfo.data.penalties || []).map(p => (
                   <div key={p.id} className="text-xs text-gray-400">
-                    {formatShortDate(p.date)} · {p.kind === 'no_show' ? 'не пришёл' : 'поздняя отмена'}
+                    {formatShortDate(p.date)} · {p.kind === 'no_show' ? t('не пришёл') : t('поздняя отмена')}
                     {p.service ? ` · ${p.service}` : ''} · {formatMoney(p.amount)}
                   </div>
                 ))}
               </>
-            ) : <div>Долгов нет, нарушений: {clientInfo.data.blacklist.count}</div>}
+            ) : <div>{t('Долгов нет, нарушений: {count}', { count: clientInfo.data.blacklist.count })}</div>}
           </div>
         )}
 
-        <Field label="Имя">
-          <TextInput value={name} onChange={e => setName(e.target.value)} placeholder="Имя клиента" />
+        <Field label={t('Имя')}>
+          <TextInput value={name} onChange={e => setName(e.target.value)} placeholder={t('Имя клиента')} />
         </Field>
 
-        <Field label="Мастер">
+        <Field label={t('Мастер')}>
           {isManager ? (
             <Select value={masterId} onChange={e => handleMasterChange(e.target.value)}>
-              <option value="">— Выберите мастера —</option>
+              <option value="">{t('— Выберите мастера —')}</option>
               {masterOptions.map(m => (
-                <option key={m.id} value={String(m.id)}>{m.name}{m.is_active ? '' : ' (скрыт)'}</option>
+                <option key={m.id} value={String(m.id)}>{m.name}{m.is_active ? '' : t(' (скрыт)')}</option>
               ))}
             </Select>
           ) : (
@@ -347,43 +348,43 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
           )}
         </Field>
 
-        <Field label="Услуга">
+        <Field label={t('Услуга')}>
           <Select value={serviceId} onChange={e => handleServiceChange(e.target.value)} disabled={!services}>
             <option value="">
-              {!services ? 'Загрузка...' : !masterId ? '— Сначала выберите мастера —' : '— Выберите услугу —'}
+              {!services ? t('Загрузка...') : !masterId ? t('— Сначала выберите мастера —') : t('— Выберите услугу —')}
             </option>
             {serviceOptions.map(s => (
               <option key={s.id} value={String(s.id)}>
-                {s.name}{s.is_active === false ? ' (скрыта)' : ''}
+                {s.name}{s.is_active === false ? t(' (скрыта)') : ''}
               </option>
             ))}
           </Select>
         </Field>
         <ErrorText>{servicesError}</ErrorText>
         {services && master && serviceOptions.length === 0 && (
-          <p className="text-gray-500 text-xs -mt-2">У мастера нет активных услуг</p>
+          <p className="text-gray-500 text-xs -mt-2">{t('У мастера нет активных услуг')}</p>
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Длительность, мин">
+          <Field label={t('Длительность, мин')}>
             <TextInput type="number" inputMode="numeric" min={5} max={600} step={5} value={duration} onChange={e => setDuration(e.target.value)} />
           </Field>
-          <Field label="Дата">
+          <Field label={t('Дата')}>
             <TextInput type="date" value={date} onChange={e => setDate(e.target.value)} />
           </Field>
         </div>
 
-        <Field label="Время">
+        <Field label={t('Время')}>
           <TextInput type="time" step={900} value={time} onChange={e => setTime(e.target.value.slice(0, 5))} />
         </Field>
 
         {/* Чипы свободного времени */}
         {freeKey && (
           <div className="-mt-1">
-            {!freeData && !freeError && <p className="text-gray-500 text-xs">Ищем свободное время...</p>}
+            {!freeData && !freeError && <p className="text-gray-500 text-xs">{t('Ищем свободное время...')}</p>}
             {freeError && <p className="text-red-400 text-xs">{freeError}</p>}
             {freeData && Array.isArray(freeData.times) && freeData.times.length === 0 && (
-              <p className="text-gray-500 text-xs">Свободного времени нет</p>
+              <p className="text-gray-500 text-xs">{t('Свободного времени нет')}</p>
             )}
             {freeData && Array.isArray(freeData.times) && freeData.times.length > 0 && (
               <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
@@ -409,15 +410,15 @@ export default function AppointmentFormModal({ appointment, initial, masters, me
 
         {warnings.map(w => <WarningText key={w}>{w}</WarningText>)}
 
-        <Field label="Заметка">
-          <TextArea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Необязательно" />
+        <Field label={t('Заметка')}>
+          <TextArea value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('Необязательно')} />
         </Field>
 
         {!isEdit && isManager && (
-          <Field label="Статус">
+          <Field label={t('Статус')}>
             <Select value={status} onChange={e => setStatus(e.target.value)}>
-              <option value="confirmed">Подтверждена</option>
-              <option value="pending">Ожидает</option>
+              <option value="confirmed">{t('Подтверждена')}</option>
+              <option value="pending">{t('Ожидает')}</option>
             </Select>
           </Field>
         )}

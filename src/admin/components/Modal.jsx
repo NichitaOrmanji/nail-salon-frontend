@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { IconClose } from './Icons'
+import { t } from '../../i18n'
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
 const FIELDS = 'input:not([disabled]):not([type="hidden"]):not([readonly]), select:not([disabled]), textarea:not([disabled]):not([readonly])'
@@ -75,7 +76,7 @@ export default function Modal({ title, onClose, children, footer, maxWidth = 'sm
           <button
             type="button"
             onClick={onClose}
-            aria-label="Закрыть"
+            aria-label={t('Закрыть')}
             className="w-11 h-11 rounded-xl flex items-center justify-center text-gray-400 active:scale-90"
           >
             <IconClose />

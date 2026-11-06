@@ -19,21 +19,21 @@ const SIDEBAR_KEY = 'admin_sidebar'
 // Разделы панели — вкладками под календарём. Настройки — внизу панели (кто вошёл)
 function sections(me, isManager) {
   const salary = me.master_id && me.role !== 'owner'
-    ? [{ to: '/admin-panel/salary', label: 'Моя зарплата', icon: IconWallet }]
+    ? [{ to: '/admin-panel/salary', label: t('Моя зарплата'), icon: IconWallet }]
     : []
   if (!isManager) {
     return [
-      { to: JOURNAL_PATH, label: 'Журнал', icon: IconCalendar, end: true },
-      { to: '/admin-panel/masters', label: 'Мой график', icon: IconUsers },
+      { to: JOURNAL_PATH, label: t('Журнал'), icon: IconCalendar, end: true },
+      { to: '/admin-panel/masters', label: t('Мой график'), icon: IconUsers },
       ...salary,
     ]
   }
   return [
-    { to: JOURNAL_PATH, label: 'Журнал', icon: IconCalendar, end: true },
-    { to: '/admin-panel/clients', label: 'Клиенты', icon: IconContact },
-    { to: '/admin-panel/masters', label: 'Мастера', icon: IconUsers },
-    { to: '/admin-panel/services', label: 'Услуги', icon: IconScissors },
-    ...(me.role === 'owner' ? [{ to: '/admin-panel/finance', label: 'Финансы', icon: IconWallet }] : []),
+    { to: JOURNAL_PATH, label: t('Журнал'), icon: IconCalendar, end: true },
+    { to: '/admin-panel/clients', label: t('Клиенты'), icon: IconContact },
+    { to: '/admin-panel/masters', label: t('Мастера'), icon: IconUsers },
+    { to: '/admin-panel/services', label: t('Услуги'), icon: IconScissors },
+    ...(me.role === 'owner' ? [{ to: '/admin-panel/finance', label: t('Финансы'), icon: IconWallet }] : []),
     ...salary,
   ]
 }
@@ -76,7 +76,7 @@ function SidebarCalendar({ onNavigate }) {
   }
 
   return (
-    <div aria-label="Календарь загруженности" role="group">
+    <div aria-label={t('Календарь загруженности')} role="group">
       <LoadCalendar
         year={Number(month.slice(0, 4))}
         month={Number(month.slice(5, 7)) - 1}
@@ -209,7 +209,7 @@ export default function AdminLayout() {
       {/* Левая панель (≥ 768px): календарь, журнал, разделы; скрывается кнопкой */}
       {sidebarShown && (
         <aside className="hidden md:block w-72 flex-shrink-0" style={{ backgroundColor: '#1a1a1a', borderRight: '1px solid #2e2e2e' }}>
-          <SidebarContent me={me} isManager={isManager} onNavigate={() => {}} onHide={toggleSidebar} hideLabel="Скрыть панель" />
+          <SidebarContent me={me} isManager={isManager} onNavigate={() => {}} onHide={toggleSidebar} hideLabel={t('Скрыть панель')} />
         </aside>
       )}
 
@@ -217,7 +217,7 @@ export default function AdminLayout() {
       {menuOpen && (
         <div className="md:hidden fixed inset-0 z-[45] flex">
           <aside role="dialog" aria-label={t('Меню')} className="w-80 max-w-[88vw] h-full" style={{ backgroundColor: '#1a1a1a', borderRight: '1px solid #2e2e2e' }}>
-            <SidebarContent me={me} isManager={isManager} onNavigate={() => setMenuOpen(false)} onHide={() => setMenuOpen(false)} hideLabel="Закрыть меню" />
+            <SidebarContent me={me} isManager={isManager} onNavigate={() => setMenuOpen(false)} onHide={() => setMenuOpen(false)} hideLabel={t('Закрыть меню')} />
           </aside>
           <div className="flex-1" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }} onClick={() => setMenuOpen(false)} />
         </div>

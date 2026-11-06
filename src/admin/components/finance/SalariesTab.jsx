@@ -6,6 +6,7 @@ import { Button, ErrorText, Field, Select, TextInput } from '../ui'
 import Modal from '../Modal'
 import { Table } from './Stat'
 import Spinner from '../../../components/layout/Spinner'
+import { t } from '../../../i18n'
 
 function SchemeModal({ row, onClose, onSaved }) {
   const [percent, setPercent] = useState(row.scheme.percent === '0.00' ? '' : String(Number(row.scheme.percent)))
@@ -30,18 +31,18 @@ function SchemeModal({ row, onClose, onSaved }) {
   }
 
   return (
-    <Modal title={`Схема оплаты: ${row.master.name}`} onClose={onClose}>
+    <Modal title={t('Схема оплаты: {name}', { name: row.master.name })} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Процент от оплаченных визитов, %" hint="Считается от суммы после скидки">
+        <Field label={t('Процент от оплаченных визитов, %')} hint={t('Считается от суммы после скидки')}>
           <TextInput inputMode="decimal" value={percent} onChange={e => setPercent(e.target.value)} placeholder="0" />
         </Field>
-        <Field label="Фикс за рабочий день, L" hint="День, в который у мастера был хотя бы один оплаченный визит">
+        <Field label={t('Фикс за рабочий день, L')} hint={t('День, в который у мастера был хотя бы один оплаченный визит')}>
           <TextInput inputMode="decimal" value={fixed} onChange={e => setFixed(e.target.value)} placeholder="0" />
         </Field>
         <ErrorText>{error}</ErrorText>
         <div className="flex justify-end gap-2">
-          <Button onClick={onClose}>Отмена</Button>
-          <Button type="submit" variant="primary" disabled={saving}>{saving ? 'Сохраняем...' : 'Сохранить'}</Button>
+          <Button onClick={onClose}>{t('Отмена')}</Button>
+          <Button type="submit" variant="primary" disabled={saving}>{saving ? t('Сохраняем...') : t('Сохранить')}</Button>
         </div>
       </form>
     </Modal>
@@ -68,24 +69,23 @@ function PayoutModal({ row, range, onClose, onSaved }) {
   }
 
   return (
-    <Modal title={`Выплата: ${row.master.name}`} onClose={onClose}>
+    <Modal title={t('Выплата: {name}', { name: row.master.name })} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-gray-400 text-sm">
-          За период {formatShortDate(range.dateFrom)} — {formatShortDate(range.dateTo)}. Начислено {formatMoney(row.accrued)},
-          уже выплачено {formatMoney(row.paid)}. Выплата пройдёт расходом по кассе.
+          {t('За период')}{' '}{formatShortDate(range.dateFrom)} — {formatShortDate(range.dateTo)}{t('. Начислено')}{' '}{formatMoney(row.accrued)}{t(', уже выплачено')}{' '}{formatMoney(row.paid)}{t('. Выплата пройдёт расходом по кассе.')}
         </p>
-        <Field label="Сумма, L">
+        <Field label={t('Сумма, L')}>
           <TextInput inputMode="decimal" value={amount} onChange={e => setAmount(e.target.value)} required />
         </Field>
-        <Field label="Способ">
+        <Field label={t('Способ')}>
           <Select value={method} onChange={e => setMethod(e.target.value)}>
             {METHODS.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
           </Select>
         </Field>
         <ErrorText>{error}</ErrorText>
         <div className="flex justify-end gap-2">
-          <Button onClick={onClose}>Отмена</Button>
-          <Button type="submit" variant="primary" disabled={saving || !amount}>{saving ? 'Сохраняем...' : 'Выплатить'}</Button>
+          <Button onClick={onClose}>{t('Отмена')}</Button>
+          <Button type="submit" variant="primary" disabled={saving || !amount}>{saving ? t('Сохраняем...') : t('Выплатить')}</Button>
         </div>
       </form>
     </Modal>
@@ -95,8 +95,8 @@ function PayoutModal({ row, range, onClose, onSaved }) {
 function schemeText(scheme) {
   const parts = []
   if (Number(scheme.percent)) parts.push(`${Number(scheme.percent)} %`)
-  if (Number(scheme.fixed_per_day)) parts.push(`${formatMoney(scheme.fixed_per_day)}/день`)
-  return parts.join(' + ') || 'не задана'
+  if (Number(scheme.fixed_per_day)) parts.push(t('{value}/день', { value: formatMoney(scheme.fixed_per_day) }))
+  return parts.join(' + ') || t('не задана')
 }
 
 // Зарплаты мастеров за период: начислено (% + фикс), выплачено, к выплате
@@ -120,7 +120,7 @@ export default function SalariesTab({ range }) {
   }, [range])
 
   async function undoPayout(payout) {
-    if (!window.confirm(`Отменить выплату ${formatMoney(payout.amount)}? Расход по кассе тоже удалится.`)) return
+    if (!window.confirm(t('Отменить выплату {value}? Расход по кассе тоже удалится.', { value: formatMoney(payout.amount) }))) return
     try {
       await cancelPayout(payout.id)
       load()
@@ -143,29 +143,29 @@ export default function SalariesTab({ range }) {
       <Table
         rows={rows}
         rowKey={r => r.master.id}
-        empty="Нет мастеров"
+        empty={t('Нет мастеров')}
         columns={[
-          { key: 'name', label: 'Мастер', render: r => r.master.name + (r.master.is_active ? '' : ' (скрыт)') },
-          { key: 'scheme', label: 'Схема', render: r => <button type="button" className="underline decoration-dotted text-gray-300" onClick={() => setModal({ type: 'scheme', row: r })}>{schemeText(r.scheme)}</button> },
-          { key: 'visits', label: 'Визитов', align: 'right' },
-          { key: 'revenue', label: 'Выручка', align: 'right', render: r => formatMoney(r.revenue) },
-          { key: 'accrued', label: 'Начислено', align: 'right', render: r => formatMoney(r.accrued) },
-          { key: 'paid', label: 'Выплачено', align: 'right', render: r => formatMoney(r.paid) },
-          { key: 'due', label: 'К выплате', align: 'right', render: r => <span style={{ color: Number(r.due) > 0 ? '#f472b6' : '#9ca3af' }}>{formatMoney(r.due)}</span> },
-          { key: 'actions', label: '', align: 'right', render: r => <Button onClick={() => setModal({ type: 'payout', row: r })}>Выплатить</Button> },
+          { key: 'name', label: t('Мастер'), render: r => r.master.name + (r.master.is_active ? '' : t(' (скрыт)')) },
+          { key: 'scheme', label: t('Схема'), render: r => <button type="button" className="underline decoration-dotted text-gray-300" onClick={() => setModal({ type: 'scheme', row: r })}>{schemeText(r.scheme)}</button> },
+          { key: 'visits', label: t('Визитов'), align: 'right' },
+          { key: 'revenue', label: t('Выручка'), align: 'right', render: r => formatMoney(r.revenue) },
+          { key: 'accrued', label: t('Начислено'), align: 'right', render: r => formatMoney(r.accrued) },
+          { key: 'paid', label: t('Выплачено'), align: 'right', render: r => formatMoney(r.paid) },
+          { key: 'due', label: t('К выплате'), align: 'right', render: r => <span style={{ color: Number(r.due) > 0 ? '#f472b6' : '#9ca3af' }}>{formatMoney(r.due)}</span> },
+          { key: 'actions', label: '', align: 'right', render: r => <Button onClick={() => setModal({ type: 'payout', row: r })}>{t('Выплатить')}</Button> },
         ]}
       />
 
       {rows.some(r => r.payouts.length) && (
         <div className="mt-6">
-          <h2 className="text-white text-base font-semibold mb-2">Выплаты за период</h2>
+          <h2 className="text-white text-base font-semibold mb-2">{t('Выплаты за период')}</h2>
           <Table
             rows={rows.flatMap(r => r.payouts.map(p => ({ ...p, master: r.master.name })))}
             columns={[
-              { key: 'master', label: 'Мастер' },
-              { key: 'period', label: 'За период', render: p => `${formatShortDate(p.date_from)} — ${formatShortDate(p.date_to)}` },
-              { key: 'amount', label: 'Сумма', align: 'right', render: p => formatMoney(p.amount) },
-              { key: 'actions', label: '', align: 'right', render: p => <button type="button" className="text-red-400 text-xs min-h-[32px]" onClick={() => undoPayout(p)}>Отменить</button> },
+              { key: 'master', label: t('Мастер') },
+              { key: 'period', label: t('За период'), render: p => `${formatShortDate(p.date_from)} — ${formatShortDate(p.date_to)}` },
+              { key: 'amount', label: t('Сумма'), align: 'right', render: p => formatMoney(p.amount) },
+              { key: 'actions', label: '', align: 'right', render: p => <button type="button" className="text-red-400 text-xs min-h-[32px]" onClick={() => undoPayout(p)}>{t('Отменить')}</button> },
             ]}
           />
         </div>

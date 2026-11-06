@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Modal from './Modal'
 import { Button, Field, TextInput, ErrorText } from './ui'
 import { changePassword } from '../api/auth'
+import { t } from '../../i18n'
 
 export default function ChangePasswordModal({ onClose }) {
   const [oldPassword, setOldPassword] = useState('')
@@ -17,7 +18,7 @@ export default function ChangePasswordModal({ onClose }) {
     e.preventDefault()
     if (!canSubmit) return
     if (newPassword !== repeat) {
-      setError('Новые пароли не совпадают')
+      setError(t('Новые пароли не совпадают'))
       return
     }
     setError(null)
@@ -34,29 +35,29 @@ export default function ChangePasswordModal({ onClose }) {
 
   if (done) {
     return (
-      <Modal title="Сменить пароль" onClose={onClose} footer={<Button variant="primary" onClick={onClose}>Готово</Button>}>
-        <p className="text-white text-sm">Пароль изменён.</p>
+      <Modal title={t('Сменить пароль')} onClose={onClose} footer={<Button variant="primary" onClick={onClose}>{t('Готово')}</Button>}>
+        <p className="text-white text-sm">{t('Пароль изменён.')}</p>
       </Modal>
     )
   }
 
   return (
-    <Modal title="Сменить пароль" onClose={onClose}>
+    <Modal title={t('Сменить пароль')} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Старый пароль">
+        <Field label={t('Старый пароль')}>
           <TextInput type="password" autoComplete="current-password" value={oldPassword} onChange={e => setOldPassword(e.target.value)} />
         </Field>
-        <Field label="Новый пароль">
+        <Field label={t('Новый пароль')}>
           <TextInput type="password" autoComplete="new-password" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
         </Field>
-        <Field label="Повторите новый пароль">
+        <Field label={t('Повторите новый пароль')}>
           <TextInput type="password" autoComplete="new-password" value={repeat} onChange={e => setRepeat(e.target.value)} />
         </Field>
         <ErrorText>{error}</ErrorText>
         <div className="flex justify-end gap-2">
-          <Button onClick={onClose}>Отмена</Button>
+          <Button onClick={onClose}>{t('Отмена')}</Button>
           <Button type="submit" variant="primary" disabled={!canSubmit}>
-            {saving ? 'Сохраняем...' : 'Сменить пароль'}
+            {saving ? t('Сохраняем...') : t('Сменить пароль')}
           </Button>
         </div>
       </form>

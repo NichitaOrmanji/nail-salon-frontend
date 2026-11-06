@@ -6,6 +6,7 @@ import { formatDuration, formatPrice } from '../../utils/format'
 import Modal from '../components/Modal'
 import { Button, Checkbox, ErrorText, Field, PageHeader, Select, TextInput } from '../components/ui'
 import Spinner from '../../components/layout/Spinner'
+import { t } from '../../i18n'
 
 function ServiceModal({ service, categories, onClose, onSaved }) {
   const isEdit = !!service
@@ -20,9 +21,9 @@ function ServiceModal({ service, categories, onClose, onSaved }) {
     e.preventDefault()
     const durationNum = Number(duration)
     const priceStr = normalizeDecimal(price)
-    if (!name.trim()) return setError('Укажите название')
-    if (!Number.isInteger(durationNum) || durationNum < 5 || durationNum > 600) return setError('Длительность — от 5 до 600 минут')
-    if (priceStr === '' || Number.isNaN(Number(priceStr)) || Number(priceStr) < 0) return setError('Укажите цену (число не меньше 0)')
+    if (!name.trim()) return setError(t('Укажите название'))
+    if (!Number.isInteger(durationNum) || durationNum < 5 || durationNum > 600) return setError(t('Длительность — от 5 до 600 минут'))
+    if (priceStr === '' || Number.isNaN(Number(priceStr)) || Number(priceStr) < 0) return setError(t('Укажите цену (число не меньше 0)'))
 
     const body = {
       name: name.trim(),
@@ -44,32 +45,32 @@ function ServiceModal({ service, categories, onClose, onSaved }) {
 
   return (
     <Modal
-      title={isEdit ? 'Изменить услугу' : 'Новая услуга'}
+      title={isEdit ? t('Изменить услугу') : t('Новая услуга')}
       onClose={onClose}
       footer={
         <>
-          <Button onClick={onClose}>Отмена</Button>
+          <Button onClick={onClose}>{t('Отмена')}</Button>
           <Button variant="primary" type="submit" form="service-form" disabled={saving}>
-            {saving ? 'Сохраняем...' : 'Сохранить'}
+            {saving ? t('Сохраняем...') : t('Сохранить')}
           </Button>
         </>
       }
     >
       <form id="service-form" onSubmit={handleSubmit} noValidate className="space-y-4">
-        <Field label="Название">
+        <Field label={t('Название')}>
           <TextInput value={name} onChange={e => setName(e.target.value)} />
         </Field>
-        <Field label="Категория">
+        <Field label={t('Категория')}>
           <Select value={category} onChange={e => setCategory(e.target.value)}>
-            <option value="">Без категории</option>
+            <option value="">{t('Без категории')}</option>
             {categories.map(c => <option key={c.id} value={String(c.id)}>{c.name}</option>)}
           </Select>
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Длительность, мин">
+          <Field label={t('Длительность, мин')}>
             <TextInput type="number" inputMode="numeric" min={5} max={600} step={5} value={duration} onChange={e => setDuration(e.target.value)} />
           </Field>
-          <Field label="Цена, L">
+          <Field label={t('Цена, L')}>
             <TextInput inputMode="decimal" value={price} onChange={e => setPrice(e.target.value)} placeholder="0" />
           </Field>
         </div>
@@ -112,32 +113,32 @@ function CategoriesModal({ categories, onClose, onChanged }) {
   }
 
   function handleDelete(c) {
-    if (!window.confirm(`Удалить категорию «${c.name}»? Услуги останутся без категории.`)) return
+    if (!window.confirm(t('Удалить категорию «{name}»? Услуги останутся без категории.', { name: c.name }))) return
     run(() => deleteCategory(c.id))
   }
 
   return (
-    <Modal title="Категории" onClose={onClose}>
+    <Modal title={t('Категории')} onClose={onClose}>
       <form onSubmit={handleAdd} className="flex gap-2 mb-4">
-        <TextInput value={newName} onChange={e => setNewName(e.target.value)} placeholder="Новая категория" className="flex-1 min-w-0" />
-        <Button type="submit" variant="primary" disabled={busy || !newName.trim()}>Добавить</Button>
+        <TextInput value={newName} onChange={e => setNewName(e.target.value)} placeholder={t('Новая категория')} className="flex-1 min-w-0" />
+        <Button type="submit" variant="primary" disabled={busy || !newName.trim()}>{t('Добавить')}</Button>
       </form>
       <ErrorText className="mb-3">{error}</ErrorText>
-      {categories.length === 0 && <p className="text-gray-500 text-sm">Категорий пока нет</p>}
+      {categories.length === 0 && <p className="text-gray-500 text-sm">{t('Категорий пока нет')}</p>}
       <div className="space-y-2">
         {categories.map(c => (
           <div key={c.id} className="rounded-xl px-3 py-2 flex flex-wrap items-center gap-2" style={{ backgroundColor: '#242424' }}>
             {editing?.id === c.id ? (
               <>
                 <TextInput value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} className="flex-1 min-w-[140px]" />
-                <Button variant="primary" disabled={busy} onClick={handleRename}>Сохранить</Button>
-                <Button disabled={busy} onClick={() => setEditing(null)}>Отмена</Button>
+                <Button variant="primary" disabled={busy} onClick={handleRename}>{t('Сохранить')}</Button>
+                <Button disabled={busy} onClick={() => setEditing(null)}>{t('Отмена')}</Button>
               </>
             ) : (
               <>
                 <span className="flex-1 min-w-0 text-white text-sm break-words">{c.name}</span>
-                <Button disabled={busy} onClick={() => setEditing({ id: c.id, name: c.name })}>Переименовать</Button>
-                <Button variant="danger" disabled={busy} onClick={() => handleDelete(c)}>Удалить</Button>
+                <Button disabled={busy} onClick={() => setEditing({ id: c.id, name: c.name })}>{t('Переименовать')}</Button>
+                <Button variant="danger" disabled={busy} onClick={() => handleDelete(c)}>{t('Удалить')}</Button>
               </>
             )}
           </div>
@@ -179,7 +180,7 @@ export default function ServicesPage() {
     const result = categories.map(c => ({ key: `c${c.id}`, name: c.name, items: visible.filter(s => s.category === c.id) }))
     const known = new Set(categories.map(c => c.id))
     const rest = visible.filter(s => s.category === null || s.category === undefined || !known.has(s.category))
-    if (rest.length) result.push({ key: 'none', name: 'Без категории', items: rest })
+    if (rest.length) result.push({ key: 'none', name: t('Без категории'), items: rest })
     return result.filter(g => g.items.length || isManager)
   }, [services, categories, showHidden, isManager])
 
@@ -200,27 +201,27 @@ export default function ServicesPage() {
 
   return (
     <div className="px-4 md:px-6 py-5 max-w-4xl">
-      <PageHeader title="Услуги" subtitle={isManager ? 'Скрытые услуги не видны на сайте записи' : 'Только просмотр'}>
+      <PageHeader title={t('Услуги')} subtitle={isManager ? t('Скрытые услуги не видны на сайте записи') : t('Только просмотр')}>
         {isManager && (
           <>
-            <Button onClick={() => setCategoriesOpen(true)}>Категории</Button>
-            <Button variant="primary" onClick={() => setEditing({ service: null })}>+ Услуга</Button>
+            <Button onClick={() => setCategoriesOpen(true)}>{t('Категории')}</Button>
+            <Button variant="primary" onClick={() => setEditing({ service: null })}>{t('+ Услуга')}</Button>
           </>
         )}
       </PageHeader>
 
-      <Checkbox checked={showHidden} onChange={setShowHidden} label={`Показать скрытые${hiddenCount ? ` (${hiddenCount})` : ''}`} className="mb-3" />
+      <Checkbox checked={showHidden} onChange={setShowHidden} label={t('Показать скрытые{value}', { value: hiddenCount ? ` (${hiddenCount})` : '' })} className="mb-3" />
 
       <ErrorText className="mb-3">{error || actionError}</ErrorText>
       {!services && !error && <Spinner />}
 
-      {services && groups.length === 0 && <p className="text-gray-500 text-sm py-6">Услуг пока нет</p>}
+      {services && groups.length === 0 && <p className="text-gray-500 text-sm py-6">{t('Услуг пока нет')}</p>}
 
       <div className="space-y-6">
         {groups.map(group => (
           <section key={group.key}>
             <h2 className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-2">{group.name}</h2>
-            {group.items.length === 0 && <p className="text-gray-600 text-sm">Нет услуг</p>}
+            {group.items.length === 0 && <p className="text-gray-600 text-sm">{t('Нет услуг')}</p>}
             <div className="space-y-2">
               {group.items.map(s => (
                 <div
@@ -231,15 +232,15 @@ export default function ServicesPage() {
                   <div className="flex-1 min-w-[160px]">
                     <div className="text-white text-sm font-medium break-words">
                       {s.name}
-                      {!s.is_active && <span className="text-gray-500 font-normal"> · скрыта</span>}
+                      {!s.is_active && <span className="text-gray-500 font-normal">{' '}{t('· скрыта')}</span>}
                     </div>
                     <div className="text-gray-500 text-xs mt-0.5">{formatDuration(s.duration)} · {formatPrice(s.price)}</div>
                   </div>
                   {isManager && (
                     <div className="flex gap-2">
-                      <Button onClick={() => setEditing({ service: s })}>Изменить</Button>
+                      <Button onClick={() => setEditing({ service: s })}>{t('Изменить')}</Button>
                       <Button disabled={busyId === s.id} onClick={() => toggleActive(s)}>
-                        {s.is_active ? 'Скрыть' : 'Вернуть'}
+                        {s.is_active ? t('Скрыть') : t('Вернуть')}
                       </Button>
                     </div>
                   )}

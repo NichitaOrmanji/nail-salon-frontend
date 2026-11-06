@@ -6,6 +6,7 @@ import Spinner from '../../components/layout/Spinner'
 import { fetchPendingAppointments, updateAppointment, MAX_PENDING_ITEMS } from '../api/appointments'
 import { notifyDataChanged, useAutoRefresh } from '../utils/events'
 import { formatShortDate } from '../utils/time'
+import { t } from '../../i18n'
 
 // Новые (ожидающие подтверждения) записи — все будущие, как в бейдже «Новые: N»
 export default function NewAppointmentsModal({ onClose }) {
@@ -27,7 +28,7 @@ export default function NewAppointmentsModal({ onClose }) {
   useAutoRefresh(load)
 
   async function setStatus(a, status) {
-    if (status === 'cancelled' && !window.confirm(`Отменить запись ${a.client_name} на ${formatShortDate(a.date)}, ${a.start_time}?`)) return
+    if (status === 'cancelled' && !window.confirm(t('Отменить запись {client_name} на {value}, {start_time}?', { client_name: a.client_name, value: formatShortDate(a.date), start_time: a.start_time }))) return
     setActionError(null)
     setBusyId(a.id)
     try {
@@ -46,16 +47,16 @@ export default function NewAppointmentsModal({ onClose }) {
   }
 
   return (
-    <Modal title="Новые записи" onClose={onClose} maxWidth="sm:max-w-2xl">
+    <Modal title={t('Новые записи')} onClose={onClose} maxWidth="sm:max-w-2xl">
       {items === null && !error && <Spinner />}
       <ErrorText className="mb-3">{error || actionError}</ErrorText>
       {items && items.length === 0 && (
-        <p className="text-gray-500 text-sm text-center py-10">Новых записей нет</p>
+        <p className="text-gray-500 text-sm text-center py-10">{t('Новых записей нет')}</p>
       )}
       {items && items.length > 0 && (
         <div className="space-y-3">
           {items.length >= MAX_PENDING_ITEMS && (
-            <p className="text-gray-500 text-xs">Показаны первые {MAX_PENDING_ITEMS} записей — подтвердите их, чтобы увидеть остальные</p>
+            <p className="text-gray-500 text-xs">{t('Показаны первые {MAX_PENDING_ITEMS} записей — подтвердите их, чтобы увидеть остальные', { MAX_PENDING_ITEMS })}</p>
           )}
           {items.map(a => (
             <div key={a.id} className="rounded-2xl p-4" style={{ backgroundColor: '#242424' }}>
@@ -63,9 +64,9 @@ export default function NewAppointmentsModal({ onClose }) {
                 <div className="text-white text-sm font-semibold">
                   {formatShortDate(a.date)}, {a.start_time}–{a.end_time}
                 </div>
-                <div className="text-gray-400 text-xs">{a.master?.name || 'Без мастера'}</div>
+                <div className="text-gray-400 text-xs">{a.master?.name || t('Без мастера')}</div>
               </div>
-              <div className="text-gray-300 text-sm mt-1 break-words">{a.service?.name || 'Услуга не указана'}</div>
+              <div className="text-gray-300 text-sm mt-1 break-words">{a.service?.name || t('Услуга не указана')}</div>
               <div className="text-sm mt-1 break-words">
                 <span className="text-white">{a.client_name}</span>
                 {a.client_phone && (
@@ -76,9 +77,9 @@ export default function NewAppointmentsModal({ onClose }) {
                 )}
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
-                <Button variant="primary" disabled={busyId === a.id} onClick={() => setStatus(a, 'confirmed')}>Подтвердить</Button>
-                <Button variant="danger" disabled={busyId === a.id} onClick={() => setStatus(a, 'cancelled')}>Отменить</Button>
-                <Button onClick={() => openInJournal(a)}>Открыть в журнале</Button>
+                <Button variant="primary" disabled={busyId === a.id} onClick={() => setStatus(a, 'confirmed')}>{t('Подтвердить')}</Button>
+                <Button variant="danger" disabled={busyId === a.id} onClick={() => setStatus(a, 'cancelled')}>{t('Отменить')}</Button>
+                <Button onClick={() => openInJournal(a)}>{t('Открыть в журнале')}</Button>
               </div>
             </div>
           ))}

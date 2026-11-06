@@ -1,4 +1,5 @@
 import { addDays, timeToMin, todayString, weekdayIndex } from './time'
+import { t } from '../../i18n'
 
 // Сетка журнала: 30 минут = 48px
 export const SLOT_MINUTES = 30
@@ -68,7 +69,7 @@ export function buildWeekColumns({ masters, appointments = [], date, master, day
     const names = new Map(masters.map(m => [m.id, m.name]))
     return {
       laneIds,
-      laneNames: laneIds?.map(id => (id === 'none' ? 'Без мастера' : names.get(id) || '')),
+      laneNames: laneIds?.map(id => (id === 'none' ? t('Без мастера') : names.get(id) || '')),
       key: day,
       date: day,
       week: true,

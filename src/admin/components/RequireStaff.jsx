@@ -2,6 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import Spinner from '../../components/layout/Spinner'
 import { Button } from './ui'
+import { t } from '../../i18n'
 
 // Пускает дальше только вошедший персонал, иначе — на страницу входа
 export default function RequireStaff({ children }) {
@@ -22,8 +23,8 @@ export default function RequireStaff({ children }) {
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center" style={{ backgroundColor: '#111111' }}>
         <p className="text-red-400 text-sm">{meError}</p>
         <div className="flex gap-2">
-          <Button variant="primary" onClick={() => refreshMe().catch(() => {})}>Повторить</Button>
-          <Button onClick={logout}>Выйти</Button>
+          <Button variant="primary" onClick={() => refreshMe().catch(() => {})}>{t('Повторить')}</Button>
+          <Button onClick={logout}>{t('Выйти')}</Button>
         </div>
       </div>
     )

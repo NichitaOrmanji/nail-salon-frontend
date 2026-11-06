@@ -180,7 +180,7 @@ const TOPICS_RO = [
       <>
         <p>Moduri <B>Zi</B> și <B>Săptămână</B>, filtru pe specialist, butonul <B>Astăzi</B>. Programare nouă — <B>+ Programare</B> sau apăsați pe o oră liberă.</p>
         <p>Programarea online vine cu statutul „așteaptă confirmare” dacă în Setări confirmarea automată e oprită. Clientul o poate confirma în Telegram; dacă nu are Telegram — sunați-l și apăsați <B>Confirmă</B> în fișa programării.</p>
-        <p>În fișa programării: <B>A venit</B>, <B>Nu a venit</B>, <B>Anulează</B>, <B>Mută/modifică</B>, <B>Revino</B> (dacă ați marcat din greșeală). Clientul cu Telegram primește mesaj despre anulare și mutare.</p>
+        <p>În fișa programării: <B>A venit</B>, <B>Nu a venit</B>, <B>Anulează</B>, <B>Mută/modifică</B>, <B>Restabilește</B> (dacă ați marcat din greșeală). Clientul cu Telegram primește mesaj despre anulare și mutare.</p>
         <p>⛔ lângă nume — clientul e în lista neagră.</p>
       </>
     ),

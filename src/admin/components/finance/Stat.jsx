@@ -1,3 +1,4 @@
+import { t } from '../../../i18n'
 // Плитка показателя: подпись, значение, пояснение
 export default function Stat({ label, value, hint, color }) {
   return (
@@ -22,7 +23,7 @@ export function Section({ title, children, action }) {
 }
 
 // Таблица: columns — [{ key, label, align, render }]
-export function Table({ columns, rows, empty = 'Нет данных', rowKey = r => r.id }) {
+export function Table({ columns, rows, empty = t('Нет данных'), rowKey = r => r.id }) {
   if (!rows.length) return <p className="text-gray-500 text-sm">{empty}</p>
   return (
     <div className="overflow-x-auto rounded-2xl" style={{ border: '1px solid #2e2e2e' }}>

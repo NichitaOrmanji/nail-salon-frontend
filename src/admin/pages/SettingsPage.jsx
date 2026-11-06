@@ -177,34 +177,34 @@ function SalonSettings() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!form.name.trim()) {
-      setError('Укажите название салона')
+      setError(t('Укажите название салона'))
       return
     }
     const latitude = parseCoordinate(form.latitude)
     const longitude = parseCoordinate(form.longitude)
     if (Number.isNaN(latitude) || (latitude !== null && Math.abs(latitude) > 90)) {
-      setError('Широта — число от -90 до 90')
+      setError(t('Широта — число от -90 до 90'))
       return
     }
     if (Number.isNaN(longitude) || (longitude !== null && Math.abs(longitude) > 180)) {
-      setError('Долгота — число от -180 до 180')
+      setError(t('Долгота — число от -180 до 180'))
       return
     }
 
     const cancelHours = form.cancel_hours.trim() === '' ? 0 : Number(form.cancel_hours)
     if (!Number.isInteger(cancelHours) || cancelHours < 0 || cancelHours > 168) {
-      setError('Срок отмены — целое число часов от 0 до 168')
+      setError(t('Срок отмены — целое число часов от 0 до 168'))
       return
     }
 
     const penaltyPercent = form.penalty_percent.trim() === '' ? 0 : Number(form.penalty_percent)
     if (!Number.isInteger(penaltyPercent) || penaltyPercent < 0 || penaltyPercent > 100) {
-      setError('Штраф — целое число процентов от 0 до 100')
+      setError(t('Штраф — целое число процентов от 0 до 100'))
       return
     }
     const lateHours = form.late_cancel_hours.trim() === '' ? 0 : Number(form.late_cancel_hours)
     if (!Number.isInteger(lateHours) || lateHours < 0 || lateHours > 48) {
-      setError('Поздняя отмена — целое число часов от 0 до 48')
+      setError(t('Поздняя отмена — целое число часов от 0 до 48'))
       return
     }
 
@@ -250,8 +250,8 @@ function SalonSettings() {
       {photos && (
         <section className="rounded-2xl p-4 mb-5 space-y-5" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
           <PhotoField
-            label="Главное фото салона"
-            hint="Шапка сайта записи. Лучше горизонтальное. Сохраняется сразу."
+            label={t('Главное фото салона')}
+            hint={t('Шапка сайта записи. Лучше горизонтальное. Сохраняется сразу.')}
             url={photos.main_photo}
             shape="wide"
             maxSide={1600}
@@ -259,8 +259,8 @@ function SalonSettings() {
             onRemove={() => changePhoto('main-photo', null)}
           />
           <PhotoField
-            label="Логотип"
-            hint="Квадратный, PNG с прозрачным фоном тоже подойдёт."
+            label={t('Логотип')}
+            hint={t('Квадратный, PNG с прозрачным фоном тоже подойдёт.')}
             url={photos.logo}
             shape="round"
             maxSide={600}
@@ -272,33 +272,32 @@ function SalonSettings() {
       )}
       {form && (
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          <Field label="Название">
+          <Field label={t('Название')}>
             <TextInput value={form.name} onChange={e => set('name', e.target.value)} />
           </Field>
-          <Field label="Адрес">
+          <Field label={t('Адрес')}>
             <TextInput value={form.address} onChange={e => set('address', e.target.value)} />
           </Field>
-          <Field label="Телефон">
+          <Field label={t('Телефон')}>
             <TextInput type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} />
           </Field>
-          <Field label="Описание">
+          <Field label={t('Описание')}>
             <TextArea rows={4} value={form.description} onChange={e => set('description', e.target.value)} />
           </Field>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label="Широта">
+            <Field label={t('Широта')}>
               <TextInput inputMode="decimal" value={form.latitude} onChange={e => set('latitude', e.target.value)} onPaste={handleCoordinatePaste} placeholder="47.044786" />
             </Field>
-            <Field label="Долгота">
+            <Field label={t('Долгота')}>
               <TextInput inputMode="decimal" value={form.longitude} onChange={e => set('longitude', e.target.value)} onPaste={handleCoordinatePaste} placeholder="28.860794" />
             </Field>
           </div>
           <p className="text-gray-500 text-xs -mt-2">
-            Координаты: правый клик по точке в Google Maps → нажмите на числа (скопируются широта и долгота).
-            Можно вставить пару целиком в любое поле; запятая в числе заменится точкой.
+            {t('Координаты: правый клик по точке в Google Maps → нажмите на числа (скопируются широта и долгота). Можно вставить пару целиком в любое поле; запятая в числе заменится точкой.')}
           </p>
           <Field
-            label="Клиент может отменить запись сам не позже чем за, часов"
-            hint="0 — до самого начала визита. Позже клиент видит «позвоните в салон»; персонал отменяет в журнале всегда."
+            label={t('Клиент может отменить запись сам не позже чем за, часов')}
+            hint={t('0 — до самого начала визита. Позже клиент видит «позвоните в салон»; персонал отменяет в журнале всегда.')}
           >
             <TextInput inputMode="numeric" value={form.cancel_hours} onChange={e => set('cancel_hours', e.target.value.replace(/\D/g, ''))} placeholder="0" />
           </Field>
@@ -310,31 +309,28 @@ function SalonSettings() {
               onChange={e => set('auto_confirm', e.target.checked)}
             />
             <span>
-              <span className="block text-white text-sm font-semibold">Подтверждать онлайн-записи автоматически</span>
+              <span className="block text-white text-sm font-semibold">{t('Подтверждать онлайн-записи автоматически')}</span>
               <span className="block text-gray-500 text-xs mt-1">
-                Включено — запись с сайта сразу «подтверждена», клиент видит это на экране; Telegram не обязателен.
-                Выключено — запись ждёт подтверждения: клиент подтверждает её в Telegram или салон — в журнале
-                (удобно, если клиент без Telegram: позвоните ему и подтвердите).
+                {t('Включено — запись с сайта сразу «подтверждена», клиент видит это на экране; Telegram не обязателен. Выключено — запись ждёт подтверждения: клиент подтверждает её в Telegram или салон — в журнале (удобно, если клиент без Telegram: позвоните ему и подтвердите).')}
               </span>
             </span>
           </label>
           <div className="rounded-2xl p-4 space-y-3" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
-            <div className="text-white text-sm font-semibold">Чёрный список</div>
+            <div className="text-white text-sm font-semibold">{t('Чёрный список')}</div>
             <p className="text-gray-500 text-xs">
-              Клиент, который не пришёл или отменил запись слишком поздно, попадает в чёрный список. Штраф он
-              оплачивает в салоне при следующем визите — панель добавит его к счёту. Правило показывается клиентам при записи.
+              {t('Клиент, который не пришёл или отменил запись слишком поздно, попадает в чёрный список. Штраф он оплачивает в салоне при следующем визите — панель добавит его к счёту. Правило показывается клиентам при записи.')}
             </p>
-            <Field label="Штраф, % от стоимости пропущенной услуги" hint="0 — штрафы выключены">
+            <Field label={t('Штраф, % от стоимости пропущенной услуги')} hint={t('0 — штрафы выключены')}>
               <TextInput inputMode="numeric" value={form.penalty_percent} onChange={e => set('penalty_percent', e.target.value.replace(/\D/g, ''))} placeholder="50" />
             </Field>
-            <Field label="Поздняя отмена — меньше чем за, часов до визита" hint="0 — штрафовать только за неявку">
+            <Field label={t('Поздняя отмена — меньше чем за, часов до визита')} hint={t('0 — штрафовать только за неявку')}>
               <TextInput inputMode="numeric" value={form.late_cancel_hours} onChange={e => set('late_cancel_hours', e.target.value.replace(/\D/g, ''))} placeholder="3" />
             </Field>
           </div>
           <ErrorText>{error}</ErrorText>
           <div className="flex items-center justify-end gap-3">
-            {done && <span className="text-xs" style={{ color: '#34d399' }}>Сохранено</span>}
-            <Button type="submit" variant="primary" disabled={saving}>{saving ? 'Сохраняем...' : 'Сохранить'}</Button>
+            {done && <span className="text-xs" style={{ color: '#34d399' }}>{t('Сохранено')}</span>}
+            <Button type="submit" variant="primary" disabled={saving}>{saving ? t('Сохраняем...') : t('Сохранить')}</Button>
           </div>
         </form>
       )}

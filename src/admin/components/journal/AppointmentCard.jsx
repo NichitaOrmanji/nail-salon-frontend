@@ -15,6 +15,7 @@ import { formatShortDate, todayString } from '../../utils/time'
 import { ACTIVE_STATUSES } from '../../utils/statuses'
 import { DISCARD_CONFIRM } from '../../utils/journal'
 import { formatDuration, formatPrice } from '../../../utils/format'
+import { t } from '../../../i18n'
 
 function Row({ label, children }) {
   return (
@@ -67,7 +68,7 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
 
   // Закрыть карточку; несохранённую заметку — только после подтверждения
   function requestClose() {
-    if (notesChanged && !window.confirm(DISCARD_CONFIRM)) return
+    if (notesChanged && !window.confirm(t(DISCARD_CONFIRM))) return
     onClose()
   }
 
@@ -106,7 +107,7 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
   }, [topAnchorRef, hidden])
 
   async function removePayment() {
-    if (!window.confirm('Отменить оплату? Сумма уйдёт из кассы и отчётов.')) return
+    if (!window.confirm(t('Отменить оплату? Сумма уйдёт из кассы и отчётов.'))) return
     setError(null)
     setBusy(true)
     try {
@@ -139,18 +140,18 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
       className={`fixed inset-0 sm:left-auto sm:top-[var(--card-top,0px)] sm:w-[360px] lg:w-[400px] z-40 flex-col shadow-2xl ${hidden ? 'hidden' : 'flex'}`}
       style={{ backgroundColor: '#1a1a1a', borderLeft: '1px solid #2e2e2e' }}
       role="dialog"
-      aria-label="Карточка записи"
+      aria-label={t('Карточка записи')}
     >
       <div className="flex items-center gap-3 pl-5 pr-2 py-2 flex-shrink-0" style={{ borderBottom: '1px solid #2e2e2e' }}>
         <div className="flex-1 min-w-0">
-          <div className="text-white text-base font-semibold truncate">{a.client_name || 'Без имени'}</div>
+          <div className="text-white text-base font-semibold truncate">{a.client_name || t('Без имени')}</div>
           <div className="text-gray-500 text-xs">{formatShortDate(a.date)}, {a.start_time}–{a.end_time}</div>
         </div>
         <StatusBadge status={a.status} />
         <button
           type="button"
           onClick={requestClose}
-          aria-label="Закрыть"
+          aria-label={t('Закрыть')}
           className="w-11 h-11 rounded-xl flex items-center justify-center text-gray-400 active:scale-90"
         >
           <IconClose />
@@ -161,13 +162,13 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
         {a.blacklist && (
           <div className="rounded-xl px-3 py-2 my-2 text-sm" role="alert"
             style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171', color: '#fca5a5' }}>
-            <div className="font-semibold" style={{ color: '#f87171' }}>⛔ Клиент в чёрном списке</div>
+            <div className="font-semibold" style={{ color: '#f87171' }}>{t('⛔ Клиент в чёрном списке')}</div>
             {Number(a.blacklist.debt) > 0
-              ? <div>Долг {formatMoney(a.blacklist.debt)} — получить при оплате этого визита</div>
-              : <div>Долгов нет, нарушений: {a.blacklist.count}</div>}
+              ? <div>{t('Долг')}{' '}{formatMoney(a.blacklist.debt)}{' '}{t('— получить при оплате этого визита')}</div>
+              : <div>{t('Долгов нет, нарушений: {count}', { count: a.blacklist.count })}</div>}
           </div>
         )}
-        <Row label="Телефон">
+        <Row label={t('Телефон')}>
           {a.client_phone
             ? <a href={`tel:${a.client_phone}`} style={{ color: '#f472b6' }}>{a.client_phone}</a>
             : '—'}
@@ -175,50 +176,50 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
             <Link
               to="/admin-panel/clients"
               state={{ phone: a.client_phone }}
-              onClick={e => { if (notes !== baseNotes && !window.confirm(DISCARD_CONFIRM)) e.preventDefault() }}
+              onClick={e => { if (notes !== baseNotes && !window.confirm(t(DISCARD_CONFIRM))) e.preventDefault() }}
               className="ml-3 text-xs text-gray-400 underline"
             >
-              Карточка клиента
+              {t('Карточка клиента')}
             </Link>
           )}
         </Row>
         {a.client_email && <Row label="Email">{a.client_email}</Row>}
-        <Row label="Услуга">
-          {a.service ? a.service.name : 'Не указана'}
-          {a.service && a.service.is_active === false && <span className="text-gray-500"> (скрыта)</span>}
+        <Row label={t('Услуга')}>
+          {a.service ? a.service.name : t('Не указана')}
+          {a.service && a.service.is_active === false && <span className="text-gray-500">{' '}{t('(скрыта)')}</span>}
         </Row>
-        <Row label="Мастер">
-          {a.master ? a.master.name : 'Без мастера'}
-          {a.master && a.master.is_active === false && <span className="text-gray-500"> (скрыт)</span>}
+        <Row label={t('Мастер')}>
+          {a.master ? a.master.name : t('Без мастера')}
+          {a.master && a.master.is_active === false && <span className="text-gray-500">{' '}{t('(скрыт)')}</span>}
         </Row>
-        <Row label="Дата и время">{formatShortDate(a.date)}, {a.start_time}–{a.end_time}</Row>
-        <Row label="Длительность">{formatDuration(a.duration)}</Row>
-        <Row label="Цена">{a.service ? formatPrice(a.service.price) : '—'}</Row>
-        <Row label="Оплата">
+        <Row label={t('Дата и время')}>{formatShortDate(a.date)}, {a.start_time}–{a.end_time}</Row>
+        <Row label={t('Длительность')}>{formatDuration(a.duration)}</Row>
+        <Row label={t('Цена')}>{a.service ? formatPrice(a.service.price) : '—'}</Row>
+        <Row label={t('Оплата')}>
           {paid ? (
             <span style={{ color: '#34d399' }}>
               {formatMoney(a.payment.amount)} · {methodLabel(a.payment.method)}
-              {Number(a.payment.discount) > 0 && <span className="text-gray-500"> (скидка {formatMoney(a.payment.discount)})</span>}
+              {Number(a.payment.discount) > 0 && <span className="text-gray-500">{' '}{t('(скидка')}{' '}{formatMoney(a.payment.discount)})</span>}
             </span>
-          ) : <span className="text-gray-500">не оплачено</span>}
+          ) : <span className="text-gray-500">{t('не оплачено')}</span>}
         </Row>
         {a.penalty && (
-          <Row label="Штраф">
+          <Row label={t('Штраф')}>
             <span style={{ color: PENALTY_STATUS[a.penalty.status]?.color }}>
               {formatMoney(a.penalty.amount)} · {PENALTY_KIND[a.penalty.kind]} · {PENALTY_STATUS[a.penalty.status]?.label}
             </span>
           </Row>
         )}
-        <Row label="Источник">{a.source === 'staff' ? 'Персонал' : 'Онлайн'}</Row>
-        <Row label="Статус"><StatusBadge status={a.status} /></Row>
+        <Row label={t('Источник')}>{a.source === 'staff' ? t('Персонал') : t('Онлайн')}</Row>
+        <Row label={t('Статус')}><StatusBadge status={a.status} /></Row>
 
         <div className="py-3">
-          <div className="text-gray-500 text-sm mb-2">Заметка</div>
-          <TextArea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Заметка для персонала" aria-label="Заметка" />
+          <div className="text-gray-500 text-sm mb-2">{t('Заметка')}</div>
+          <TextArea value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('Заметка для персонала')} aria-label={t('Заметка')} />
           {notesChanged && (
             <div className="flex justify-end gap-2 mt-2">
-              <Button onClick={() => setNotes(serverNotes)} disabled={busy}>Отменить</Button>
-              <Button variant="primary" onClick={() => patch({ notes })} disabled={busy}>Сохранить</Button>
+              <Button onClick={() => setNotes(serverNotes)} disabled={busy}>{t('Отменить')}</Button>
+              <Button variant="primary" onClick={() => patch({ notes })} disabled={busy}>{t('Сохранить')}</Button>
             </div>
           )}
         </div>
@@ -230,71 +231,71 @@ export default function AppointmentCard({ appointment: a, isManager, hidden = fa
         <div className="flex-shrink-0 px-5 py-3 flex flex-wrap gap-2" style={{ borderTop: '1px solid #2e2e2e' }}>
           {error && <p role="alert" className="basis-full text-red-400 text-sm">{error}</p>}
           {canPay && (
-            <Button variant="primary" disabled={busy} onClick={() => setCheckoutOpen(true)}>Оплата</Button>
+            <Button variant="primary" disabled={busy} onClick={() => setCheckoutOpen(true)}>{t('Оплата')}</Button>
           )}
           {paid && isOwner && (
-            <Button disabled={busy} onClick={removePayment}>Отменить оплату</Button>
+            <Button disabled={busy} onClick={removePayment}>{t('Отменить оплату')}</Button>
           )}
           {a.status === 'pending' && (
-            <Button variant={canPay ? 'secondary' : 'primary'} disabled={busy} onClick={() => patch({ status: 'confirmed' })}>Подтвердить</Button>
+            <Button variant={canPay ? 'secondary' : 'primary'} disabled={busy} onClick={() => patch({ status: 'confirmed' })}>{t('Подтвердить')}</Button>
           )}
           {canMarkVisit && (
             <>
-              <Button disabled={busy} style={{ color: '#60a5fa' }} onClick={() => patch({ status: 'completed' })}>Пришёл</Button>
+              <Button disabled={busy} style={{ color: '#60a5fa' }} onClick={() => patch({ status: 'completed' })}>{t('Пришёл')}</Button>
               <Button disabled={busy} style={{ color: '#f87171' }}
-                onClick={() => (fee > 0 ? setPenaltyAsk('no_show') : patch({ status: 'no_show' }))}>Не пришёл</Button>
+                onClick={() => (fee > 0 ? setPenaltyAsk('no_show') : patch({ status: 'no_show' }))}>{t('Не пришёл')}</Button>
             </>
           )}
           {isActive && (
             <Button variant="danger" disabled={busy}
               onClick={() => (fee > 0 && isLateCancel(a, me?.company)
                 ? setPenaltyAsk('cancel')
-                : patch({ status: 'cancelled' }, 'Отменить запись?'))}>Отменить</Button>
+                : patch({ status: 'cancelled' }, t('Отменить запись?')))}>{t('Отменить')}</Button>
           )}
           {canRestore && (
             <Button
               disabled={busy}
               onClick={() => patch(
                 { status: 'confirmed' },
-                a.status === 'completed' ? 'Вернуть запись в «Подтверждена»? Отметка «Пришёл» снимется.' : undefined
+                a.status === 'completed' ? t('Вернуть запись в «Подтверждена»? Отметка «Пришёл» снимется.') : undefined
               )}
             >
-              Вернуть
+              {t('Вернуть')}
             </Button>
           )}
           {isManager && !paid && (
-            <Button disabled={busy} onClick={() => onEdit(a)}>Перенести/изменить</Button>
+            <Button disabled={busy} onClick={() => onEdit(a)}>{t('Перенести/изменить')}</Button>
           )}
         </div>
       )}
       {penaltyAsk === 'no_show' && (
         <ChoiceDialog
-          title="Клиент не пришёл"
+          title={t('Клиент не пришёл')}
           choices={[
-            { value: 'penalty', label: `В чёрный список, штраф ${formatMoney(fee)}`, variant: 'danger' },
-            { value: 'skip', label: 'Без штрафа (уважительная причина)' },
+            { value: 'penalty', label: t('В чёрный список, штраф {value}', { value: formatMoney(fee) }), variant: 'danger' },
+            { value: 'skip', label: t('Без штрафа (уважительная причина)') },
           ]}
           onChoose={choice => {
             setPenaltyAsk(null)
             if (choice) patch({ status: 'no_show', penalty: choice === 'penalty' })
           }}
         >
-          <p>Штраф {me?.company?.penalty_percent}% стоимости услуги клиент оплатит в салоне при следующем визите.</p>
+          <p>{t('Штраф {penalty_percent}% стоимости услуги клиент оплатит в салоне при следующем визите.', { penalty_percent: me?.company?.penalty_percent })}</p>
         </ChoiceDialog>
       )}
       {penaltyAsk === 'cancel' && (
         <ChoiceDialog
-          title={`Отмена меньше чем за ${me?.company?.late_cancel_hours} ч до визита`}
+          title={t('Отмена меньше чем за {late_cancel_hours} ч до визита', { late_cancel_hours: me?.company?.late_cancel_hours })}
           choices={[
-            { value: 'penalty', label: `Клиент отменил поздно — штраф ${formatMoney(fee)}`, variant: 'danger' },
-            { value: 'skip', label: 'Отменить без штрафа (отменяет салон)' },
+            { value: 'penalty', label: t('Клиент отменил поздно — штраф {value}', { value: formatMoney(fee) }), variant: 'danger' },
+            { value: 'skip', label: t('Отменить без штрафа (отменяет салон)') },
           ]}
           onChoose={choice => {
             setPenaltyAsk(null)
             if (choice) patch({ status: 'cancelled', penalty: choice === 'penalty' })
           }}
         >
-          <p>Если запись отменяет клиент, он попадёт в чёрный список и оплатит штраф при следующем визите.</p>
+          <p>{t('Если запись отменяет клиент, он попадёт в чёрный список и оплатит штраф при следующем визите.')}</p>
         </ChoiceDialog>
       )}
       {checkoutOpen && (

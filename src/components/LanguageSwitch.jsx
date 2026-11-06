@@ -1,10 +1,10 @@
-import { LANGS, setLang, useLang } from '../i18n'
+import { LANGS, setLang, useLang, t } from '../i18n'
 
 // Переключатель языка сайта записи: RU / RO
 export default function LanguageSwitch({ className = '' }) {
   const lang = useLang()
   return (
-    <div className={`inline-flex rounded-full p-0.5 text-xs font-semibold ${className}`} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} role="group" aria-label="Язык / Limba">
+    <div className={`inline-flex rounded-full p-0.5 text-xs font-semibold ${className}`} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} role="group" aria-label={t('Язык / Limba')}>
       {LANGS.map(code => (
         <button
           key={code}
