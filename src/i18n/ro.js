@@ -289,4 +289,8 @@ export default {
   'Напоминание': 'Memento',
   'Укажите email — пришлём подтверждение со ссылкой для переноса и напоминание.': 'Indicați emailul — vă trimitem confirmarea cu link pentru mutare și un memento.',
   'Напомним в Telegram, если подключите его, или на email.': 'Vă reamintim în Telegram, dacă îl conectați, sau pe email.',
+  'Можно выбрать несколько — запишем на них подряд, в один визит.': 'Puteți alege mai multe — vă programăm la ele una după alta, într-o singură vizită.',
+  '{count} услуги': '{count} servicii',
+  'от': 'de la',
+  'Ваш визит: {start} – {end}': 'Vizita dvs.: {start} – {end}',
 }

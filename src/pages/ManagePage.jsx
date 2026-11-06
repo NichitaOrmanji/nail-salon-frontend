@@ -118,8 +118,8 @@ export default function ManagePage() {
   function addToCalendar() {
     const a = appointment
     downloadIcs({
-      title: `${a.service?.name || t('Визит')} — ${a.salon.name}`,
-      date: a.date, start: a.start_time, end: a.end_time,
+      title: `${a.visit?.parts?.length > 1 ? a.visit.parts.map(p => p.service_name).join(' + ') : (a.service?.name || t('Визит'))} — ${a.salon.name}`,
+      date: a.date, start: a.visit?.start_time || a.start_time, end: a.visit?.end_time || a.end_time,
       location: a.salon.address,
       description: a.master ? t('Мастер: {name}', { name: a.master.name }) : '',
     })
@@ -145,6 +145,8 @@ export default function ManagePage() {
   }
 
   const status = STATUS[appointment.status] || STATUS.pending
+  // Визит из нескольких услуг: отменяются и переносятся все части сразу
+  const visit = appointment.visit?.parts?.length > 1 ? appointment.visit : null
   const lang = getLang()
   const active = appointment.status === 'pending' || appointment.status === 'confirmed'
 
@@ -165,12 +167,27 @@ export default function ManagePage() {
 
       <div className="mx-6 px-4 rounded-2xl" style={{ backgroundColor: '#212121' }}>
         <Row label={t('Салон')}>{appointment.salon.name}</Row>
-        {appointment.service && <Row label={t('Услуга')}>{appointment.service.name}</Row>}
-        {appointment.master && <Row label={t('Специалист')}>{appointment.master.name}</Row>}
-        <Row label={t('Дата и время')}>
-          {t('{date} в {time}', { date: formatDisplayDate(appointment.date, { withYear: false, lang }), time: appointment.start_time })}
-        </Row>
-        {appointment.service && <Row label={t('Длительность')}>{formatDuration(appointment.service.duration)}</Row>}
+        {visit ? (
+          <>
+            <Row label={t('Дата и время')}>
+              {formatDisplayDate(appointment.date, { withYear: false, lang })}, {visit.start_time} – {visit.end_time}
+            </Row>
+            {visit.parts.map(part => (
+              <Row key={`${part.service}-${part.start_time}`} label={part.start_time}>
+                {part.service_name} · {part.master_name}
+              </Row>
+            ))}
+          </>
+        ) : (
+          <>
+            {appointment.service && <Row label={t('Услуга')}>{appointment.service.name}</Row>}
+            {appointment.master && <Row label={t('Специалист')}>{appointment.master.name}</Row>}
+            <Row label={t('Дата и время')}>
+              {t('{date} в {time}', { date: formatDisplayDate(appointment.date, { withYear: false, lang }), time: appointment.start_time })}
+            </Row>
+            {appointment.service && <Row label={t('Длительность')}>{formatDuration(appointment.service.duration)}</Row>}
+          </>
+        )}
         {appointment.salon.address && <Row label={t('Адрес')}>{appointment.salon.address}</Row>}
       </div>
 

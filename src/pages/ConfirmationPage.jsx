@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, Navigate } from 'react-router-dom'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import { useBooking, CONTACT_DRAFT_KEY } from '../context/BookingContext'
-import { createAppointment } from '../api/appointments'
+import { createAppointment, createVisit } from '../api/appointments'
 import { fetchMe } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
 import { fetchSlotsByMaster } from '../api/slots'
@@ -53,7 +53,9 @@ export default function ConfirmationPage() {
   const company = useCompany()
   const honeypotRef = useRef(null)
   const navigate = useNavigate()
-  const { master, service, date, time, reset, getNextRoute } = useBooking()
+  const { master, service, extras, visit, date, time, reset, getNextRoute } = useBooking()
+  // Несколько услуг подряд: части визита выбраны на шаге времени
+  const isVisit = extras.length > 0
   const { isLoggedIn } = useAuth()
 
   // Данные клиента запоминаем, чтобы не вводить их при каждой записи
@@ -111,6 +113,9 @@ export default function ConfirmationPage() {
     return () => { cancelled = true }
   }, [isLoggedIn])
 
+  const visitMinutes = isVisit && visit ? visit.reduce((sum, part) => sum + part.duration, 0) : 0
+  const visitPrice = isVisit && visit ? visit.reduce((sum, part) => sum + Number(part.price), 0) : 0
+
   const phoneValid = phone && isValidPhoneNumber(phone)
   // Красным подсвечиваем после ухода из поля, чтобы не мешать, пока номер набирают
   const phoneInvalid = Boolean(phone) && !phoneValid && phoneTouched
@@ -122,11 +127,7 @@ export default function ConfirmationPage() {
     setSubmitting(true)
 
     try {
-      const masterId = await resolveMasterId({ master, service, date, time })
-      // end_time бэкенд считает сам по длительности услуги
-      const created = await createAppointment({
-        master: masterId,
-        service: service.id,
+      const contact = {
         client_name: name.trim(),
         client_phone: phone,
         client_email: email.trim(),
@@ -137,10 +138,27 @@ export default function ConfirmationPage() {
         reminder_minutes: reminder === '' ? null : Number(reminder),
         // Поле-ловушка: человек его не видит; заполнил — значит бот, сервер запись не примет
         website: honeypotRef.current?.value || '',
-      })
+      }
+      let created
+      if (isVisit) {
+        // Мастера частей подобраны на шаге времени — отправляем именно их
+        created = await createVisit({
+          ...contact,
+          items: visit.map(part => ({ service: part.service, master: part.master })),
+        })
+      } else {
+        const masterId = await resolveMasterId({ master, service, date, time })
+        // end_time бэкенд считает сам по длительности услуги
+        created = await createAppointment({ ...contact, master: masterId, service: service.id })
+      }
       setTelegramUrl(created?.telegram_url || null)
       setConfirmed(created?.status === 'confirmed')
-      setBooked({
+      setBooked(isVisit ? {
+        token: created?.manage_token || null,
+        service: visit.map(part => part.service_name).join(' + '),
+        duration: visitMinutes, date, time,
+        master: [...new Set(visit.map(part => part.master_name))].join(', '),
+      } : {
         token: created?.manage_token || null,
         service: service.name, duration: ownTerms?.duration || service.duration, date, time,
         master: master?.id ? master.name : null,
@@ -248,6 +266,9 @@ export default function ConfirmationPage() {
   if (!service || master === null || !date || !time) {
     return <Navigate to={getNextRoute('confirm')} replace />
   }
+  if (isVisit && !visit?.length) {
+    return <Navigate to="/slots" replace />
+  }
 
   return (
     <div className="min-h-screen pb-10" style={{ backgroundColor: '#1a1a1a' }}>
@@ -263,6 +284,29 @@ export default function ConfirmationPage() {
         </div>
 
         {/* Карточка итога */}
+        {isVisit ? (
+          <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#242424' }}>
+            <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
+              <span className="text-gray-500 text-sm">{t('Дата и время')}</span>
+              <span className="text-white text-sm font-medium">
+                {formatDisplayDate(date, { lang: getLang() })}, {visit[0].start_time} – {visit[visit.length - 1].end_time}
+              </span>
+            </div>
+            {visit.map(part => (
+              <div key={`${part.service}-${part.start_time}`} className="flex justify-between gap-4 px-5 py-3" style={{ borderBottom: '1px solid #2e2e2e' }}>
+                <div className="min-w-0">
+                  <div className="text-white text-sm font-medium wrap-anywhere">{part.service_name}</div>
+                  <div className="text-gray-500 text-xs mt-0.5">{part.start_time} · {part.master_name} · {formatDuration(part.duration, getLang())}</div>
+                </div>
+                <span className="text-white text-sm whitespace-nowrap">{formatPrice(part.price)}</span>
+              </div>
+            ))}
+            <div className="flex justify-between items-center px-5 py-4">
+              <span className="text-gray-500 text-sm">{t('Итого')}</span>
+              <span className="text-white text-base font-bold">{formatPrice(visitPrice)}</span>
+            </div>
+          </div>
+        ) : (
         <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#242424' }}>
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
@@ -291,6 +335,7 @@ export default function ConfirmationPage() {
           </div>
 
         </div>
+        )}
 
         {/* Форма */}
         <div>

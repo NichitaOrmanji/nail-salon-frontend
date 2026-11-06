@@ -5,7 +5,10 @@ const BookingContext = createContext(null)
 const STORAGE_KEY = 'booking'
 // Черновик данных клиента на шаге подтверждения (имя, телефон, комментарий)
 export const CONTACT_DRAFT_KEY = 'booking_contact'
-const EMPTY = { master: null, service: null, date: null, time: null }
+// extras — ещё услуги в том же визите (идут подряд после service); visit — части выбранного времени
+const EMPTY = { master: null, service: null, extras: [], visit: null, date: null, time: null }
+// Сколько услуг можно взять в один визит
+export const MAX_VISIT_SERVICES = 5
 
 // Выбор сохраняется в sessionStorage, чтобы не терялся при обновлении страницы
 function loadState() {
@@ -19,6 +22,8 @@ function loadState() {
 export function BookingProvider({ children }) {
   const [state, setState] = useState(loadState)
   const { master, service, date, time } = state
+  const extras = state.extras || []
+  const visit = state.visit || null
 
   useEffect(() => {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
@@ -28,6 +33,8 @@ export function BookingProvider({ children }) {
   const setService = service => setState(s => ({ ...s, service }))
   const setDate = date => setState(s => ({ ...s, date }))
   const setTime = time => setState(s => ({ ...s, time }))
+  const setExtras = extras => setState(s => ({ ...s, extras }))
+  const setVisit = visit => setState(s => ({ ...s, visit }))
 
   function reset() {
     setState(EMPTY)
@@ -52,6 +59,8 @@ export function BookingProvider({ children }) {
       service, setService,
       date, setDate,
       time, setTime,
+      extras, setExtras,
+      visit, setVisit,
       reset,
       hasProgress,
       getNextRoute
