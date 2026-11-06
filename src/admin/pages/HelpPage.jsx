@@ -1,6 +1,9 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { PageHeader } from '../components/ui'
+import { IconChevronLeft } from '../components/Icons'
+import { getLang, t } from '../../i18n'
 
 // Инструкция для персонала салона. Названия кнопок — как в панели; меняя кнопку, обновите текст.
 
@@ -140,14 +143,138 @@ const TOPICS = [
   },
 ]
 
+// Румынская версия инструкции (те же разделы и ключи, что в TOPICS)
+const TOPICS_RO = [
+  {
+    key: 'start',
+    title: 'Cu ce să începeți (o singură dată)',
+    managers: true,
+    body: (
+      <ol className="list-decimal pl-5 space-y-1">
+        <li><B>Setări</B>: denumirea, adresa, telefonul, fotografii, coordonatele pentru hartă, regulile de anulare și lista neagră.</li>
+        <li><B>Servicii</B>: categorii și servicii cu preț și durată.</li>
+        <li><B>Specialiști</B> → <B>+ Specialist</B>: nume, fotografie, ce servicii face. Tot acolo — <B>Oferă acces</B> în panou (login și parolă pentru specialist).</li>
+        <li><B>Specialiști → Grafice</B>: zilele de lucru și pauza de masă pe o lună înainte.</li>
+        <li><B>Setări</B> (jos în panou, numele dvs.) → <B>Notificări în Telegram</B>: programările noi și anulările vor veni în Telegram-ul salonului.</li>
+        <li><B>Setări → Despre salon → Deschide site-ul ↗</B> — programați-vă singuri și verificați că totul se vede corect.</li>
+        <li><B>Setări → Despre salon</B> — lista de configurare și linkul dvs. de programare: copiere, cod QR, text pentru rețele sociale.</li>
+      </ol>
+    ),
+  },
+  {
+    key: 'schedule',
+    title: 'Graficul specialiștilor și pauza de masă',
+    body: (
+      <>
+        <p><B>Specialiști → Grafice</B> — luna pe zile. Selectați zilele (sau apăsați <B>Toată luna</B>, <B>Zile lucrătoare</B>, <B>Sâ și Du</B>), alegeți <B>Zi de lucru</B>, <B>Zi liberă</B> sau <B>Ca în șablon</B>, indicați orele de lucru și pauza → <B>Aplică</B>.</p>
+        <p>Șablonul săptămânii și „Pauză în toate zilele de lucru” — în fișa specialistului. Ce e setat pe date are prioritate față de șablon.</p>
+        <p>În pauză și în ziua liberă clientul nu se poate programa pe site. Dacă în ziua aleasă există deja programări, panoul vă va avertiza — mutați-le singuri.</p>
+        <p>Specialistul cu acces își vede graficul în secțiunea <B>Programul meu</B>.</p>
+      </>
+    ),
+  },
+  {
+    key: 'journal',
+    title: 'Registru: programări, confirmare, mutare',
+    body: (
+      <>
+        <p>Moduri <B>Zi</B> și <B>Săptămână</B>, filtru pe specialist, butonul <B>Astăzi</B>. Programare nouă — <B>+ Programare</B> sau apăsați pe o oră liberă.</p>
+        <p>Programarea online vine cu statutul „așteaptă confirmare” dacă în Setări confirmarea automată e oprită. Clientul o poate confirma în Telegram; dacă nu are Telegram — sunați-l și apăsați <B>Confirmă</B> în fișa programării.</p>
+        <p>În fișa programării: <B>A venit</B>, <B>Nu a venit</B>, <B>Anulează</B>, <B>Mută/modifică</B>, <B>Revino</B> (dacă ați marcat din greșeală). Clientul cu Telegram primește mesaj despre anulare și mutare.</p>
+        <p>⛔ lângă nume — clientul e în lista neagră.</p>
+      </>
+    ),
+  },
+  {
+    key: 'payment',
+    title: 'Plata vizitei',
+    body: (
+      <>
+        <p>În fișa programării → <B>Plată</B>: metoda (numerar, card, transfer), reducere în % sau lei → <B>Achitat</B>. Programarea se marchează „a venit”.</p>
+        <p>Dacă clientul are o penalitate neachitată, în fereastra de plată apare rândul „Penalitate din lista neagră” — bifa o adaugă la sumă.</p>
+        <p>Ați greșit — <B>Anulează plata</B> (doar proprietarul).</p>
+      </>
+    ),
+  },
+  {
+    key: 'blacklist',
+    title: 'Neprezentare, anulare târzie și lista neagră',
+    body: (
+      <>
+        <p>Ați apăsat <B>Nu a venit</B> (sau anulați programarea cu mai puțin de N ore înainte) — panoul întreabă: <B>În lista neagră, penalitate …</B> sau <B>Fără penalitate</B> (motiv întemeiat).</p>
+        <p>Dacă clientul a anulat târziu singur pe site sau în Telegram — penalitatea se aplică automat.</p>
+        <p>Penalitatea (procentul din Setări) clientul o achită doar în salon la vizita următoare. Se poate programa; la o programare nouă în Telegram-ul salonului vine blocul „Client în lista neagră” cu suma.</p>
+        <p><B>Clienți → Datornici</B> — toți cei care datorează, suma totală și cine când vine (sus — cele mai apropiate vizite). Apăsați pe client — în fișă penalitatea poate fi marcată achitată sau iertată.</p>
+      </>
+    ),
+  },
+  {
+    key: 'clients',
+    title: 'Clienți',
+    managers: true,
+    body: (
+      <>
+        <p>Căutare după nume și telefon, istoricul vizitelor, suma plăților, specialistul preferat, notiță despre client (o văd doar angajații).</p>
+        <p><B>Programează din nou</B> — deschide registrul cu datele clientului.</p>
+        <p>Clientul a cerut ștergerea datelor — fișa clientului → <B>Șterge datele clientului</B>. Programările și plățile rămân în rapoarte fără nume și telefon. Acțiunea e ireversibilă.</p>
+      </>
+    ),
+  },
+  {
+    key: 'finance',
+    title: 'Finanțe și salarii',
+    owner: true,
+    body: (
+      <>
+        <p><B>Finanțe</B> le vede doar proprietarul. <B>Raport</B> — încasările pe perioadă pe specialiști și zile. <B>Casa</B> — plăți, intrări și cheltuieli pe zi. <B>Salarii</B> — schema (procent și/sau fix pe zi), calculat, <B>Achită</B>.</p>
+        <p>Specialistul își vede calculul în secțiunea <B>Salariul meu</B>.</p>
+      </>
+    ),
+  },
+  {
+    key: 'staff',
+    title: 'Angajați și securitate',
+    managers: true,
+    body: (
+      <>
+        <p>Fiecare angajat are login și parolă proprii: fișa specialistului → <B>Oferă acces</B>. A plecat — <B>Dezactivează accesul</B> imediat.</p>
+        <p>Parola — minimum 8 caractere, nu „12345678” și nu numele. Schimbați-o pe a dvs. — <B>Setări → Schimbă parola</B>.</p>
+        <p>Nu trimiteți nimănui linkul de conectare Telegram și codurile de intrare. După 5 parole greșite intrarea se blochează pe 15 minute.</p>
+      </>
+    ),
+  },
+  {
+    key: 'problems',
+    title: 'Dacă ceva nu merge',
+    body: (
+      <>
+        <p><B>Clientul nu se poate programa la o oră</B> — verificați graficul specialistului în ziua respectivă (e zi de lucru, nu e pauză) și că specialistul are serviciul bifat.</p>
+        <p><B>Specialistul sau serviciul lipsește pe site</B> — specialistul e ascuns, nu are servicii active sau serviciul e dezactivat.</p>
+        <p><B>Nu vin notificările în Telegram</B> — <B>Setări → Notificări în Telegram</B>, conectați din nou.</p>
+        <p><B>Clientul scrie „prea multe încercări”</B> — a funcționat protecția anti-spam; peste o oră se poate din nou, sau programați-l singuri prin <B>+ Programare</B>.</p>
+        <p><B>Sus apare „A apărut o versiune nouă a panoului”</B> — reîncărcați pagina.</p>
+        <p>Nu a ajutat — scrieți la suportul TimePoint, atașați o captură de ecran.</p>
+      </>
+    ),
+  },
+]
+
 export default function HelpPage() {
   const { me, isManager } = useStaffAuth()
   const [open, setOpen] = useState(isManager ? 'start' : 'schedule')
-  const topics = TOPICS.filter(tp => (!tp.managers || isManager) && (!tp.owner || me?.role === 'owner'))
+  const all = getLang() === 'ro' ? TOPICS_RO : TOPICS
+  const topics = all.filter(tp => (!tp.managers || isManager) && (!tp.owner || me?.role === 'owner'))
 
   return (
     <div className="px-4 md:px-6 py-5 max-w-3xl">
-      <PageHeader title="Помощь" subtitle="Как работать в панели салона" />
+      <Link
+        to="/admin-panel/settings"
+        className="inline-flex items-center gap-1.5 min-h-[44px] -ml-1 pr-3 mb-1 rounded-xl text-sm font-semibold text-gray-300 hover:text-white"
+      >
+        <IconChevronLeft size={20} />
+        {t('Настройки')}
+      </Link>
+      <PageHeader title={t('Помощь')} subtitle={t('Как работать в панели салона')} />
       {topics.map(tp => (
         <Topic key={tp.key} title={tp.title} open={open === tp.key} onToggle={() => setOpen(o => (o === tp.key ? null : tp.key))}>
           {tp.body}
