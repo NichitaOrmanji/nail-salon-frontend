@@ -232,6 +232,14 @@ export default function JournalPage() {
 
   // Карточка держится по id — опрос журнала её не сбрасывает
   const selected = current && openId ? current.appointments.find(a => a.id === openId) || null : null
+  // Все услуги визита этой записи (общий visit) по порядку времени
+  const selectedParts = useMemo(() => {
+    if (!selected) return []
+    if (!selected.visit) return [selected]
+    return current.appointments
+      .filter(a => a.visit === selected.visit)
+      .sort((x, y) => (x.date + x.start_time).localeCompare(y.date + y.start_time))
+  }, [selected, current])
 
   function openCreate(col, time) {
     if (!confirmLeaveCard()) return
@@ -381,6 +389,8 @@ export default function JournalPage() {
         <AppointmentCard
           key={`${selected.id}-${cardResetKey}`}
           appointment={selected}
+          parts={selectedParts}
+          masters={current.masters}
           isManager={isManager}
           hidden={formVisible}
           topAnchorRef={toolbarRef}

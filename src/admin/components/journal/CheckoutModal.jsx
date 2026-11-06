@@ -10,8 +10,10 @@ import { t } from '../../../i18n'
 export default function CheckoutModal({ appointment: a, onClose, onPaid }) {
   const price = Number(a.service?.price) || 0
   const [method, setMethod] = useState('cash')
-  const [discountText, setDiscountText] = useState('')
-  const [percent, setPercent] = useState(false)
+  // Скидка, заданная в карточке записи (в процентах), подставляется сразу
+  const presetDiscount = Number(a.discount) || 0
+  const [discountText, setDiscountText] = useState(presetDiscount > 0 ? String(presetDiscount) : '')
+  const [percent, setPercent] = useState(presetDiscount > 0)
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   // Чёрный список: долг за прошлые неявки оплачивается при этом визите
