@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
 import { fetchMasters } from '../api/masters'
-import { fetchSlotsByMaster } from '../api/slots'
+import { fetchSlotsByMaster, fetchNearestSlots } from '../api/slots'
 import Spinner from '../components/layout/Spinner'
 import SalonHeader from '../components/layout/SalonHeader'
-import { t } from '../i18n'
+import { getLang, t } from '../i18n'
+import { formatDisplayDate, toDateString } from '../utils/format'
 
 function IconUser() {
   return (
@@ -40,6 +41,8 @@ export default function MastersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState(master ? (master.id ?? 'any') : null)
+  // Ближайшие окна каждого мастера: { masterId: { date, slots } } (только когда услуга выбрана)
+  const [nearest, setNearest] = useState({})
 
   // Время уже выбрано — показываем только мастеров, свободных в это время
   const filteredByTime = !!(service && date && time)
@@ -62,6 +65,35 @@ export default function MastersPage() {
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (!service || filteredByTime) return
+    let cancelled = false
+    fetchNearestSlots({ serviceId: service.id })
+      .then(list => {
+        if (!cancelled) setNearest(Object.fromEntries(list.filter(n => n.date).map(n => [n.master, n])))
+      })
+      .catch(() => {}) // подсказка необязательная — без неё обычный выбор мастера
+    return () => { cancelled = true }
+  }, [service, filteredByTime])
+
+  // Клик по времени под мастером — сразу к подтверждению
+  function pickNearest(m, day, slot) {
+    setSelected(m.id)
+    setMaster(m)
+    setDate(day)
+    setTime(slot)
+    navigate(getNextRoute('masters'))
+  }
+
+  function dayLabel(day) {
+    const now = new Date()
+    const today = toDateString(now)
+    const tomorrow = toDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1))
+    if (day === today) return t('Сегодня')
+    if (day === tomorrow) return t('Завтра')
+    return formatDisplayDate(day, { withYear: false, lang: getLang() })
+  }
 
   function handleSelect(m) {
     setSelected(m.id ?? 'any')
@@ -126,9 +158,10 @@ export default function MastersPage() {
         <div className="px-4 pb-8 space-y-1">
           {allMasters.map(m => {
             const isSelected = selected === (m.id ?? 'any')
+            const near = m.id ? nearest[m.id] : null
             return (
+              <div key={m.id ?? 'any'}>
               <button
-                key={m.id ?? 'any'}
                 onClick={() => handleSelect(m)}
                 className="w-full flex items-center justify-between px-4 py-4 rounded-2xl transition-all active:scale-95"
                 style={{ backgroundColor: isSelected ? '#242424' : 'transparent' }}
@@ -167,6 +200,26 @@ export default function MastersPage() {
                   )}
                 </div>
               </button>
+              {near && (
+                <div className="pl-[84px] pr-4 pb-3 -mt-2">
+                  <div className="text-gray-500 text-xs mb-1.5">{t('Ближайшее время: {day}', { day: dayLabel(near.date) })}</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {near.slots.map(slot => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => pickNearest(m, near.date, slot)}
+                        aria-label={t('{date} в {time}', { date: dayLabel(near.date), time: slot })}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium active:scale-95"
+                        style={{ backgroundColor: '#242424', color: '#f9a8d4' }}
+                      >
+                        {slot}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              </div>
             )
           })}
         </div>

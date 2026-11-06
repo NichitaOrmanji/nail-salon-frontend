@@ -39,3 +39,18 @@ export async function fetchFreePoints(date) {
   const response = await api.get(`/companies/${SLUG}/points/`, { params: { date } })
   return expectArray(response.data)
 }
+
+// Загруженность дней месяца для календаря с кружками: { 'YYYY-MM-DD': { working, load, free } }
+export async function fetchMonthLoad({ month, serviceId, masterId }) {
+  const params = { month }
+  if (serviceId) params.service = serviceId
+  if (masterId) params.master = masterId
+  const response = await api.get(`/companies/${SLUG}/calendar/`, { params })
+  return Object.fromEntries(expectArray(response.data?.days).map(d => [d.date, d]))
+}
+
+// Ближайшие окна мастеров: [{ master, date, slots: ['HH:MM'] }]
+export async function fetchNearestSlots({ serviceId }) {
+  const response = await api.get(`/companies/${SLUG}/nearest/`, { params: serviceId ? { service: serviceId } : {} })
+  return expectArray(response.data)
+}

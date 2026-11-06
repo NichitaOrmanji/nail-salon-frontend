@@ -76,3 +76,31 @@ test('время заняли, пока клиент заполнял форму
   await expect(page.getByText(/время недоступно|уже заняли/)).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Вы записаны' })).toHaveCount(0)
 })
+
+test('ссылка «Перенести или отменить»: перенос на другой день и отмена без входа', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: /Выбрать услуги/ }).click()
+  await page.getByRole('button', { name: /Маникюр классический/ }).click()
+  await page.getByRole('button', { name: 'Далее' }).click()
+  await page.getByRole('button', { name: /Анна/ }).first().click()
+  await pickDay(page, 5)
+  await pickFirstSlot(page)
+  await page.getByRole('button', { name: 'Далее' }).click()
+  await fillAndBook(page, { name: 'Ссылка Управления', phone: uniquePhone() })
+  await expect(page.getByRole('heading', { name: /Вы записаны|Запись подтверждена/ })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Перенести или отменить' }).click()
+  await expect(page.getByRole('heading', { name: 'Ваша запись' })).toBeVisible()
+  await expect(page).toHaveURL(/\/manage\//)
+
+  await page.getByRole('button', { name: 'Перенести на другое время' }).click()
+  await pickDay(page, 6)
+  await page.locator('.grid-cols-4 button').first().click()
+  await page.getByRole('button', { name: /^Перенести/ }).last().click()
+  await expect(page.getByRole('status').filter({ hasText: 'Запись перенесена' })).toBeVisible()
+
+  page.once('dialog', dialog => dialog.accept())
+  await page.getByRole('button', { name: 'Отменить запись' }).click()
+  await expect(page.getByText('Отменена', { exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Записаться снова' })).toBeVisible()
+})

@@ -9,6 +9,7 @@ import ErrorBoundary from '../../components/layout/ErrorBoundary'
 import ChangePasswordModal from '../components/ChangePasswordModal'
 import TelegramModal from '../components/TelegramModal'
 import NewAppointmentsModal from '../components/NewAppointmentsModal'
+import OnlineToasts from '../components/OnlineToasts'
 import { IconCalendar, IconScissors, IconUsers, IconSettings, IconMenu, IconClose, IconWallet, IconContact, IconAlert, IconStart } from '../components/Icons'
 
 function menuItems(me, isManager) {
@@ -247,6 +248,7 @@ export default function AdminLayout() {
       {passwordOpen && <ChangePasswordModal onClose={() => setPasswordOpen(false)} />}
       {telegramOpen && <TelegramModal onClose={() => setTelegramOpen(false)} />}
       {newListOpen && <NewAppointmentsModal onClose={() => setNewListOpen(false)} />}
+      <OnlineToasts />
     </div>
   )
 }
