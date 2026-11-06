@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useBooking } from '../context/BookingContext'
+import { useBooking, MAX_VISIT_SERVICES } from '../context/BookingContext'
 import { fetchServices } from '../api/services'
 import Spinner from '../components/layout/Spinner'
 import SalonHeader from '../components/layout/SalonHeader'
 import { PAGE_WIDTH } from '../components/layout/width'
-import { formatDurationRange, formatPriceRange } from '../utils/format'
+import { formatDuration, formatDurationRange, formatPrice, formatPriceRange } from '../utils/format'
 import { getLang, t } from '../i18n'
 
 function IconSearch() {
@@ -27,7 +27,7 @@ function IconCheck() {
 
 export default function ServicesPage() {
   const navigate = useNavigate()
-  const { master, service, setService, date, time, setDate, setTime, getNextRoute } = useBooking()
+  const { master, service, setService, extras, setExtras, setVisit, date, time, setDate, setTime, getNextRoute } = useBooking()
   const [allServices, setAllServices] = useState([])
   const [activeCategory, setActiveCategory] = useState(t('Все'))
   const [search, setSearch] = useState('')
@@ -62,19 +62,40 @@ export default function ServicesPage() {
 
   const categories = [t('Все'), ...new Set(allServices.map(s => s.category_name))]
 
-  // Бэкенд хранит одну услугу на запись, поэтому выбор одиночный
-  function selectService(s) {
-    if (service?.id === s.id) {
-      setService(null)
-      return
-    }
-    setService(s)
-    // Время подбиралось под другую услугу — его нужно выбрать заново
-    if (service && !filteredByTime) {
+  // Несколько услуг — один визит, услуги идут подряд (порядок — как выбирали).
+  // Если сначала выбрали время, услуга одна: под неё и подбирались мастера.
+  const multi = !filteredByTime
+  const selected = service ? [service, ...extras] : []
+
+  function resetTime() {
+    setVisit(null)
+    if (!filteredByTime) {
       setDate(null)
       setTime(null)
     }
   }
+
+  function selectService(s) {
+    const isChosen = selected.some(x => x.id === s.id)
+    if (!multi) {
+      setService(isChosen ? null : s)
+      if (service && !isChosen) resetTime()
+      return
+    }
+    let next
+    if (isChosen) next = selected.filter(x => x.id !== s.id)
+    else if (selected.length >= MAX_VISIT_SERVICES) return
+    else next = [...selected, s]
+    setService(next[0] || null)
+    setExtras(next.slice(1))
+    // Время подбиралось под другой набор услуг — его нужно выбрать заново
+    resetTime()
+  }
+
+  const totalMin = selected.reduce((sum, s) => sum + Number(s.duration_min ?? s.duration), 0)
+  const totalPrice = selected.reduce((sum, s) => sum + Number(s.price_min ?? s.price), 0)
+  const rangeTotals = selected.some(s => (s.price_max ?? s.price) !== (s.price_min ?? s.price)
+    || (s.duration_max ?? s.duration) !== (s.duration_min ?? s.duration))
 
   const filtered = allServices.filter(s => {
     const matchCategory = activeCategory === t('Все') || s.category_name === activeCategory
@@ -95,6 +116,9 @@ export default function ServicesPage() {
         <p className="text-gray-500 text-sm mt-1">
           {masterId ? t('Услуги мастера {name}', { name: master.name }) : filteredByTime ? t('Доступные в выбранное время') : t('Выберите услугу')}
         </p>
+        {multi && (
+          <p className="text-gray-600 text-xs mt-1">{t('Можно выбрать несколько — запишем на них подряд, в один визит.')}</p>
+        )}
       </div>
 
       {loading && <Spinner text={t('Загружаем услуги...')} />}
@@ -159,11 +183,13 @@ export default function ServicesPage() {
                 <h3 className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">{cat}</h3>
                 <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#242424' }}>
                   {filtered.filter(s => s.category_name === cat).map((item, idx, arr) => {
-                    const isSelected = service?.id === item.id
+                    const order = selected.findIndex(x => x.id === item.id)
+                    const isSelected = order >= 0
                     return (
                       <button
                         key={item.id}
                         onClick={() => selectService(item)}
+                        aria-pressed={isSelected}
                         className="w-full flex items-center justify-between px-4 py-4 transition-all active:scale-95"
                         style={{
                           borderBottom: idx < arr.length - 1 ? '1px solid #2e2e2e' : 'none',
@@ -183,7 +209,9 @@ export default function ServicesPage() {
                             border: isSelected ? 'none' : '2px solid #374151'
                           }}
                         >
-                          {isSelected && <IconCheck />}
+                          {isSelected && (selected.length > 1
+                            ? <span className="text-white text-[11px] font-bold">{order + 1}</span>
+                            : <IconCheck />)}
                         </div>
                       </button>
                     )
@@ -204,8 +232,10 @@ export default function ServicesPage() {
             style={{ backgroundColor: '#db2777' }}
           >
             <div className="text-sm font-semibold">{t('Далее')}</div>
-            <div className="text-xs opacity-75 mt-0.5">
-              {service.name} · {formatDurationRange(service, getLang())} · {formatPriceRange(service)}
+            <div className="text-xs opacity-75 mt-0.5 wrap-anywhere">
+              {selected.length > 1
+                ? `${t('{count} услуги', { count: selected.length })} · ${rangeTotals ? t('от') + ' ' : ''}${formatDuration(totalMin, getLang())} · ${rangeTotals ? t('от') + ' ' : ''}${formatPrice(totalPrice)}`
+                : `${service.name} · ${formatDurationRange(service, getLang())} · ${formatPriceRange(service)}`}
             </div>
           </button>
         </div>

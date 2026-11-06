@@ -54,3 +54,11 @@ export async function fetchNearestSlots({ serviceId }) {
   const response = await api.get(`/companies/${SLUG}/nearest/`, { params: serviceId ? { service: serviceId } : {} })
   return expectArray(response.data)
 }
+
+// Визит из нескольких услуг подряд: варианты начала с частями
+// items — [{ service, master }]; ответ — [{ start_time, end_time, parts: [{ master_name, service_name, start_time, ... }] }]
+export async function fetchVisitSlots({ items, date }) {
+  const query = items.map(i => (i.master ? `${i.service}:${i.master}` : `${i.service}`)).join(',')
+  const response = await api.get(`/companies/${SLUG}/visit-slots/`, { params: { date, items: query } })
+  return expectArray(response.data?.slots)
+}

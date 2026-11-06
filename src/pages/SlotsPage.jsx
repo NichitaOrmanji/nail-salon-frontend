@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
-import { fetchSlots, fetchSlotsByMaster, fetchFreePoints, fetchMonthLoad } from '../api/slots'
+import { fetchSlots, fetchSlotsByMaster, fetchFreePoints, fetchMonthLoad, fetchVisitSlots } from '../api/slots'
 import LoadCalendar from '../components/LoadCalendar'
 import { groupSlots } from '../utils/slotGroups'
 import Spinner from '../components/layout/Spinner'
@@ -13,7 +13,13 @@ import { getLang, t } from '../i18n'
 // Свободное время на дату с учётом того, что уже выбрано:
 // конкретный мастер → его слоты; «любой» → слоты всех мастеров услуги;
 // услуга ещё не выбрана → свободное время салона
-async function loadSlots({ master, service, date }) {
+async function loadSlots({ master, service, extras, date }) {
+  if (service && extras?.length) {
+    // Несколько услуг подряд: время начала, при котором помещается весь визит
+    const items = [{ service: service.id, master: master?.id || null }, ...extras.map(s => ({ service: s.id, master: null }))]
+    const options = await fetchVisitSlots({ items, date })
+    return { slots: options.map(o => o.start_time), options }
+  }
   if (service && master?.id) {
     return fetchSlots({ masterId: master.id, serviceId: service.id, date })
   }
@@ -34,7 +40,7 @@ function dropPastSlots(slots, date) {
 
 export default function SlotsPage() {
   const navigate = useNavigate()
-  const { master, service, date, time, setDate, setTime, getNextRoute } = useBooking()
+  const { master, service, extras, setVisit, date, time, setDate, setTime, getNextRoute } = useBooking()
   const today = new Date()
   const todayStr = toDateString(today)
   const initial = date ? new Date(`${date}T00:00`) : today
@@ -46,6 +52,17 @@ export default function SlotsPage() {
   const [loading, setLoading] = useState(false)
   const [slotsError, setSlotsError] = useState(null)
   const [monthLoad, setMonthLoad] = useState({})
+  // Части визита для каждого времени начала (если услуг несколько)
+  const [options, setOptions] = useState({})
+
+  function applySlots(data, dateStr) {
+    if (Array.isArray(data)) {
+      setOptions({})
+      return dropPastSlots(data, dateStr)
+    }
+    setOptions(Object.fromEntries(data.options.map(o => [o.start_time, o])))
+    return dropPastSlots(data.slots, dateStr)
+  }
 
 
   async function selectDate(dateStr) {
@@ -53,11 +70,12 @@ export default function SlotsPage() {
     setDate(dateStr)
     setSelectedSlot(null)
     setTime(null)
+    setVisit(null)
     setLoading(true)
     setSlotsError(null)
     try {
-      const data = await loadSlots({ master, service, date: dateStr })
-      setSlots(dropPastSlots(data, dateStr))
+      const data = await loadSlots({ master, service, extras, date: dateStr })
+      setSlots(applySlots(data, dateStr))
     } catch (err) {
       setSlots([])
       setSlotsError(err.message || t('Не удалось загрузить слоты'))
@@ -69,8 +87,8 @@ export default function SlotsPage() {
   // Вернулись на шаг — подгружаем слоты для уже выбранной даты
   useEffect(() => {
     if (!date) return
-    loadSlots({ master, service, date })
-      .then(data => setSlots(dropPastSlots(data, date)))
+    loadSlots({ master, service, extras, date })
+      .then(data => setSlots(applySlots(data, date)))
       .catch(err => setSlotsError(err.message || t('Не удалось загрузить слоты')))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -97,10 +115,14 @@ export default function SlotsPage() {
   function selectSlot(slot) {
     setSelectedSlot(slot)
     setTime(slot)
+    setVisit(options[slot]?.parts || null)
   }
 
+  const chosen = selectedSlot ? options[selectedSlot] : null
   const subtitle = service
-    ? `${service.name}${master?.id ? ` · ${master.name}` : ''}`
+    ? extras.length
+      ? [service, ...extras].map(s => s.name).join(' + ')
+      : `${service.name}${master?.id ? ` · ${master.name}` : ''}`
     : t('Выберите удобный день')
 
   return (
@@ -174,6 +196,18 @@ export default function SlotsPage() {
                   ))}
                 </div>
               </>
+            )}
+
+            {chosen && (
+              <div className="mt-5 rounded-2xl px-4 py-3" style={{ backgroundColor: '#242424' }}>
+                <p className="text-gray-500 text-xs mb-2">{t('Ваш визит: {start} – {end}', { start: chosen.start_time, end: chosen.end_time })}</p>
+                {chosen.parts.map(part => (
+                  <div key={`${part.service}-${part.start_time}`} className="flex justify-between gap-3 py-1 text-sm">
+                    <span className="text-white wrap-anywhere">{part.start_time} · {part.service_name}</span>
+                    <span className="text-gray-400 whitespace-nowrap">{part.master_name}</span>
+                  </div>
+                ))}
+              </div>
             )}
 
             {!loading && !slotsError && slots.length === 0 && (
