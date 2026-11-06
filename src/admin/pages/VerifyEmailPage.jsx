@@ -41,7 +41,7 @@ export default function VerifyEmailPage() {
         </div>
       )}
       {(result || error) && (
-        <Link to={me ? '/admin-panel/salon' : '/admin-panel/login'} className="block text-center text-sm underline" style={{ color: '#f472b6' }}>
+        <Link to={me ? '/admin-panel/settings' : '/admin-panel/login'} className="block text-center text-sm underline" style={{ color: '#f472b6' }}>
           {me ? 'Продолжить настройку' : 'Войти в панель'}
         </Link>
       )}

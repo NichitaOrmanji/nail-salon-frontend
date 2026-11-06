@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchClients } from '../api/clients'
 import { formatMoney } from '../utils/money'
 import { clientDate } from '../utils/time'
 import { REBOOK_KEY } from '../utils/rebook'
 import ClientCardModal from '../components/clients/ClientCardModal'
 import { Button, ErrorText, PageHeader, Select, TextInput } from '../components/ui'
+import DebtorsView from '../components/clients/DebtorsView'
+import { t } from '../../i18n'
 import Spinner from '../../components/layout/Spinner'
 
 const SORTS = [
@@ -43,7 +45,7 @@ function ClientRow({ client: c, onOpen }) {
   )
 }
 
-export default function ClientsPage() {
+function ClientsList() {
   const navigate = useNavigate()
   const location = useLocation()
   const [query, setQuery] = useState('')
@@ -108,8 +110,8 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="px-4 md:px-6 py-5 max-w-3xl">
-      <PageHeader title="Клиенты" subtitle={data ? `Всего: ${data.count}` : 'Все, кто записывался в салон'} />
+    <div>
+      <p className="text-gray-500 text-sm mb-4">{data ? `Всего: ${data.count}` : 'Все, кто записывался в салон'}</p>
       <div className="flex flex-col sm:flex-row gap-2 mb-4">
         <TextInput
           type="search"
@@ -147,6 +149,35 @@ export default function ClientsPage() {
       )}
 
       {openPhone && <ClientCardModal phone={openPhone} onClose={closeCard} onRebook={rebook} onForgotten={forgotten} />}
+    </div>
+  )
+}
+
+const TABS = [['all', 'Все клиенты'], ['debtors', 'Должники']]
+
+// Клиенты: вся база и должники (неоплаченные штрафы) — вкладками; ?tab=debtors
+export default function ClientsPage() {
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('tab') === 'debtors' ? 'debtors' : 'all'
+  return (
+    <div className="px-4 md:px-6 py-5 max-w-3xl">
+      <PageHeader title={t('Клиенты')} />
+      <div role="tablist" aria-label={t('Клиенты')} className="inline-flex rounded-xl overflow-hidden mb-4" style={{ border: '1px solid #2e2e2e' }}>
+        {TABS.map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={tab === key}
+            onClick={() => setParams(key === 'all' ? {} : { tab: key }, { replace: true })}
+            className="min-h-[44px] px-4 text-sm font-medium"
+            style={{ backgroundColor: tab === key ? '#db2777' : '#242424', color: tab === key ? '#ffffff' : '#9ca3af' }}
+          >
+            {t(label)}
+          </button>
+        ))}
+      </div>
+      {tab === 'debtors' ? <DebtorsView /> : <ClientsList />}
     </div>
   )
 }
