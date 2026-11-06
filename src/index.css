@@ -61,3 +61,7 @@ h1, h2, h3, p, .wrap-anywhere {
 .react-tel-input .country-list .dial-code {
   color: #9ca3af !important;
 }
+
+/* Прокрутка без видимой полосы (боковая панель, ленты фильтров) */
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }

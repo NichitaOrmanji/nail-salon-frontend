@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { deleteCompanyPhoto, fetchStaffCompany, updateStaffCompany, uploadCompanyPhoto } from '../api/company'
 import { useStaffAuth } from '../context/StaffAuthContext'
+import { ROLE_LABELS } from '../utils/statuses'
+import ChangePasswordModal from '../components/ChangePasswordModal'
+import TelegramModal from '../components/TelegramModal'
+import { IconLogout } from '../components/Icons'
 import { normalizeDecimal } from '../utils/time'
 import { Button, ErrorText, Field, PageHeader, TextArea, TextInput } from '../components/ui'
 import PhotoField from '../components/PhotoField'
@@ -30,7 +34,48 @@ function parseCoordinate(value) {
   return Number(normalized)
 }
 
+// Аккаунт сотрудника: кто вошёл, уведомления в Telegram, пароль, выход
+function AccountSection() {
+  const { me, logout } = useStaffAuth()
+  const [telegramOpen, setTelegramOpen] = useState(false)
+  const [passwordOpen, setPasswordOpen] = useState(false)
+  return (
+    <section aria-labelledby="account-title" className="rounded-2xl p-4 mb-6" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+      <h2 id="account-title" className="text-white text-base font-semibold mb-3">Аккаунт</h2>
+      <div className="flex items-center gap-3 mb-4">
+        <span className="w-11 h-11 rounded-full flex items-center justify-center text-base font-semibold flex-shrink-0" style={{ backgroundColor: '#2e1f28', color: '#f472b6' }}>
+          {(me.name || me.username || '?').trim().charAt(0).toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <div className="text-white text-sm font-medium truncate">{me.name || me.username}</div>
+          <div className="text-gray-400 text-xs">{ROLE_LABELS[me.role] || me.role}{me.email ? ` · ${me.email}` : ''}</div>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => setTelegramOpen(true)}>Уведомления в Telegram</Button>
+        <Button onClick={() => setPasswordOpen(true)}>Сменить пароль</Button>
+        <Button onClick={logout} style={{ color: '#f87171' }}>
+          <span className="inline-flex items-center gap-2"><IconLogout size={16} />Выйти</span>
+        </Button>
+      </div>
+      {telegramOpen && <TelegramModal onClose={() => setTelegramOpen(false)} />}
+      {passwordOpen && <ChangePasswordModal onClose={() => setPasswordOpen(false)} />}
+    </section>
+  )
+}
+
 export default function SettingsPage() {
+  const { isManager } = useStaffAuth()
+  return (
+    <div className="px-4 md:px-6 py-5 max-w-2xl">
+      <PageHeader title="Настройки" subtitle={isManager ? 'Аккаунт и данные салона' : 'Ваш аккаунт'} />
+      <AccountSection />
+      {isManager && <SalonSettings />}
+    </div>
+  )
+}
+
+function SalonSettings() {
   const { refreshMe } = useStaffAuth()
   const [form, setForm] = useState(null)
   const [initial, setInitial] = useState(null)
@@ -140,8 +185,9 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="px-4 md:px-6 py-5 max-w-2xl">
-      <PageHeader title="Настройки" subtitle="Данные салона на сайте записи" />
+    <div>
+      <h2 className="text-white text-base font-semibold mb-1">Салон</h2>
+      <p className="text-gray-500 text-xs mb-4">Данные салона на сайте записи</p>
       <ErrorText className="mb-3">{loadError}</ErrorText>
       {!form && !loadError && <Spinner />}
       {photos && (

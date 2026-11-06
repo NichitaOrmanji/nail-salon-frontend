@@ -18,8 +18,8 @@ test('регистрация → подтверждение email → салон
   await page.getByRole('checkbox').check()
   await page.getByRole('button', { name: 'Создать салон' }).click()
 
-  // 2. Сразу в панели: «Начало работы», салон ещё не виден клиентам
-  await expect(page.getByRole('heading', { name: 'Начало работы' })).toBeVisible()
+  // 2. Сразу в панели: «О салоне» с шагами настройки, салон ещё не виден клиентам
+  await expect(page.getByRole('heading', { name: 'О салоне' })).toBeVisible()
   await expect(page.getByText(`Салон «${name}» создан`)).toBeVisible()
   await expect(page.getByText(/Подтвердите email .* до этого клиенты не видят/)).toBeVisible()
   const client = await page.context().newPage()

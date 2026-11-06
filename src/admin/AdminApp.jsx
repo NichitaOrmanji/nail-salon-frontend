@@ -36,12 +36,13 @@ export default function AdminApp() {
           <Route path="terms" element={<TermsPage />} />
           <Route element={<RequireStaff><AdminLayout /></RequireStaff>}>
             <Route index element={<JournalPage />} />
-            <Route path="start" element={<ManagerOnly><StartPage /></ManagerOnly>} />
+            <Route path="salon" element={<ManagerOnly><StartPage /></ManagerOnly>} />
+            <Route path="start" element={<Navigate to="/admin-panel/salon" replace />} />
             <Route path="clients" element={<ManagerOnly><ClientsPage /></ManagerOnly>} />
             <Route path="debtors" element={<ManagerOnly><DebtorsPage /></ManagerOnly>} />
             <Route path="services" element={<ServicesPage />} />
             <Route path="masters" element={<MastersPage />} />
-            <Route path="settings" element={<ManagerOnly><SettingsPage /></ManagerOnly>} />
+            <Route path="settings" element={<SettingsPage />} />
             <Route path="finance" element={<OwnerOnly><FinancePage /></OwnerOnly>} />
             <Route path="salary" element={<MySalaryPage />} />
             <Route path="help" element={<HelpPage />} />

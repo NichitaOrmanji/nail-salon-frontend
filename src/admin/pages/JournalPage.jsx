@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
-import { fetchAppointments, fetchStaffMonthLoad } from '../api/appointments'
-import LoadCalendar from '../../components/LoadCalendar'
+import { fetchAppointments } from '../api/appointments'
+import { journalNav } from '../layout/journalNav'
 import { fetchStaffMasters, fetchDaysOff, fetchWorkDays, addDayOff, removeDayOff } from '../api/masters'
 import { notifyDataChanged, useAutoRefresh } from '../utils/events'
 import { todayString, addDays, formatDayTitle, isValidDateString, parseDate } from '../utils/time'
@@ -168,43 +168,13 @@ export default function JournalPage() {
     setParams({ master: id || null, open: null }, { state: null })
   }
 
-  // Мини-календарь с кружками загруженности (открыт/закрыт — запоминается в браузере)
-  const [calOpen, setCalOpen] = useState(() => {
-    try {
-      const saved = localStorage.getItem('journal_calendar')
-      return saved ? saved === '1' : window.matchMedia('(min-width: 1024px)').matches
-    } catch {
-      return false
-    }
-  })
-  const [calMonth, setCalMonth] = useState(() => date.slice(0, 7))
-  const [monthLoad, setMonthLoad] = useState({})
-  const shownMonth = calMonth
-
-  function toggleCalendar() {
-    setCalOpen(open => {
-      try { localStorage.setItem('journal_calendar', open ? '0' : '1') } catch { /* недоступно */ }
-      return !open
-    })
-  }
-
-  // Ушли на дату другого месяца (стрелки, «Сегодня») — календарь листается следом
-  const dateMonth = date.slice(0, 7)
-  const [prevDateMonth, setPrevDateMonth] = useState(dateMonth)
-  if (dateMonth !== prevDateMonth) {
-    setPrevDateMonth(dateMonth)
-    setCalMonth(dateMonth)
-  }
-
-  const loadMonth = useCallback(() => {
-    if (!calOpen) return
-    fetchStaffMonthLoad({ month: shownMonth, master: masterFilter })
-      .then(setMonthLoad)
-      .catch(() => setMonthLoad({}))
-  }, [calOpen, shownMonth, masterFilter])
-
-  useEffect(() => { loadMonth() }, [loadMonth])
-  useAutoRefresh(loadMonth)
+  // Календарь в боковой панели переходит на дату через журнал (с проверкой несохранённой заметки)
+  const goToDateRef = useRef(goToDate)
+  useEffect(() => { goToDateRef.current = goToDate })
+  useEffect(() => {
+    journalNav.goToDate = day => goToDateRef.current(day)
+    return () => { journalNav.goToDate = null }
+  }, [])
 
   const step = view === 'week' ? 7 : 1
 
@@ -355,7 +325,6 @@ export default function JournalPage() {
           {view === 'week' ? weekTitle(rangeFrom) : formatDayTitle(date)}
         </div>
         <Checkbox checked={showCancelled} onChange={setShowCancelled} label="Показывать отменённые" className="mr-auto lg:mr-0" />
-        <Button aria-pressed={calOpen} onClick={toggleCalendar} style={calOpen ? { color: '#f472b6' } : undefined}>Календарь</Button>
         <Button variant="primary" onClick={() => openCreate(null, '')}>+ Запись</Button>
       </div>
 
@@ -376,21 +345,7 @@ export default function JournalPage() {
         ))}
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
-        {calOpen && (
-          <aside aria-label="Календарь загруженности" className="flex-shrink-0 lg:w-72 p-4 overflow-y-auto" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e', borderRight: '1px solid #2e2e2e' }}>
-            <LoadCalendar
-              year={Number(shownMonth.slice(0, 4))}
-              month={Number(shownMonth.slice(5, 7)) - 1}
-              onMonthChange={(y, m) => setCalMonth(`${y}-${String(m + 1).padStart(2, '0')}`)}
-              days={monthLoad}
-              selected={date}
-              onSelect={goToDate}
-              compact
-            />
-          </aside>
-        )}
-        <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+      <div className="flex-1 min-h-0 flex flex-col">
         {!current && !loadError && <Spinner />}
 
         {current && columns.length === 0 && (
@@ -417,7 +372,6 @@ export default function JournalPage() {
             onToggleDayOff={toggleDayOff}
           />
         )}
-        </div>
       </div>
 
       {/* Под открытой формой карточка не размонтируется — несохранённая заметка остаётся */}
