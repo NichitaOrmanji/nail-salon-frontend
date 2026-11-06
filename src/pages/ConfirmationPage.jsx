@@ -32,6 +32,15 @@ async function resolveMasterId({ master, service, date, time }) {
   return free[0]
 }
 
+// Напоминание о визите: значение — минуты до визита ('' — как обычно, за сутки)
+const REMINDERS = [
+  ['', 'За сутки'],
+  ['120', 'За 2 часа'],
+  ['360', 'За 6 часов'],
+  ['2880', 'За 2 дня'],
+  ['0', 'Не напоминать'],
+]
+
 function loadDraft() {
   try {
     return JSON.parse(sessionStorage.getItem(CONTACT_DRAFT_KEY)) || {}
@@ -54,6 +63,7 @@ export default function ConfirmationPage() {
   const [phone, setPhone] = useState(() => draft.phone ?? localStorage.getItem('client_phone') ?? '')
   const [email, setEmail] = useState(draft.email ?? '')
   const [notes, setNotes] = useState(draft.notes ?? '')
+  const [reminder, setReminder] = useState(() => localStorage.getItem('client_reminder') ?? '')
   const [consent, setConsent] = useState(false)
   const [phoneTouched, setPhoneTouched] = useState(false)
   const [sent, setSent] = useState(false)
@@ -124,6 +134,7 @@ export default function ConfirmationPage() {
         start_time: time,
         notes: notes.trim(),
         consent: true,
+        reminder_minutes: reminder === '' ? null : Number(reminder),
         // Поле-ловушка: человек его не видит; заполнил — значит бот, сервер запись не примет
         website: honeypotRef.current?.value || '',
       })
@@ -136,6 +147,7 @@ export default function ConfirmationPage() {
       })
       localStorage.setItem('client_name', name.trim())
       localStorage.setItem('client_phone', phone)
+      localStorage.setItem('client_reminder', reminder)
       setSent(true)
       reset()
     } catch (err) {
@@ -317,6 +329,29 @@ export default function ConfirmationPage() {
               style={{ backgroundColor: '#242424' }}
             />
 
+          </div>
+          <p className="text-gray-500 text-xs mt-2 px-1">
+            {t('Укажите email — пришлём подтверждение со ссылкой для переноса и напоминание.')}
+          </p>
+
+          <div className="mt-4">
+            <p id="reminder-label" className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-2">{t('Напоминание')}</p>
+            <div role="radiogroup" aria-labelledby="reminder-label" className="flex flex-wrap gap-2">
+              {REMINDERS.map(([value, label]) => (
+                <button
+                  key={value || 'default'}
+                  type="button"
+                  role="radio"
+                  aria-checked={reminder === value}
+                  onClick={() => setReminder(value)}
+                  className="px-3 py-2 rounded-xl text-sm active:scale-95"
+                  style={{ backgroundColor: reminder === value ? '#db2777' : '#242424', color: reminder === value ? '#fff' : '#d1d5db' }}
+                >
+                  {t(label)}
+                </button>
+              ))}
+            </div>
+            <p className="text-gray-500 text-xs mt-2 px-1">{t('Напомним в Telegram, если подключите его, или на email.')}</p>
           </div>
           {phone && !phoneValid && (
             <p className="text-xs mt-2 px-1" style={{ color: phoneInvalid ? '#f87171' : '#9098a4' }}>
