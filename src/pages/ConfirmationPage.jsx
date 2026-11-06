@@ -6,10 +6,11 @@ import { createAppointment } from '../api/appointments'
 import { fetchMe } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
 import { fetchSlotsByMaster } from '../api/slots'
+import { fetchMasterServices } from '../api/masters'
 import SalonHeader from '../components/layout/SalonHeader'
 import { useCompany } from '../context/CompanyContext'
 import PhoneField from '../components/layout/PhoneField'
-import { formatDisplayDate, formatDuration, formatPrice } from '../utils/format'
+import { formatDisplayDate, formatDuration, formatDurationRange, formatPrice, formatPriceRange } from '../utils/format'
 import { getLang, t } from '../i18n'
 import { downloadIcs } from '../utils/ics'
 
@@ -61,6 +62,20 @@ export default function ConfirmationPage() {
   const [submitError, setSubmitError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
+  // Цена и длительность у выбранного мастера (у мастера может быть своя); null — ещё не знаем
+  const [ownTerms, setOwnTerms] = useState(null)
+  useEffect(() => {
+    if (!master?.id || !service?.id) return
+    let cancelled = false
+    fetchMasterServices(master.id)
+      .then(list => {
+        const own = list.find(s => s.id === service.id)
+        if (!cancelled && own) setOwnTerms({ price: own.price, duration: own.duration })
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [master?.id, service?.id])
+
   // Что записали (выбор сбрасывается после записи) и ссылка «Управлять записью»
   const [booked, setBooked] = useState(null)
 
@@ -116,7 +131,7 @@ export default function ConfirmationPage() {
       setConfirmed(created?.status === 'confirmed')
       setBooked({
         token: created?.manage_token || null,
-        service: service.name, duration: service.duration, date, time,
+        service: service.name, duration: ownTerms?.duration || service.duration, date, time,
         master: master?.id ? master.name : null,
       })
       localStorage.setItem('client_name', name.trim())
@@ -255,12 +270,12 @@ export default function ConfirmationPage() {
 
           <div className="flex justify-between items-center px-5 py-4" style={{ borderBottom: '1px solid #2e2e2e' }}>
             <span className="text-gray-500 text-sm">{t('Длительность')}</span>
-            <span className="text-white text-sm font-medium">{formatDuration(service.duration, getLang())}</span>
+            <span className="text-white text-sm font-medium">{ownTerms ? formatDuration(ownTerms.duration, getLang()) : formatDurationRange(service, getLang())}</span>
           </div>
 
           <div className="flex justify-between items-center px-5 py-4">
             <span className="text-gray-500 text-sm">{t('Итого')}</span>
-            <span className="text-white text-base font-bold">{formatPrice(service.price)}</span>
+            <span className="text-white text-base font-bold">{ownTerms ? formatPrice(ownTerms.price) : formatPriceRange(service)}</span>
           </div>
 
         </div>

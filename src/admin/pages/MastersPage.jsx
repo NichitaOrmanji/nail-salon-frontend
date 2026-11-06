@@ -44,6 +44,10 @@ function ProfileSection({ master, services, onSaved }) {
   const [description, setDescription] = useState(master?.description || '')
   const [selected, setSelected] = useState(() => new Set(services.filter(s => s.is_active && linked.has(s.id)).map(s => s.id)))
   const [isActive, setIsActive] = useState(master ? master.is_active : true)
+  // Своя цена и длительность услуги у мастера: { serviceId: { price: '', duration: '' } } (пусто — как у услуги)
+  const [terms, setTerms] = useState(() => Object.fromEntries((master?.service_terms || []).map(row => [
+    row.service, { price: row.price != null ? String(Number(row.price)) : '', duration: row.duration ? String(row.duration) : '' },
+  ])))
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
@@ -62,15 +66,43 @@ function ProfileSection({ master, services, onSaved }) {
     })
   }
 
+  function changeTerm(id, field, value) {
+    setDone(false)
+    setTerms(prev => ({ ...prev, [id]: { price: '', duration: '', ...prev[id], [field]: value } }))
+  }
+
+  function termsBody() {
+    const items = []
+    for (const id of selected) {
+      const row = terms[id]
+      if (!row) continue
+      const price = row.price.trim() === '' ? null : Number(row.price.replace(',', '.'))
+      const duration = row.duration.trim() === '' ? null : Number(row.duration)
+      if (price !== null && (!Number.isFinite(price) || price < 0)) throw new Error('Цена — число не меньше 0')
+      if (duration !== null && (!Number.isInteger(duration) || duration < 5 || duration > 600)) {
+        throw new Error('Длительность — от 5 до 600 минут')
+      }
+      if (price !== null || duration !== null) items.push({ service: id, price, duration })
+    }
+    return items
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     if (!name.trim()) {
       setError('Укажите имя')
       return
     }
+    let serviceTerms
+    try {
+      serviceTerms = termsBody()
+    } catch (err) {
+      setError(err.message)
+      return
+    }
     setError(null)
     setSaving(true)
-    const body = { name: name.trim(), description: description.trim(), services: [...selected] }
+    const body = { name: name.trim(), description: description.trim(), services: [...selected], service_terms: serviceTerms }
     try {
       let saved
       if (isNew) {
@@ -106,11 +138,42 @@ function ProfileSection({ master, services, onSaved }) {
         <div>
           <div className="text-gray-400 text-xs font-medium mb-1">Услуги</div>
           {activeServices.length === 0 && <p className="text-gray-500 text-sm">Активных услуг нет</p>}
-          <div className="grid sm:grid-cols-2 gap-x-4">
+          <div className="space-y-1">
             {activeServices.map(s => (
-              <Checkbox key={s.id} checked={selected.has(s.id)} onChange={on => toggleService(s.id, on)} label={s.name} />
+              <div key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <div className="flex-1 min-w-[10rem]">
+                  <Checkbox checked={selected.has(s.id)} onChange={on => toggleService(s.id, on)} label={s.name} />
+                </div>
+                {selected.has(s.id) && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      aria-label={`Цена у мастера: ${s.name}`}
+                      placeholder={`${Number(s.price)} L`}
+                      value={terms[s.id]?.price || ''}
+                      onChange={e => changeTerm(s.id, 'price', e.target.value)}
+                      className="w-24 min-h-[40px] px-3 rounded-xl text-white text-sm outline-none"
+                      style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e' }}
+                    />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      aria-label={`Длительность у мастера, минут: ${s.name}`}
+                      placeholder={`${s.duration} мин`}
+                      value={terms[s.id]?.duration || ''}
+                      onChange={e => changeTerm(s.id, 'duration', e.target.value)}
+                      className="w-24 min-h-[40px] px-3 rounded-xl text-white text-sm outline-none"
+                      style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e' }}
+                    />
+                  </div>
+                )}
+              </div>
             ))}
           </div>
+          {activeServices.length > 0 && (
+            <p className="text-gray-500 text-xs mt-2">Цена и длительность у этого мастера — если отличаются от услуги. Пусто — как у услуги.</p>
+          )}
           {hiddenLinked.length > 0 && (
             <div className="mt-2">
               {hiddenLinked.map(s => (

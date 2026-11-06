@@ -5,7 +5,7 @@ import { fetchServices } from '../api/services'
 import Spinner from '../components/layout/Spinner'
 import SalonHeader from '../components/layout/SalonHeader'
 import { PAGE_WIDTH } from '../components/layout/width'
-import { formatDuration, formatPrice } from '../utils/format'
+import { formatDurationRange, formatPriceRange } from '../utils/format'
 import { getLang, t } from '../i18n'
 
 function IconSearch() {
@@ -173,7 +173,7 @@ export default function ServicesPage() {
                         <div className="text-left flex-1 wrap-anywhere">
                           <div className="text-white text-sm font-medium">{item.name}</div>
                           <div className="text-gray-500 text-xs mt-0.5">
-                            {formatDuration(item.duration, getLang())} · {formatPrice(item.price)}
+                            {formatDurationRange(item, getLang())} · {formatPriceRange(item)}
                           </div>
                         </div>
                         <div
@@ -205,7 +205,7 @@ export default function ServicesPage() {
           >
             <div className="text-sm font-semibold">{t('Далее')}</div>
             <div className="text-xs opacity-75 mt-0.5">
-              {service.name} · {formatDuration(service.duration, getLang())} · {formatPrice(service.price)}
+              {service.name} · {formatDurationRange(service, getLang())} · {formatPriceRange(service)}
             </div>
           </button>
         </div>

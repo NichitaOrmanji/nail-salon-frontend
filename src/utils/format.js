@@ -8,6 +8,19 @@ export function formatPrice(price) {
   return `${Number(price)} L`
 }
 
+// Цена услуги «от – до», если у мастеров она разная
+export function formatPriceRange(service) {
+  const min = Number(service.price_min ?? service.price)
+  const max = Number(service.price_max ?? service.price)
+  return min === max ? `${min} L` : `${min} – ${max} L`
+}
+
+export function formatDurationRange(service, lang = 'ru') {
+  const min = Number(service.duration_min ?? service.duration)
+  const max = Number(service.duration_max ?? service.duration)
+  return min === max ? formatDuration(min, lang) : `${formatDuration(min, lang)} – ${formatDuration(max, lang)}`
+}
+
 export function sumPrice(services) {
   return services.reduce((sum, s) => sum + Number(s.price), 0)
 }
