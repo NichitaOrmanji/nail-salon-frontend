@@ -37,6 +37,7 @@ const SlotsPage = lazyPage(loadBooking[2])
 const ConfirmationPage = lazyPage(loadBooking[3])
 const ProfilePage = lazyPage(() => import('./pages/ProfilePage'))
 const AccountPage = lazyPage(() => import('./pages/AccountPage'))
+const ManagePage = lazyPage(() => import('./pages/ManagePage'))
 const PrivacyPage = lazyPage(() => import('./pages/PrivacyPage'))
 const RulesPage = lazyPage(() => import('./pages/RulesPage'))
 const NotFoundPage = lazyPage(() => import('./pages/NotFoundPage'))
@@ -95,6 +96,7 @@ function ClientApp() {
                   <Route path="/account" element={<AccountPage />} />
                   <Route path="/privacy" element={<PrivacyPage />} />
                   <Route path="/rules" element={<RulesPage />} />
+                  <Route path="/manage/:token" element={<ManagePage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
                 </Suspense>

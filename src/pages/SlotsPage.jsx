@@ -1,41 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
-import { fetchSlots, fetchSlotsByMaster, fetchFreePoints } from '../api/slots'
+import { fetchSlots, fetchSlotsByMaster, fetchFreePoints, fetchMonthLoad } from '../api/slots'
+import LoadCalendar from '../components/LoadCalendar'
+import { groupSlots } from '../utils/slotGroups'
 import Spinner from '../components/layout/Spinner'
 import SalonHeader from '../components/layout/SalonHeader'
 import { PAGE_WIDTH } from '../components/layout/width'
 import { formatDisplayDate, toDateString } from '../utils/format'
 import { getLang, t } from '../i18n'
-
-// Переводятся при показе: константа модуля не знает о смене языка
-const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
-const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс']
-
-function getDaysInMonth(year, month) {
-  return new Date(year, month + 1, 0).getDate()
-}
-
-function getFirstDayOfMonth(year, month) {
-  const day = new Date(year, month, 1).getDay()
-  return day === 0 ? 6 : day - 1
-}
-
-function IconChevronLeft() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 18l-6-6 6-6"/>
-    </svg>
-  )
-}
-
-function IconChevronRight() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 18l6-6-6-6"/>
-    </svg>
-  )
-}
 
 // Свободное время на дату с учётом того, что уже выбрано:
 // конкретный мастер → его слоты; «любой» → слоты всех мастеров услуги;
@@ -72,10 +45,8 @@ export default function SlotsPage() {
   const [slots, setSlots] = useState([])
   const [loading, setLoading] = useState(false)
   const [slotsError, setSlotsError] = useState(null)
+  const [monthLoad, setMonthLoad] = useState({})
 
-  const daysInMonth = getDaysInMonth(year, month)
-  const firstDay = getFirstDayOfMonth(year, month)
-  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth()
 
   async function selectDate(dateStr) {
     setSelectedDate(dateStr)
@@ -104,15 +75,24 @@ export default function SlotsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function changeMonth(delta) {
-    const d = new Date(year, month + delta, 1)
-    setYear(d.getFullYear())
-    setMonth(d.getMonth())
+  function changeMonth(newYear, newMonth) {
+    setYear(newYear)
+    setMonth(newMonth)
     setSelectedDate(null)
     setSelectedSlot(null)
     setSlots([])
     setSlotsError(null)
   }
+
+  // Кружки загруженности дней: для выбранных услуги и мастера (без них — по всему салону)
+  useEffect(() => {
+    let cancelled = false
+    const key = `${year}-${String(month + 1).padStart(2, '0')}`
+    fetchMonthLoad({ month: key, serviceId: service?.id, masterId: master?.id })
+      .then(days => { if (!cancelled) setMonthLoad(days) })
+      .catch(() => { if (!cancelled) setMonthLoad({}) }) // без кружков календарь работает как раньше
+    return () => { cancelled = true }
+  }, [year, month, service?.id, master?.id])
 
   function selectSlot(slot) {
     setSelectedSlot(slot)
@@ -136,66 +116,16 @@ export default function SlotsPage() {
 
       <div className="px-6">
 
-        {/* Навигация по месяцу */}
-        <div className="flex items-center justify-between mb-6">
-          <span className="text-white font-semibold text-base">
-            {t(MONTHS[month])} {year}
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => changeMonth(-1)}
-              disabled={isCurrentMonth}
-              aria-label={t('Предыдущий месяц')}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-              style={{ backgroundColor: '#242424', opacity: isCurrentMonth ? 0.3 : 1 }}
-            >
-              <IconChevronLeft />
-            </button>
-            <button
-              onClick={() => changeMonth(1)}
-              aria-label={t('Следующий месяц')}
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 transition-all active:scale-90"
-              style={{ backgroundColor: '#242424' }}
-            >
-              <IconChevronRight />
-            </button>
-          </div>
-        </div>
-
-        {/* Дни недели */}
-        <div className="grid grid-cols-7 mb-2">
-          {DAYS.map(d => (
-            <div key={d} className="text-center text-gray-600 text-xs py-2 font-medium">{t(d)}</div>
-          ))}
-        </div>
-
-        {/* Числа */}
-        <div className="grid grid-cols-7 gap-y-1">
-          {Array(firstDay).fill(null).map((_, i) => <div key={`e-${i}`} />)}
-          {Array(daysInMonth).fill(null).map((_, i) => {
-            const day = i + 1
-            const dateStr = toDateString(new Date(year, month, day))
-            const isSelected = selectedDate === dateStr
-            const isPast = dateStr < todayStr
-            const todayMark = dateStr === todayStr
-
-            return (
-              <button
-                key={day}
-                onClick={() => selectDate(dateStr)}
-                disabled={isPast}
-                className="flex items-center justify-center h-10 w-10 mx-auto rounded-xl text-sm transition-all active:scale-90"
-                style={{
-                  backgroundColor: isSelected ? '#db2777' : todayMark ? '#242424' : 'transparent',
-                  color: isPast ? '#374151' : '#ffffff',
-                  fontWeight: todayMark ? '700' : '400',
-                }}
-              >
-                {day}
-              </button>
-            )
-          })}
-        </div>
+        <LoadCalendar
+          year={year}
+          month={month}
+          onMonthChange={changeMonth}
+          days={monthLoad}
+          selected={selectedDate}
+          onSelect={selectDate}
+          clientMode
+          minMonth={todayStr.slice(0, 7)}
+        />
 
         {/* Слоты */}
         {selectedDate && (
@@ -221,19 +151,26 @@ export default function SlotsPage() {
                 <p className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">
                   {t('Свободное время')}
                 </p>
-                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
-                  {slots.map(slot => (
-                    <button
-                      key={slot}
-                      onClick={() => selectSlot(slot)}
-                      className="py-3 rounded-xl text-sm font-medium transition-all active:scale-95"
-                      style={{
-                        backgroundColor: selectedSlot === slot ? '#db2777' : '#242424',
-                        color: selectedSlot === slot ? '#ffffff' : '#9ca3af'
-                      }}
-                    >
-                      {slot}
-                    </button>
+                <div className="space-y-4">
+                  {groupSlots(slots).map(group => (
+                    <div key={group.key}>
+                      <p className="text-gray-600 text-xs mb-2">{t(group.label)}</p>
+                      <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+                        {group.slots.map(slot => (
+                          <button
+                            key={slot}
+                            onClick={() => selectSlot(slot)}
+                            className="py-3 rounded-xl text-sm font-medium transition-all active:scale-95"
+                            style={{
+                              backgroundColor: selectedSlot === slot ? '#db2777' : '#242424',
+                              color: selectedSlot === slot ? '#ffffff' : '#9ca3af'
+                            }}
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </>

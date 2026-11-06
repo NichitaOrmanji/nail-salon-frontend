@@ -11,6 +11,7 @@ import { useCompany } from '../context/CompanyContext'
 import PhoneField from '../components/layout/PhoneField'
 import { formatDisplayDate, formatDuration, formatPrice } from '../utils/format'
 import { getLang, t } from '../i18n'
+import { downloadIcs } from '../utils/ics'
 
 function IconSuccess() {
   return (
@@ -60,6 +61,8 @@ export default function ConfirmationPage() {
   const [submitError, setSubmitError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
+  // Что записали (выбор сбрасывается после записи) и ссылка «Управлять записью»
+  const [booked, setBooked] = useState(null)
 
   // Сохраняем черновик, чтобы введённое не терялось при уходе на главную
   useEffect(() => {
@@ -111,6 +114,11 @@ export default function ConfirmationPage() {
       })
       setTelegramUrl(created?.telegram_url || null)
       setConfirmed(created?.status === 'confirmed')
+      setBooked({
+        token: created?.manage_token || null,
+        service: service.name, duration: service.duration, date, time,
+        master: master?.id ? master.name : null,
+      })
       localStorage.setItem('client_name', name.trim())
       localStorage.setItem('client_phone', phone)
       setSent(true)
@@ -137,10 +145,43 @@ export default function ConfirmationPage() {
             ? t('Ждём вас в салоне. Запись появится в личном кабинете.')
             : t('Салон подтвердит запись — при необходимости вам позвонят по указанному номеру.')}
         </p>
-        <p className="text-gray-500 text-xs text-center mb-8 max-w-xs">
-          {t('Не можете прийти — отмените запись в личном кабинете или позвоните в салон.')}{' '}
+        {booked && (
+          <p className="text-white text-sm text-center mb-4">
+            {booked.service} · {t('{date} в {time}', { date: formatDisplayDate(booked.date, { withYear: false, lang: getLang() }), time: booked.time })}
+          </p>
+        )}
+        <p className="text-gray-500 text-xs text-center mb-5 max-w-xs">
+          {booked?.token
+            ? t('Планы изменились — перенесите или отмените запись по кнопке ниже.')
+            : t('Не можете прийти — отмените запись в личном кабинете или позвоните в салон.')}{' '}
           <Link to="/rules" className="underline" style={{ color: '#f472b6' }}>{t('Правила салона')}</Link>
         </p>
+        {booked && (
+          <div className="w-full max-w-xs grid grid-cols-2 gap-2 mb-3">
+            {booked.token && (
+              <button
+                type="button"
+                onClick={() => navigate(`/manage/${booked.token}`)}
+                className="py-3 rounded-2xl text-sm font-medium active:scale-95"
+                style={{ backgroundColor: '#242424', color: '#f9a8d4' }}
+              >
+                {t('Перенести или отменить')}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => downloadIcs({
+                title: `${booked.service} — ${company?.name || ''}`.trim(),
+                date: booked.date, start: booked.time, duration: booked.duration,
+                location: company?.address, description: booked.master ? t('Мастер: {name}', { name: booked.master }) : '',
+              })}
+              className={`py-3 rounded-2xl text-sm font-medium active:scale-95 ${booked.token ? '' : 'col-span-2'}`}
+              style={{ backgroundColor: '#242424', color: '#d1d5db' }}
+            >
+              {t('В календарь')}
+            </button>
+          </div>
+        )}
         {telegramUrl && (
           <>
             <p className="text-gray-500 text-xs text-center mb-3 max-w-xs">
@@ -160,9 +201,15 @@ export default function ConfirmationPage() {
           </>
         )}
         <button
-          onClick={() => navigate('/')}
-          className="w-full max-w-xs py-4 rounded-2xl font-semibold transition-all active:scale-95"
+          onClick={() => navigate('/services')}
+          className="w-full max-w-xs py-4 rounded-2xl font-semibold transition-all active:scale-95 mb-3"
           style={telegramUrl ? { backgroundColor: '#242424', color: '#d1d5db' } : { backgroundColor: '#db2777', color: '#fff' }}
+        >
+          {t('Записаться ещё')}
+        </button>
+        <button
+          onClick={() => navigate('/')}
+          className="w-full max-w-xs py-3 rounded-2xl text-sm font-medium text-gray-400 active:scale-95"
         >
           {t('На главную')}
         </button>

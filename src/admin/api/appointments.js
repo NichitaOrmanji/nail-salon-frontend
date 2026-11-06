@@ -54,3 +54,17 @@ export async function lookupClient(phone) {
   const response = await staffApi.get('/clients/lookup/', { params: { phone } })
   return response.data
 }
+
+// Новые онлайн-записи после since (ISO): { now, items } — для всплывающего «Новая запись»
+export async function fetchRecentOnline(since) {
+  const response = await staffApi.get('/appointments/recent-online/', { params: { since } })
+  return { now: response.data?.now || since, items: expectArray(response.data?.items) }
+}
+
+// Мини-календарь журнала: { 'YYYY-MM-DD': { working, load, free } }
+export async function fetchStaffMonthLoad({ month, master }) {
+  const params = { month }
+  if (master) params.master = master
+  const response = await staffApi.get('/calendar/', { params })
+  return Object.fromEntries(expectArray(response.data?.days).map(d => [d.date, d]))
+}
