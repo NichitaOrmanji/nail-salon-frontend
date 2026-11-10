@@ -63,3 +63,29 @@ export async function fetchSuperLog() {
 export async function regenerateBackupCodes(code) {
   return (await api.post('/auth/backup-codes/', { code })).data
 }
+
+// Вход в панель салона от имени владельца → { access, expires_at, salon }
+export async function impersonateSalon(id) {
+  return (await api.post(`/salons/${id}/impersonate/`)).data
+}
+
+export async function fetchOverview() {
+  return (await api.get('/overview/')).data
+}
+
+export async function fetchSalons(params = {}) {
+  return (await api.get('/salons/', { params })).data
+}
+
+export async function fetchSalon(id) {
+  return (await api.get(`/salons/${id}/`)).data
+}
+
+// action: status | trial | resend-verification | password-reset | note → свежая карточка салона
+export async function salonAction(id, action, data = {}) {
+  return (await api.post(`/salons/${id}/${action}/`, data)).data
+}
+
+export async function fetchHealth() {
+  return (await api.get('/health/')).data
+}
