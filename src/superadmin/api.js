@@ -89,3 +89,20 @@ export async function salonAction(id, action, data = {}) {
 export async function fetchHealth() {
   return (await api.get('/health/')).data
 }
+
+// Тревоги в Telegram: статус, ссылка для подключения, отключение, проверка
+export async function fetchSuperTelegram() {
+  return (await api.get('/telegram/')).data
+}
+
+export async function linkSuperTelegram() {
+  return (await api.post('/telegram/')).data
+}
+
+export async function unlinkSuperTelegram() {
+  await api.delete('/telegram/')
+}
+
+export async function testSuperTelegram() {
+  return (await api.post('/telegram/test/')).data
+}

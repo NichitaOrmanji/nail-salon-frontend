@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Spinner from '../components/layout/Spinner'
 import { Button, ErrorText } from '../admin/components/ui'
 import { fetchHealth } from './api'
@@ -91,6 +92,9 @@ export default function HealthPage() {
         style={problems.length
           ? { backgroundColor: '#2a1414', border: '1px solid #7f1d1d' }
           : { backgroundColor: '#132117', border: '1px solid #166534' }}>
+        <p className="text-xs text-gray-400 mb-2">
+          Тревоги о проблемах приходят в Telegram — подключается в разделе <Link to="/superadmin/security" className="underline">«Безопасность и Telegram»</Link>.
+        </p>
         {problems.length === 0 ? (
           <p className="text-white font-medium">✓ Всё работает: проблем не найдено</p>
         ) : (
