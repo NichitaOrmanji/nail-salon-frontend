@@ -14,6 +14,8 @@ export const ACTIONS = {
   password_reset_sent: 'Отправлена ссылка для сброса пароля',
   note_added: 'Добавлена заметка',
   impersonation_started: 'Вход в панель салона',
+  telegram_linked: 'Подключён Telegram для тревог',
+  telegram_unlinked: 'Отключён Telegram для тревог',
 }
 
 export const STATUS = {

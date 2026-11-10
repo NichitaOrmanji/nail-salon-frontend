@@ -9,6 +9,7 @@ import OverviewPage from './OverviewPage'
 import SalonsPage from './SalonsPage'
 import SalonPage from './SalonPage'
 import HealthPage from './HealthPage'
+import TelegramPanel from './TelegramPanel'
 import { ACTIONS, formatWhen } from './common'
 import { Panel } from './ui'
 
@@ -39,7 +40,7 @@ const NAV = [
   { to: '/superadmin/salons', label: 'Салоны' },
   { to: '/superadmin/health', label: 'Техническое состояние' },
   { to: '/superadmin/log', label: 'Журнал действий' },
-  { to: '/superadmin/security', label: 'Безопасность' },
+  { to: '/superadmin/security', label: 'Безопасность и Telegram' },
 ]
 
 function Layout({ me }) {
@@ -144,6 +145,8 @@ function SecurityPage({ me, setMe }) {
   }
 
   return (
+    <>
+    <TelegramPanel />
     <Panel title="Безопасность">
       <div className="space-y-4 max-w-lg">
         <p className="text-gray-300 text-sm">
@@ -167,6 +170,7 @@ function SecurityPage({ me, setMe }) {
         </p>
       </div>
     </Panel>
+    </>
   )
 }
 
