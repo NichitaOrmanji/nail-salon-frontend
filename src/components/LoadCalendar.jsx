@@ -105,7 +105,9 @@ export default function LoadCalendar({
               style={{
                 width: cell, height: cell,
                 backgroundColor: isSelected ? '#db2777' : 'transparent',
-                color: disabled || isPast ? '#4b5563' : dayOff ? '#9ca3af' : '#ffffff',
+                // Недоступный день у клиента — приглушён (кнопка выключена); в панели прошедшие дни
+                // кликабельны — серый, но читаемый (контраст ≥ 4.5:1)
+                color: disabled ? '#4b5563' : isPast || dayOff ? '#9ca3af' : '#ffffff',
                 fontWeight: isToday ? 700 : 400,
                 textDecoration: full && clientMode ? 'line-through' : 'none',
               }}
