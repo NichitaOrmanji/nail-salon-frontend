@@ -945,4 +945,12 @@ export default {
   'Каждые 2 недели': 'La fiecare 2 săptămâni',
   'Каждые 3 недели': 'La fiecare 3 săptămâni',
   'Каждые 4 недели': 'La fiecare 4 săptămâni',
+  'Цены и длительность': 'Prețuri și durată',
+  'Не короче 8 символов, не только цифры, не похож на адрес почты': 'Minimum 8 caractere, nu doar cifre, diferită de adresa de poștă',
+  '✓ Email подтверждён — салон виден клиентам. Ваша ссылка для записи:': '✓ Email confirmat — salonul e vizibil pentru clienți. Linkul dvs. de programare:',
+  'Email подтверждён — сайт записи виден клиентам.': 'Email confirmat — site-ul de programare e vizibil pentru clienți.',
+  'Заполнить быстро:': 'Completare rapidă:',
+  'Пн–Пт 9:00–18:00': 'Lu–Vi 9:00–18:00',
+  'Пн–Сб 9:00–19:00': 'Lu–Sâ 9:00–19:00',
+  'Каждый день 10:00–20:00': 'Zilnic 10:00–20:00',
 }

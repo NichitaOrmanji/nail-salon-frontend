@@ -126,7 +126,8 @@ export default function SettingsPage() {
           <HelpButton />
           {isManager && <SalonSettings />}
         </div>
-        {isManager && <div className="min-w-0"><SalonOverview /></div>}
+        {/* До xl колонки идут друг под другом: шаги настройки и ссылка — первыми */}
+        {isManager && <div className="min-w-0 order-first xl:order-none"><SalonOverview /></div>}
       </div>
     </div>
   )

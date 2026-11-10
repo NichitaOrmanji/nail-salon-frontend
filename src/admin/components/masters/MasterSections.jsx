@@ -33,6 +33,13 @@ function normalizeSchedule(schedule) {
   })
 }
 
+// Готовые графики: дни недели (0 — Пн) и часы
+const PRESETS = [
+  { label: 'Пн–Пт 9:00–18:00', days: [0, 1, 2, 3, 4], start: '09:00', end: '18:00' },
+  { label: 'Пн–Сб 9:00–19:00', days: [0, 1, 2, 3, 4, 5], start: '09:00', end: '19:00' },
+  { label: 'Каждый день 10:00–20:00', days: [0, 1, 2, 3, 4, 5, 6], start: '10:00', end: '20:00' },
+]
+
 export function ScheduleSection({ master, readOnly, onSaved }) {
   const [rows, setRows] = useState(() => normalizeSchedule(master.schedule))
   const [saved, setSaved] = useState(() => JSON.stringify(normalizeSchedule(master.schedule)))
@@ -45,6 +52,14 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
   function update(day, patch) {
     setDone(false)
     setRows(list => list.map(r => (r.day_of_week === day ? { ...r, ...patch } : r)))
+  }
+
+  function applyPreset(preset) {
+    setDone(false)
+    setError(null)
+    setRows(list => list.map(r => (preset.days.includes(r.day_of_week)
+      ? { ...r, is_working: true, start_time: preset.start, end_time: preset.end }
+      : { ...r, is_working: false, break_start: null, break_end: null })))
   }
 
   // Обед первого рабочего дня с обедом — во все рабочие дни
@@ -87,6 +102,14 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
         <p className="text-gray-500 text-xs mb-3">
           {t('Действует на все недели. Отдельные даты (другие часы, выходной) — во вкладке «Графики». Обед клиентам не показывается: записаться на это время нельзя.')}
         </p>
+      )}
+      {!readOnly && (
+        <div className="mb-3">
+          <div className="text-gray-400 text-xs mb-2">{t('Заполнить быстро:')}</div>
+          <div className="flex flex-wrap gap-2">
+            {PRESETS.map(p => <Button key={p.label} onClick={() => applyPreset(p)}>{t(p.label)}</Button>)}
+          </div>
+        </div>
       )}
       <div className="space-y-2">
         {rows.map(r => (
