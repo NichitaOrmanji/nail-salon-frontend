@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import ImpersonationBar from '../components/ImpersonationBar'
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { fetchPendingCount, fetchStaffMonthLoad } from '../api/appointments'
@@ -224,6 +225,7 @@ export default function AdminLayout() {
       )}
 
       <div className="flex-1 min-w-0 flex flex-col">
+        <ImpersonationBar me={me} />
         {outdated && (
           <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: '#3b2a12', borderBottom: '1px solid #f59e0b' }}>
             <span className="flex-1 min-w-0 text-sm" style={{ color: '#fbbf24' }}>{t('Вышла новая версия панели')}</span>

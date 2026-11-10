@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { t, tr } from '../../i18n'
+import { endImpersonation } from '../utils/impersonation'
 
 // API персонала: /api/staff/…; токены хранятся отдельно от клиентских
 const API_ROOT = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api')
@@ -52,6 +53,12 @@ export function clearStaffTokens() {
 // и RequireStaff уводит на страницу входа (message — почему вышли)
 export function forceStaffLogout(message) {
   clearStaffTokens()
+  // Супер-админ работал в салоне от имени владельца и сессия кончилась — назад в супер-админку
+  const back = endImpersonation()
+  if (back) {
+    window.location.assign(back)
+    return
+  }
   window.dispatchEvent(new CustomEvent('staff:logout', { detail: { message } }))
   if (!window.location.pathname.startsWith(LOGIN_PATH)) {
     window.history.pushState({}, '', LOGIN_PATH)

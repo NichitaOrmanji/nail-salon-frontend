@@ -1,34 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Navigate, NavLink, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
+import { Link, Navigate, NavLink, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
 import Spinner from '../components/layout/Spinner'
 import { Button, ErrorText, Field, TextInput } from '../admin/components/ui'
 import { clearSuperToken, fetchSuperLog, fetchSuperMe, getSuperToken, regenerateBackupCodes, SUPER_LOGIN_PATH } from './api'
 import LoginPage from './LoginPage'
 import BackupCodes from './BackupCodes'
-
-const ACTIONS = {
-  login: 'Вход',
-  login_failed: 'Неверный код',
-  totp_setup: 'Подключено приложение для кодов',
-  totp_reset: 'Сброшен код из приложения',
-  backup_codes_regenerated: 'Новые резервные коды',
-  password_set: 'Задан пароль',
-}
-
-function formatWhen(iso) {
-  const d = new Date(iso)
-  const pad = n => String(n).padStart(2, '0')
-  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
-function Panel({ title, children }) {
-  return (
-    <section className="rounded-2xl p-5" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2e2e2e' }}>
-      {title && <h2 className="text-white text-base font-semibold mb-4">{title}</h2>}
-      {children}
-    </section>
-  )
-}
+import OverviewPage from './OverviewPage'
+import SalonsPage from './SalonsPage'
+import SalonPage from './SalonPage'
+import HealthPage from './HealthPage'
+import { ACTIONS, formatWhen } from './common'
+import { Panel } from './ui'
 
 // Без токена — на вход; токен проверяем запросом /me (401 → выход)
 function RequireSuper({ children }) {
@@ -55,6 +37,7 @@ function RequireSuper({ children }) {
 const NAV = [
   { to: '/superadmin', label: 'Сводка', end: true },
   { to: '/superadmin/salons', label: 'Салоны' },
+  { to: '/superadmin/health', label: 'Техническое состояние' },
   { to: '/superadmin/log', label: 'Журнал действий' },
   { to: '/superadmin/security', label: 'Безопасность' },
 ]
@@ -94,17 +77,6 @@ function Layout({ me }) {
   )
 }
 
-function Soon({ title, items }) {
-  return (
-    <Panel title={title}>
-      <p className="text-gray-400 text-sm mb-3">Раздел в разработке. Здесь будет:</p>
-      <ul className="list-disc pl-5 text-gray-300 text-sm space-y-1">
-        {items.map(item => <li key={item}>{item}</li>)}
-      </ul>
-    </Panel>
-  )
-}
-
 function LogPage() {
   const [rows, setRows] = useState(null)
   const [error, setError] = useState(null)
@@ -136,7 +108,7 @@ function LogPage() {
                     {ACTIONS[r.action] || r.action}
                     {r.details?.backup_code && <span className="text-gray-500"> · резервным кодом</span>}
                   </td>
-                  <td className="py-2 pr-4 text-gray-300">{r.company ? r.company.name : '—'}</td>
+                  <td className="py-2 pr-4 text-gray-300">{r.company ? <Link to={`/superadmin/salons/${r.company.id}`} className="hover:underline">{r.company.name}</Link> : '—'}</td>
                   <td className="py-2 pr-4 text-gray-300">{r.user || '—'}</td>
                   <td className="py-2 text-gray-500 whitespace-nowrap">{r.ip || '—'}</td>
                 </tr>
@@ -222,16 +194,10 @@ export default function SuperApp() {
             {(me, setMe) => (
               <Routes>
                 <Route element={<Layout me={me} />}>
-                  <Route index element={<Soon title="Сводка" items={[
-                    'Салоны по статусам: пробный период, работают, заблокированы',
-                    'Регистрации и записи по дням',
-                    'Кончается пробный период, не подтверждён email, давно не заходили',
-                  ]} />} />
-                  <Route path="salons" element={<Soon title="Салоны" items={[
-                    'Список с поиском и фильтрами',
-                    'Карточка салона: блокировка, продление пробного периода, письма владельцу, заметки',
-                    'Вход в панель салона от имени владельца',
-                  ]} />} />
+                  <Route index element={<OverviewPage />} />
+                  <Route path="salons" element={<SalonsPage />} />
+                  <Route path="salons/:id" element={<SalonPage />} />
+                  <Route path="health" element={<HealthPage />} />
                   <Route path="log" element={<LogPage />} />
                   <Route path="security" element={<SecurityPage me={me} setMe={setMe} />} />
                   <Route path="*" element={<Navigate to="/superadmin" replace />} />
