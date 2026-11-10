@@ -50,6 +50,8 @@ const isProductHost = typeof window !== 'undefined' && PRODUCT_HOSTS.includes(wi
 
 // Панель салона грузится отдельным чанком, чтобы клиентский бандл не рос
 const AdminApp = lazyPage(() => import('./admin/AdminApp'))
+// Супер-админка платформы (только владелец TimePoint) — тоже отдельный чанк
+const SuperApp = lazyPage(() => import('./superadmin/SuperApp'))
 
 // Пока клиент смотрит главную, браузер в простое докачивает шаги записи —
 // переход к выбору услуги без ожидания
@@ -126,6 +128,16 @@ export default function App() {
                 }
               >
                 <AdminApp />
+              </Suspense>
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="/superadmin/*"
+          element={
+            <ErrorBoundary homePath="/superadmin" homeLabel="В супер-админку">
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#111111' }}><Spinner /></div>}>
+                <SuperApp />
               </Suspense>
             </ErrorBoundary>
           }

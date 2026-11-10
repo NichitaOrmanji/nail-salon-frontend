@@ -1,0 +1,65 @@
+import axios from 'axios'
+import { extractMessage } from '../admin/api/staffClient'
+
+// API супер-админки: /api/super/…. Токен живёт 4 часа и хранится только в этой вкладке
+// (sessionStorage): закрыли вкладку — вход заново с кодом из приложения
+const API_ROOT = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:8000/api')
+const TOKEN_KEY = 'super_token'
+export const SUPER_LOGIN_PATH = '/superadmin/login'
+
+const api = axios.create({ baseURL: API_ROOT + '/super' })
+
+export function getSuperToken() {
+  try { return sessionStorage.getItem(TOKEN_KEY) } catch { return null }
+}
+
+export function saveSuperToken(token) {
+  try { sessionStorage.setItem(TOKEN_KEY, token) } catch { /* хранилище недоступно */ }
+}
+
+export function clearSuperToken() {
+  try { sessionStorage.removeItem(TOKEN_KEY) } catch { /* хранилище недоступно */ }
+}
+
+api.interceptors.request.use(config => {
+  const token = getSuperToken()
+  if (token && !config.url.startsWith('/auth/login') && !config.url.startsWith('/auth/verify')) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+api.interceptors.response.use(
+  response => response,
+  error => {
+    const status = error.response?.status
+    const message = extractMessage(error.response?.data) || (status ? `Ошибка ${status}` : 'Нет связи с сервером')
+    if (status === 401 && getSuperToken()) {
+      clearSuperToken()
+      window.dispatchEvent(new CustomEvent('super:logout', { detail: { message } }))
+    }
+    const wrapped = new Error(message)
+    wrapped.status = status
+    return Promise.reject(wrapped)
+  }
+)
+
+export async function superLogin(username, password) {
+  return (await api.post('/auth/login/', { username, password })).data
+}
+
+export async function superVerify(ticket, code) {
+  return (await api.post('/auth/verify/', { ticket, code })).data
+}
+
+export async function fetchSuperMe() {
+  return (await api.get('/me/')).data
+}
+
+export async function fetchSuperLog() {
+  return (await api.get('/log/')).data
+}
+
+export async function regenerateBackupCodes(code) {
+  return (await api.post('/auth/backup-codes/', { code })).data
+}
