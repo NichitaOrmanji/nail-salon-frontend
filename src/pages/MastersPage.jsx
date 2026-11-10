@@ -114,7 +114,7 @@ export default function MastersPage() {
 
   const allMasters = masters.length === 0 ? [] : [
     { id: null, name: t('Любой специалист'), specialty: '' },
-    ...masters.map(m => ({ ...m, specialty: m.description || t('Мастер маникюра и педикюра') }))
+    ...masters.map(m => ({ ...m, specialty: m.description || '' }))
   ]
 
   return (

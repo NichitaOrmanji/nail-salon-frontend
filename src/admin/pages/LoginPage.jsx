@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { BrandLockup } from '../../components/BrandMark'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { fetchSignupConfig } from '../api/signup'
 import { useStaffAuth } from '../context/StaffAuthContext'
@@ -52,11 +53,8 @@ export default function LoginPage() {
         style={{ backgroundColor: '#1a1a1a', border: '1px solid #2e2e2e' }}
       >
         <div className="flex flex-col items-center mb-2">
-          {/* Панель общая для всех салонов — без логотипа конкретного салона */}
-          <div className="w-16 h-16 rounded-2xl mb-3 flex items-center justify-center text-white text-xl font-bold"
-            style={{ background: 'linear-gradient(135deg, #f472b6, #a855f7)' }}>
-            TP
-          </div>
+          {/* Панель общая для всех салонов — знак TimePoint, без логотипа конкретного салона */}
+          <BrandLockup />
           <h1 className="text-white text-xl font-bold">{t('Панель салона')}</h1>
           <p className="text-gray-500 text-sm mt-1">{t('Вход для персонала · TimePoint')}</p>
         </div>

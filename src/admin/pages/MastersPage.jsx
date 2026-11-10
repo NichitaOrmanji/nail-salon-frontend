@@ -43,7 +43,7 @@ function ProfileSection({ master, services, onSaved }) {
   const linked = new Set(master?.services || [])
   const [name, setName] = useState(master?.name || '')
   const [description, setDescription] = useState(master?.description || '')
-  const [selected, setSelected] = useState(() => new Set(services.filter(s => s.is_active && linked.has(s.id)).map(s => s.id)))
+  const [selected, setSelected] = useState(() => new Set(services.filter(s => s.is_active && (isNew || linked.has(s.id))).map(s => s.id)))
   const [isActive, setIsActive] = useState(master ? master.is_active : true)
   // Своя цена и длительность услуги у мастера: { serviceId: { price: '', duration: '' } } (пусто — как у услуги)
   const [terms, setTerms] = useState(() => Object.fromEntries((master?.service_terms || []).map(row => [

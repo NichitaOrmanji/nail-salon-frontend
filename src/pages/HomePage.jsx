@@ -253,7 +253,7 @@ export default function HomePage() {
     {
       icon: <IconServices />,
       label: t('Выбрать услуги'),
-      sub: t('Маникюр, педикюр и другое'),
+      sub: t('Цены и длительность'),
       path: '/services'
     },
   ]

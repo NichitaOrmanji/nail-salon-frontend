@@ -8,6 +8,9 @@ import { PAGE_WIDTH } from '../components/layout/width'
 import { formatDuration, formatDurationRange, formatPrice, formatPriceRange } from '../utils/format'
 import { getLang, t } from '../i18n'
 
+// Поле поиска показываем, когда услуг больше стольких
+const SEARCH_FROM = 6
+
 function IconSearch() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -145,8 +148,8 @@ export default function ServicesPage() {
 
       {!loading && !error && allServices.length > 0 && (
         <>
-          {/* Фильтр категорий */}
-          <div className="px-6 flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide">
+          {/* Фильтр категорий — когда их больше одной */}
+          {categories.length > 2 && <div className="px-6 flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-hide">
             {categories.map(cat => (
               <button
                 key={cat}
@@ -160,10 +163,10 @@ export default function ServicesPage() {
                 {cat}
               </button>
             ))}
-          </div>
+          </div>}
 
-          {/* Поиск */}
-          <div className="px-6 mb-6">
+          {/* Поиск — когда услуг много */}
+          {allServices.length > SEARCH_FROM && <div className="px-6 mb-6">
             <div className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={{ backgroundColor: '#242424' }}>
               <span className="text-gray-500"><IconSearch /></span>
               <input
@@ -174,13 +177,15 @@ export default function ServicesPage() {
                 className="bg-transparent text-white placeholder-gray-600 outline-none w-full text-sm"
               />
             </div>
-          </div>
+          </div>}
 
           {/* Список услуг */}
           <div className="px-6">
             {visibleCategories.map(cat => (
               <div key={cat} className="mb-6">
-                <h3 className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">{cat}</h3>
+                {(visibleCategories.length > 1 || cat !== t('Без категории')) && (
+                  <h3 className="text-gray-500 text-xs uppercase tracking-widest font-medium mb-3">{cat}</h3>
+                )}
                 <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#242424' }}>
                   {filtered.filter(s => s.category_name === cat).map((item, idx, arr) => {
                     const order = selected.findIndex(x => x.id === item.id)

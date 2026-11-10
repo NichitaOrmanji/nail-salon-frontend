@@ -33,12 +33,15 @@ export function ButtonLink({ to, href, variant = 'secondary', className = '', ch
 }
 
 // Подпись + поле
-export function Field({ label, hint, children, className = '' }) {
+// error — ошибка этого поля (вместо подсказки)
+export function Field({ label, hint, error, children, className = '' }) {
   return (
     <label className={`block ${className}`}>
       {label && <span className="block text-gray-400 text-xs font-medium mb-1.5">{label}</span>}
       {children}
-      {hint && <span className="block text-gray-500 text-xs mt-1">{hint}</span>}
+      {error
+        ? <span role="alert" className="block text-xs mt-1" style={{ color: '#f87171' }}>{error}</span>
+        : hint && <span className="block text-gray-500 text-xs mt-1">{hint}</span>}
     </label>
   )
 }

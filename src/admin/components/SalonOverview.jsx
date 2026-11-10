@@ -9,7 +9,7 @@ import Spinner from '../../components/layout/Spinner'
 import { t, tr } from '../../i18n'
 
 const STEPS = tr({
-  email: { title: 'Подтвердите email', text: 'Пока email не подтверждён, клиенты не видят сайт записи.' },
+  email: { title: 'Подтвердите email', text: 'Пока email не подтверждён, клиенты не видят сайт записи.', doneText: 'Email подтверждён — сайт записи виден клиентам.' },
   salon: { title: 'Адрес и телефон салона', text: 'Клиенты увидят их на сайте; можно добавить фото и точку на карте.', to: '/admin-panel/settings', action: 'Настройки' },
   services: { title: 'Услуги и цены', text: 'Что вы делаете, сколько длится и стоит.', to: '/admin-panel/services', action: 'Услуги' },
   masters: { title: 'Мастера', text: 'Добавьте мастеров и отметьте, какие услуги делает каждый.', to: '/admin-panel/masters', action: 'Мастера' },
@@ -196,7 +196,7 @@ export default function SalonOverview() {
                     <div className="text-white text-sm font-semibold">
                       {info.title}<span className="sr-only">{step.done ? t(' — готово') : t(' — не сделано')}</span>
                     </div>
-                    <div className="text-gray-400 text-xs mt-0.5">{info.text}</div>
+                    <div className="text-gray-400 text-xs mt-0.5">{(step.done && info.doneText) || info.text}</div>
                     {step.key === 'email' && !step.done && (
                       <div className="text-xs mt-2">
                         <span className="text-gray-300">{t('Письмо на {email}.', { email: me?.email })}{' '}</span>

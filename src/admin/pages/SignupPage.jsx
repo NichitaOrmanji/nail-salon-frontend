@@ -26,6 +26,9 @@ function useSlugCheck(query) {
   return state
 }
 
+// Поля, ошибки которых сервер возвращает отдельно и мы показываем под самим полем
+const FIELD_ERRORS = ['salon_name', 'email', 'password', 'phone']
+
 // Регистрация салона: название, адрес сайта, email, пароль → сразу в панель
 export default function SignupPage() {
   const { me, signIn } = useStaffAuth()
@@ -35,6 +38,8 @@ export default function SignupPage() {
   // Адрес: пока владелец его не правил — из названия (подсказка сервера), потом — свой
   const [customSlug, setCustomSlug] = useState(null)
   const [error, setError] = useState(null)
+  // Ошибки сервера по полям: { password: '…', email: '…' } — показываем под полем
+  const [fieldErrors, setFieldErrors] = useState({})
   const [busy, setBusy] = useState(false)
   // Салон создан: { emailSent } — после входа «Начало работы» покажет приветствие
   const [created, setCreated] = useState(null)
@@ -52,6 +57,7 @@ export default function SignupPage() {
 
   function set(field, value) {
     setError(null)
+    setFieldErrors(errors => ({ ...errors, [field]: null }))
     setForm(f => ({ ...f, [field]: value }))
   }
 
@@ -69,7 +75,14 @@ export default function SignupPage() {
       setCreated({ emailSent: data.email_sent })
       await signIn(data)
     } catch (err) {
-      setError(err.message)
+      const byField = {}
+      for (const field of FIELD_ERRORS) {
+        const value = err.data?.[field]
+        const text = Array.isArray(value) ? value[0] : value
+        if (typeof text === 'string') byField[field] = text
+      }
+      setFieldErrors(byField)
+      setError(Object.keys(byField).length ? null : err.message)
       setBusy(false)
     }
   }
@@ -94,7 +107,7 @@ export default function SignupPage() {
   return (
     <AuthCard title={t('Регистрация салона')} wide onSubmit={handleSubmit}
       subtitle={t('Онлайн-запись для вашего салона · {trial_days} дней бесплатно', { trial_days: config.trial_days })}>
-      <Field label={t('Название салона')} hint={t('Так его увидят клиенты')}>
+      <Field label={t('Название салона')} hint={t('Так его увидят клиенты')} error={fieldErrors.salon_name}>
         <TextInput value={form.salon_name} onChange={e => set('salon_name', e.target.value)} maxLength={200} autoFocus />
       </Field>
 
@@ -124,15 +137,15 @@ export default function SignupPage() {
           ))}
       </div>
 
-      <Field label="Email" hint={t('Для входа и восстановления пароля. Придёт письмо для подтверждения')}>
+      <Field label="Email" hint={t('Для входа и восстановления пароля. Придёт письмо для подтверждения')} error={fieldErrors.email}>
         <TextInput type="email" autoComplete="email" autoCapitalize="none" value={form.email}
           onChange={e => set('email', e.target.value)} maxLength={150} />
       </Field>
-      <Field label={t('Пароль')} hint={t('Не короче 8 символов, не только цифры')}>
+      <Field label={t('Пароль')} hint={t('Не короче 8 символов, не только цифры, не похож на адрес почты')} error={fieldErrors.password}>
         <TextInput type="password" autoComplete="new-password" value={form.password}
           onChange={e => set('password', e.target.value)} maxLength={128} />
       </Field>
-      <Field label={t('Телефон салона (необязательно)')}>
+      <Field label={t('Телефон салона (необязательно)')} error={fieldErrors.phone}>
         <TextInput type="tel" autoComplete="tel" value={form.phone} onChange={e => set('phone', e.target.value)} maxLength={30} />
       </Field>
 
