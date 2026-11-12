@@ -30,7 +30,7 @@ export default function ReportTab({ range }) {
         <Stat label={t('Средний чек')} value={formatMoney(data.average_check)} hint={t('скидки {value}', { value: formatMoney(data.discounts) })} />
         <Stat label={t('Расходы')} value={formatMoney(data.expenses)} hint={t('из них зарплаты {value}', { value: formatMoney(data.salaries) })} color="#f87171" />
         <Stat label={t('Прочие приходы')} value={formatMoney(data.other_income)} />
-        <Stat label={t('Прибыль')} value={formatMoney(data.profit)} hint={t('выручка + приходы − расходы')} color={Number(data.profit) < 0 ? '#f87171' : '#f472b6'} />
+        <Stat label={t('Прибыль')} value={formatMoney(data.profit)} hint={t('выручка + приходы − расходы (внесение и изъятие из кассы не считаются)')} color={Number(data.profit) < 0 ? '#f87171' : '#f472b6'} />
       </div>
 
       {(data.unpaid_visits > 0 || data.no_shows > 0) && (

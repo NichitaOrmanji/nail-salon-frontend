@@ -71,6 +71,11 @@ function PayoutModal({ row, range, onClose, onSaved }) {
   return (
     <Modal title={t('Выплата: {name}', { name: row.master.name })} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {row.overlapping_payouts?.length > 0 && (
+          <p role="alert" className="text-amber-400 text-sm">
+            {t('Внимание: часть этих дней уже оплачена —')}{' '}{overlapText(row.overlapping_payouts)}
+          </p>
+        )}
         <p className="text-gray-400 text-sm">
           {t('За период')}{' '}{formatShortDate(range.dateFrom)} — {formatShortDate(range.dateTo)}{t('. Начислено')}{' '}{formatMoney(row.accrued)}{t(', уже выплачено')}{' '}{formatMoney(row.paid)}{t('. Выплата пройдёт расходом по кассе.')}
         </p>
@@ -90,6 +95,10 @@ function PayoutModal({ row, range, onClose, onSaved }) {
       </form>
     </Modal>
   )
+}
+
+function overlapText(payouts) {
+  return payouts.map(p => `${formatShortDate(p.date_from)} — ${formatShortDate(p.date_to)}: ${formatMoney(p.amount)}`).join('; ')
 }
 
 function schemeText(scheme) {
@@ -140,6 +149,17 @@ export default function SalariesTab({ range }) {
   return (
     <div>
       <ErrorText className="mb-3">{error}</ErrorText>
+      {rows.some(r => r.overlapping_payouts?.length) && (
+        <div role="alert" className="rounded-xl px-3 py-2.5 mb-3 text-sm" style={{ backgroundColor: 'rgba(251,191,36,0.1)', border: '1px solid #92400e', color: '#fbbf24' }}>
+          <div className="font-medium">{t('Есть выплаты, которые частично захватывают этот период')}</div>
+          <div className="text-xs mt-1 text-amber-200/80">{t('Они не входят в «Выплачено» — проверьте, чтобы не заплатить за одни и те же дни дважды.')}</div>
+          <ul className="text-xs mt-1.5 space-y-0.5">
+            {rows.filter(r => r.overlapping_payouts?.length).map(r => (
+              <li key={r.master.id}>{r.master.name}: {overlapText(r.overlapping_payouts)}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <Table
         rows={rows}
         rowKey={r => r.master.id}

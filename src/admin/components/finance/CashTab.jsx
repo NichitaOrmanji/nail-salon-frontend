@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { createOperation, deleteOperation, fetchCashDay, fetchOperations } from '../../api/finance'
 import { formatMoney, methodLabel, METHODS } from '../../utils/money'
-import { addDays, formatDayTitle, normalizeDecimal, todayString } from '../../utils/time'
+import { addDays, formatDayTitle, formatShortDate, normalizeDecimal, todayString } from '../../utils/time'
 import { Button, ErrorText, Field, Select, TextInput } from '../ui'
 import Modal from '../Modal'
 import Stat, { Section, Table } from './Stat'
@@ -149,11 +149,17 @@ export default function CashTab() {
           </p>
 
           <Section title={t('Оплаты визитов')}>
+            <p className="text-gray-500 text-xs mb-2">{t('Здесь оплаты, полученные в этот день. Если визит был раньше — рядом его дата.')}</p>
             <Table
               rows={data.payments}
               empty={t('За этот день оплат нет')}
               columns={[
-                { key: 'time', label: t('Время') },
+                {
+                  key: 'time', label: t('Визит'),
+                  render: r => (r.visit_date && r.visit_date !== data.date
+                    ? <span>{r.time} <span className="text-amber-400 text-xs">{formatShortDate(r.visit_date)}</span></span>
+                    : r.time),
+                },
                 { key: 'client_name', label: t('Клиент') },
                 { key: 'master', label: t('Мастер'), render: r => r.master || '—' },
                 { key: 'method', label: t('Способ'), render: r => methodLabel(r.method) },
