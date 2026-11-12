@@ -11,11 +11,12 @@ import ErrorBoundary from '../../components/layout/ErrorBoundary'
 import LoadCalendar from '../../components/LoadCalendar'
 import NewAppointmentsModal from '../components/NewAppointmentsModal'
 import OnlineToasts from '../components/OnlineToasts'
-import { IconCalendar, IconScissors, IconUsers, IconSettings, IconClose, IconWallet, IconContact, IconPanel } from '../components/Icons'
+import { IconCalendar, IconScissors, IconUsers, IconSettings, IconClose, IconWallet, IconContact, IconPanel, IconStore } from '../components/Icons'
 import { t } from '../../i18n'
 import { journalNav, JOURNAL_PATH } from './journalNav'
 
 const SIDEBAR_KEY = 'admin_sidebar'
+const SALON_PATH = '/admin-panel/salon'
 
 // Разделы панели — вкладками под календарём. Настройки — внизу панели (кто вошёл)
 function sections(me, isManager) {
@@ -35,6 +36,7 @@ function sections(me, isManager) {
     { to: '/admin-panel/masters', label: t('Мастера'), icon: IconUsers },
     { to: '/admin-panel/services', label: t('Услуги'), icon: IconScissors },
     ...(me.role === 'owner' ? [{ to: '/admin-panel/finance', label: t('Финансы'), icon: IconWallet }] : []),
+    { to: SALON_PATH, label: t('О салоне'), icon: IconStore },
     ...salary,
   ]
 }
@@ -97,7 +99,14 @@ function SidebarContent({ me, isManager, onNavigate, onHide, hideLabel }) {
     <div className="flex flex-col h-full">
       <div className="flex items-start gap-2 pl-5 pr-2 pt-4 pb-3">
         <div className="flex-1 min-w-0 pt-1">
-          <div className="text-white text-base font-bold truncate">{me.company?.name}</div>
+          {isManager ? (
+            <Link to={SALON_PATH} onClick={onNavigate} title={t('О салоне')}
+              className="block text-white text-base font-bold truncate hover:text-pink-300">
+              {me.company?.name}
+            </Link>
+          ) : (
+            <div className="text-white text-base font-bold truncate">{me.company?.name}</div>
+          )}
           {me.role === 'owner' && me.company?.trial_ends_at ? (
             <div className="text-xs mt-0.5" style={{ color: '#fbbf24' }}>
               {t('Пробный период до {date}', { date: new Date(me.company.trial_ends_at).toLocaleDateString(t('ru-RU'), { day: 'numeric', month: 'long' }) })}
@@ -295,7 +304,16 @@ export default function AdminLayout() {
               <IconPanel />
             </button>
           )}
-          <div className="flex-1 min-w-0 text-white text-sm md:text-base font-semibold truncate">{me.company?.name}</div>
+          <div className="flex-1 min-w-0">
+            {isManager ? (
+              <Link to={SALON_PATH} title={t('О салоне')}
+                className="inline-block max-w-full align-middle text-white text-sm md:text-base font-semibold truncate hover:text-pink-300">
+                {me.company?.name}
+              </Link>
+            ) : (
+              <div className="text-white text-sm md:text-base font-semibold truncate">{me.company?.name}</div>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => setNewListOpen(true)}

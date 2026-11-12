@@ -42,7 +42,7 @@ export default function VerifyEmailPage() {
         </div>
       )}
       {(result || error) && (
-        <Link to={me ? '/admin-panel/settings' : '/admin-panel/login'}
+        <Link to={me ? '/admin-panel/salon' : '/admin-panel/login'}
           className="flex items-center justify-center w-full min-h-[44px] rounded-xl text-sm font-semibold"
           style={{ backgroundColor: '#db2777', color: '#ffffff' }}>
           {me ? t('Продолжить настройку') : t('Войти в панель')}

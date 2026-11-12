@@ -1025,4 +1025,11 @@ export default {
   'Запись отменена. Вернуть её можно кнопкой «Подтверждена».': 'Programarea este anulată. O puteți restabili cu butonul «Confirmată».',
   'Услуги и оплата': 'Servicii și plată',
   'Визиты клиента': 'Vizitele clientului',
+  'Данные салона': 'Datele salonului',
+  'Правила записи': 'Regulile de programare',
+  'Как салон выглядит на сайте записи': 'Cum arată salonul pe site-ul de programare',
+  'Отмена записи, подтверждение и штрафы': 'Anularea programării, confirmarea și amenzile',
+  'Название, адрес, фото, ссылка для записи и QR-код': 'Denumirea, adresa, fotografii, linkul de programare și codul QR',
+  'Аккаунт и правила записи': 'Contul și regulile de programare',
+  'Назад к записи': 'Înapoi la programare',
 }

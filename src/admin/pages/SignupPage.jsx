@@ -52,7 +52,7 @@ export default function SignupPage() {
   }, [])
 
   if (me) {
-    return <Navigate to="/admin-panel/settings" replace state={created ? { welcome: true, emailSent: created.emailSent } : undefined} />
+    return <Navigate to="/admin-panel/salon" replace state={created ? { welcome: true, emailSent: created.emailSent } : undefined} />
   }
 
   function set(field, value) {

@@ -34,13 +34,13 @@ const TOPICS = [
     body: (
       <>
         <ol className="list-decimal pl-5 space-y-1">
-          <li><B>Настройки</B>: название, адрес, телефон, фото, координаты для карты, правила отмены и чёрного списка.</li>
+          <li><B>О салоне</B>: название, адрес, телефон, фото, координаты для карты. <B>Настройки</B>: правила отмены и чёрного списка.</li>
           <li><B>Услуги</B>: категории и услуги с ценой и длительностью.</li>
           <li><B>Мастера</B> → <B>+ Мастер</B>: имя, фото, какие услуги делает. Там же — <B>Дать доступ</B> в панель (логин и пароль мастеру).</li>
           <li><B>Мастера → Графики</B>: рабочие дни и обед на месяц вперёд.</li>
           <li><B>Настройки</B> (внизу панели, ваше имя) → <B>Уведомления в Telegram</B>: новые записи и отмены будут приходить в Telegram салона.</li>
-          <li><B>Настройки → О салоне → Открыть сайт ↗</B> — запишитесь сами и проверьте, что всё видно правильно.</li>
-          <li><B>Настройки → О салоне</B> — чек-лист настройки и ваша ссылка для записи: копировать, QR-код, текст для соцсетей.</li>
+          <li><B>О салоне → Открыть сайт ↗</B> — запишитесь сами и проверьте, что всё видно правильно.</li>
+          <li><B>О салоне</B> — чек-лист настройки и ваша ссылка для записи: копировать, QR-код, текст для соцсетей.</li>
         </ol>
       </>
     ),
@@ -151,13 +151,13 @@ const TOPICS_RO = [
     managers: true,
     body: (
       <ol className="list-decimal pl-5 space-y-1">
-        <li><B>Setări</B>: denumirea, adresa, telefonul, fotografii, coordonatele pentru hartă, regulile de anulare și lista neagră.</li>
+        <li><B>Despre salon</B>: denumirea, adresa, telefonul, fotografii, coordonatele pentru hartă. <B>Setări</B>: regulile de anulare și lista neagră.</li>
         <li><B>Servicii</B>: categorii și servicii cu preț și durată.</li>
         <li><B>Specialiști</B> → <B>+ Specialist</B>: nume, fotografie, ce servicii face. Tot acolo — <B>Oferă acces</B> în panou (login și parolă pentru specialist).</li>
         <li><B>Specialiști → Grafice</B>: zilele de lucru și pauza de masă pe o lună înainte.</li>
         <li><B>Setări</B> (jos în panou, numele dvs.) → <B>Notificări în Telegram</B>: programările noi și anulările vor veni în Telegram-ul salonului.</li>
-        <li><B>Setări → Despre salon → Deschide site-ul ↗</B> — programați-vă singuri și verificați că totul se vede corect.</li>
-        <li><B>Setări → Despre salon</B> — lista de configurare și linkul dvs. de programare: copiere, cod QR, text pentru rețele sociale.</li>
+        <li><B>Despre salon → Deschide site-ul ↗</B> — programați-vă singuri și verificați că totul se vede corect.</li>
+        <li><B>Despre salon</B> — lista de configurare și linkul dvs. de programare: copiere, cod QR, text pentru rețele sociale.</li>
       </ol>
     ),
   },

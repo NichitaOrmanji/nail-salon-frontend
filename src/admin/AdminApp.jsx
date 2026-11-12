@@ -10,6 +10,7 @@ import JournalPage from './pages/JournalPage'
 import ServicesPage from './pages/ServicesPage'
 import MastersPage from './pages/MastersPage'
 import SettingsPage from './pages/SettingsPage'
+import SalonPage from './pages/SalonPage'
 import FinancePage from './pages/FinancePage'
 import MySalaryPage from './pages/MySalaryPage'
 import ClientsPage from './pages/ClientsPage'
@@ -37,9 +38,8 @@ export default function AdminApp() {
           <Route path="terms" element={<TermsPage />} />
           <Route element={<RequireStaff><AdminLayout /></RequireStaff>}>
             <Route index element={<JournalPage />} />
-            {/* «О салоне» и «Начало работы» — теперь правая колонка настроек */}
-            <Route path="salon" element={<Navigate to="/admin-panel/settings" replace />} />
-            <Route path="start" element={<Navigate to="/admin-panel/settings" replace />} />
+            <Route path="salon" element={<ManagerOnly><SalonPage /></ManagerOnly>} />
+            <Route path="start" element={<Navigate to="/admin-panel/salon" replace />} />
             <Route path="clients" element={<ManagerOnly><ClientsPage /></ManagerOnly>} />
             <Route path="debtors" element={<Navigate to="/admin-panel/clients?tab=debtors" replace />} />
             <Route path="services" element={<ServicesPage />} />

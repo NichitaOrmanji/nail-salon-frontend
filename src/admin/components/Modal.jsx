@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { IconClose } from './Icons'
+import { IconChevronLeft, IconClose } from './Icons'
 import { t } from '../../i18n'
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -13,7 +13,8 @@ function focusableIn(root) {
 // Модальное окно: на экранах < 640px — на весь экран, иначе — по центру.
 // Закрывается крестиком и Escape (не кликом мимо — чтобы не потерять ввод).
 // Фокус: при открытии — первое поле, Tab не уходит за окно, при закрытии — обратно
-export default function Modal({ title, onClose, children, footer, maxWidth = 'sm:max-w-lg' }) {
+// backLabel — вместо крестика стрелка «назад» слева (окно открыто из другого места и вернёт туда)
+export default function Modal({ title, onClose, children, footer, maxWidth = 'sm:max-w-lg', backLabel }) {
   const onCloseRef = useRef(onClose)
   const dialogRef = useRef(null)
   const bodyRef = useRef(null)
@@ -71,16 +72,31 @@ export default function Modal({ title, onClose, children, footer, maxWidth = 'sm
         className={`w-full h-full sm:h-auto sm:max-h-[90vh] ${maxWidth} sm:rounded-2xl flex flex-col overflow-hidden`}
         style={{ backgroundColor: '#1a1a1a', border: '1px solid #2e2e2e' }}
       >
-        <div className="flex items-center gap-3 pl-5 pr-2 py-2 flex-shrink-0" style={{ borderBottom: '1px solid #2e2e2e' }}>
+        <div className={`flex items-center gap-3 ${backLabel ? 'pl-2 pr-5' : 'pl-5 pr-2'} py-2 flex-shrink-0`} style={{ borderBottom: '1px solid #2e2e2e' }}>
+          {backLabel && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={backLabel}
+              title={backLabel}
+              className="h-11 pl-1 pr-3 rounded-xl flex items-center gap-1 text-gray-300 text-sm font-medium flex-shrink-0 active:scale-95 hover:text-white"
+              style={{ backgroundColor: '#242424' }}
+            >
+              <IconChevronLeft size={20} />
+              {t('Назад')}
+            </button>
+          )}
           <h2 className="flex-1 min-w-0 text-white text-base font-semibold truncate">{title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t('Закрыть')}
-            className="w-11 h-11 rounded-xl flex items-center justify-center text-gray-400 active:scale-90"
-          >
-            <IconClose />
-          </button>
+          {!backLabel && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t('Закрыть')}
+              className="w-11 h-11 rounded-xl flex items-center justify-center text-gray-400 active:scale-90"
+            >
+              <IconClose />
+            </button>
+          )}
         </div>
         <div ref={bodyRef} className="flex-1 min-h-0 overflow-y-auto px-5 py-4">
           {children}
