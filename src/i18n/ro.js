@@ -957,4 +957,9 @@ export default {
   'Записей': 'Programări',
   'Открыть в разделе «Мастера»': 'Deschide în secțiunea «Specialiști»',
   '{name}: о мастере': '{name}: despre specialist',
+  'Штрафы и чёрный список': 'Penalități și lista neagră',
+  'Включены': 'Activate',
+  'Выключены': 'Dezactivate',
+  'Укажите процент штрафа или выключите штрафы': 'Indicați procentul penalității sau dezactivați penalitățile',
+  'Клиентов не штрафуют за неявку и позднюю отмену, правило штрафа клиентам не показывается. Включите, если хотите, чтобы неявка добавляла штраф к следующему визиту.': 'Clienții nu sunt penalizați pentru neprezentare sau anulare târzie, iar regula nu le este afișată. Activați dacă doriți ca neprezentarea să adauge o penalitate la următoarea vizită.',
 }

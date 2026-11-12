@@ -10,23 +10,35 @@ const staffApi = axios.create({
 })
 
 const ACCESS_KEY = 'staff_access_token'
-export const STAFF_ACCESS_KEY = ACCESS_KEY
-
-// Кто вошёл: user_id из токена (без проверки подписи — только сравнить вкладки)
-export function tokenUserId(token) {
-  try {
-    const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
-    return JSON.parse(atob(part)).user_id ?? null
-  } catch {
-    return null
-  }
-}
 const REFRESH_KEY = 'staff_refresh_token'
 
 export const LOGIN_PATH = '/admin-panel/login'
 
+// Вход — у каждой вкладки свой (sessionStorage): в одной вкладке администратор, в соседней мастер,
+// и перезагрузка их не смешивает. localStorage хранит последний вход — его подхватывает новая вкладка
+function tabStore() {
+  try { return window.sessionStorage } catch { return null }
+}
+function sharedStore() {
+  try { return window.localStorage } catch { return null }
+}
+
+// Новая вкладка без своего входа — берёт последний вход
+;(function adoptLastLogin() {
+  const tab = tabStore()
+  const shared = sharedStore()
+  if (!tab || !shared) return
+  try {
+    if (tab.getItem(ACCESS_KEY) || tab.getItem(REFRESH_KEY)) return
+    const access = shared.getItem(ACCESS_KEY)
+    const refresh = shared.getItem(REFRESH_KEY)
+    if (access) tab.setItem(ACCESS_KEY, access)
+    if (refresh) tab.setItem(REFRESH_KEY, refresh)
+  } catch { /* хранилище недоступно */ }
+})()
+
 function readStorage(key) {
-  try { return localStorage.getItem(key) } catch { return null }
+  try { return (tabStore() || sharedStore())?.getItem(key) ?? null } catch { return null }
 }
 
 export function getStaffAccessToken() {
@@ -34,9 +46,19 @@ export function getStaffAccessToken() {
 }
 
 export function saveStaffTokens({ access, refresh }) {
+  const tab = tabStore()
+  const shared = sharedStore()
   try {
-    if (access) localStorage.setItem(ACCESS_KEY, access)
-    if (refresh) localStorage.setItem(REFRESH_KEY, refresh)
+    // Последний вход обновляем, если это новый вход (есть refresh) или та же сессия, что в нём записана
+    const sameAsShared = shared && shared.getItem(REFRESH_KEY) === readStorage(REFRESH_KEY)
+    if (tab) {
+      if (access) tab.setItem(ACCESS_KEY, access)
+      if (refresh) tab.setItem(REFRESH_KEY, refresh)
+    }
+    if (shared && (refresh || sameAsShared || !tab)) {
+      if (access) shared.setItem(ACCESS_KEY, access)
+      if (refresh) shared.setItem(REFRESH_KEY, refresh)
+    }
   } catch { /* хранилище недоступно */ }
 }
 
@@ -54,9 +76,18 @@ export function clearStaffTokens() {
   sessionGeneration += 1
   // Обновление токена старой сессии больше не общее для новых запросов
   refreshPromise = null
+  const tab = tabStore()
+  const shared = sharedStore()
   try {
-    localStorage.removeItem(ACCESS_KEY)
-    localStorage.removeItem(REFRESH_KEY)
+    // Последний вход стираем, только если это вход этой вкладки — вход соседней вкладки не трогаем
+    if (shared && (!tab || shared.getItem(REFRESH_KEY) === tab.getItem(REFRESH_KEY))) {
+      shared.removeItem(ACCESS_KEY)
+      shared.removeItem(REFRESH_KEY)
+    }
+    if (tab) {
+      tab.removeItem(ACCESS_KEY)
+      tab.removeItem(REFRESH_KEY)
+    }
   } catch { /* хранилище недоступно */ }
 }
 

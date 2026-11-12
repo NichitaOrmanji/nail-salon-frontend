@@ -33,7 +33,7 @@ test('регистрация → подтверждение email → салон
   await expect(page.getByText(/до этого клиенты не видят/)).toHaveCount(0)
 
   // 4. Минимальная настройка (через API панели) → ссылка готова, клиент видит салон
-  const token = await page.evaluate(() => localStorage.getItem('staff_access_token'))
+  const token = await page.evaluate(() => sessionStorage.getItem('staff_access_token') || localStorage.getItem('staff_access_token'))
   const headers = { Authorization: `Bearer ${token}` }
   const service = await (await request.post('/api/staff/services/', { headers, data: { name: 'Маникюр', duration: 60, price: 250 } })).json()
   const master = await (await request.post('/api/staff/masters/', { headers, data: { name: 'Ольга', services: [service.id] } })).json()
@@ -47,7 +47,7 @@ test('регистрация → подтверждение email → салон
   await expect(client.getByRole('heading', { name })).toBeVisible()
 
   // 5. Выход → «Забыли пароль?» → письмо → новый пароль → вход по email в другом регистре
-  await page.evaluate(() => localStorage.clear())
+  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear() })
   await page.goto('/admin-panel/login')
   await page.getByRole('link', { name: 'Забыли пароль?' }).click()
   // Поле входа «Логин, email или телефон» тоже подходит под подпись «Email» — ждём страницу восстановления

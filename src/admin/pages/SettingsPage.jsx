@@ -25,6 +25,7 @@ function toForm(company) {
     longitude: company.longitude === null || company.longitude === undefined ? '' : String(company.longitude),
     cancel_hours: String(company.cancel_hours ?? 0),
     penalty_percent: String(company.penalty_percent ?? 0),
+    penalty_on: Number(company.penalty_percent ?? 0) > 0,
     late_cancel_hours: String(company.late_cancel_hours ?? 0),
     auto_confirm: Boolean(company.auto_confirm),
   }
@@ -171,6 +172,18 @@ function SalonSettings() {
     setForm(f => ({ ...f, [field]: value }))
   }
 
+  // Выключение ставит 0 %, включение — прежний процент или 50
+  const penaltyOn = !!form?.penalty_on
+  function togglePenalty(on) {
+    setDone(false)
+    setForm(f => {
+      if (!on) return { ...f, penalty_on: false, penalty_percent: '0' }
+      const previous = Number(initial?.penalty_percent || 0)
+      return { ...f, penalty_on: true, penalty_percent: String(previous > 0 ? previous : 50) }
+    })
+  }
+
+
   // Вставили пару из Google Maps «47.0447862, 28.8607939» — раскладываем по двум полям.
   // Только при вставке: при наборе с клавиатуры пара «47.04, 28.8» ещё не дописана
   function handleCoordinatePaste(e) {
@@ -210,7 +223,11 @@ function SalonSettings() {
       return
     }
 
-    const penaltyPercent = form.penalty_percent.trim() === '' ? 0 : Number(form.penalty_percent)
+    const penaltyPercent = !form.penalty_on ? 0 : form.penalty_percent.trim() === '' ? 0 : Number(form.penalty_percent)
+    if (form.penalty_on && penaltyPercent === 0) {
+      setError(t('Укажите процент штрафа или выключите штрафы'))
+      return
+    }
     if (!Number.isInteger(penaltyPercent) || penaltyPercent < 0 || penaltyPercent > 100) {
       setError(t('Штраф — целое число процентов от 0 до 100'))
       return
@@ -223,7 +240,7 @@ function SalonSettings() {
 
     const body = {}
     if (form.cancel_hours !== initial.cancel_hours) body.cancel_hours = cancelHours
-    if (form.penalty_percent !== initial.penalty_percent) body.penalty_percent = penaltyPercent
+    if (penaltyPercent !== Number(initial.penalty_percent || 0)) body.penalty_percent = penaltyPercent
     if (form.late_cancel_hours !== initial.late_cancel_hours) body.late_cancel_hours = lateHours
     if (form.auto_confirm !== initial.auto_confirm) body.auto_confirm = form.auto_confirm
     for (const field of FIELDS) {
@@ -329,16 +346,45 @@ function SalonSettings() {
             </span>
           </label>
           <div className="rounded-2xl p-4 space-y-3" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
-            <div className="text-white text-sm font-semibold">{t('Чёрный список')}</div>
-            <p className="text-gray-500 text-xs">
-              {t('Клиент, который не пришёл или отменил запись слишком поздно, попадает в чёрный список. Штраф он оплачивает в салоне при следующем визите — панель добавит его к счёту. Правило показывается клиентам при записи.')}
-            </p>
-            <Field label={t('Штраф, % от стоимости пропущенной услуги')} hint={t('0 — штрафы выключены')}>
-              <TextInput inputMode="numeric" value={form.penalty_percent} onChange={e => set('penalty_percent', e.target.value.replace(/\D/g, ''))} placeholder="50" />
-            </Field>
-            <Field label={t('Поздняя отмена — меньше чем за, часов до визита')} hint={t('0 — штрафовать только за неявку')}>
-              <TextInput inputMode="numeric" value={form.late_cancel_hours} onChange={e => set('late_cancel_hours', e.target.value.replace(/\D/g, ''))} placeholder="3" />
-            </Field>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div id="penalty-title" className="text-white text-sm font-semibold">{t('Штрафы и чёрный список')}</div>
+                <div className="text-xs mt-0.5 font-medium" style={{ color: penaltyOn ? '#34d399' : '#9ca3af' }}>
+                  {penaltyOn ? t('Включены') : t('Выключены')}
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={penaltyOn}
+                aria-labelledby="penalty-title"
+                onClick={() => togglePenalty(!penaltyOn)}
+                className="relative flex-shrink-0 w-14 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                style={{ backgroundColor: penaltyOn ? '#db2777' : '#3a3a3a' }}
+              >
+                <span
+                  className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform"
+                  style={{ transform: penaltyOn ? 'translateX(24px)' : 'none' }}
+                />
+              </button>
+            </div>
+            {penaltyOn ? (
+              <>
+                <p className="text-gray-500 text-xs">
+                  {t('Клиент, который не пришёл или отменил запись слишком поздно, попадает в чёрный список. Штраф он оплачивает в салоне при следующем визите — панель добавит его к счёту. Правило показывается клиентам при записи.')}
+                </p>
+                <Field label={t('Штраф, % от стоимости пропущенной услуги')}>
+                  <TextInput inputMode="numeric" value={form.penalty_percent} onChange={e => set('penalty_percent', e.target.value.replace(/\D/g, ''))} placeholder="50" />
+                </Field>
+                <Field label={t('Поздняя отмена — меньше чем за, часов до визита')} hint={t('0 — штрафовать только за неявку')}>
+                  <TextInput inputMode="numeric" value={form.late_cancel_hours} onChange={e => set('late_cancel_hours', e.target.value.replace(/\D/g, ''))} placeholder="3" />
+                </Field>
+              </>
+            ) : (
+              <p className="text-gray-500 text-xs">
+                {t('Клиентов не штрафуют за неявку и позднюю отмену, правило штрафа клиентам не показывается. Включите, если хотите, чтобы неявка добавляла штраф к следующему визиту.')}
+              </p>
+            )}
           </div>
           <ErrorText>{error}</ErrorText>
           <div className="flex items-center justify-end gap-3">
