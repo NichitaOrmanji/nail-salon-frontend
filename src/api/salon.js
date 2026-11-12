@@ -5,7 +5,11 @@
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,49}$/
 const STORAGE_KEY = 'salon'
 const BASE_DOMAINS = ['timepoint.tech']
-const NOT_SALONS = ['www', 'api', 'app', 'admin']
+// Служебные поддомены — как RESERVED_SLUGS на бэкенде (dashboard/salons.py), кроме demo и e2e: это салоны
+const NOT_SALONS = [
+  'www', 'api', 'app', 'admin', 'admin-panel', 'panel', 'mail', 'smtp', 'static', 'media', 'help', 'support',
+  'status', 'blog', 'timepoint', 'signup', 'login', 'billing', 'pay', 'docs', 'test',
+]
 export const DEFAULT_SALON = import.meta.env.VITE_DEFAULT_SALON || 'jcnails'
 
 function fromQuery() {
