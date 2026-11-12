@@ -15,7 +15,7 @@ export default function ImpersonationBar({ me }) {
 
   return (
     <div role="status" className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2"
-      style={{ backgroundColor: '#7f1d1d', borderBottom: '1px solid #f87171' }}>
+      style={{ backgroundColor: '#7f1d1d', borderBottom: '1px solid var(--c-danger)' }}>
       <span className="flex-1 min-w-0 text-sm text-white">
         Вы в салоне «{me.company?.name}» как поддержка TimePoint ({me.impersonated_by}).
         {until && ` Сессия до ${pad(until.getHours())}:${pad(until.getMinutes())}.`} Вход записан в журнал супер-админки.

@@ -36,7 +36,7 @@ export default function ChangePasswordModal({ onClose }) {
   if (done) {
     return (
       <Modal title={t('Сменить пароль')} onClose={onClose} footer={<Button variant="primary" onClick={onClose}>{t('Готово')}</Button>}>
-        <p className="text-white text-sm">{t('Пароль изменён.')}</p>
+        <p className="text-ink text-sm">{t('Пароль изменён.')}</p>
       </Modal>
     )
   }

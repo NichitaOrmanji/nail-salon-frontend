@@ -2,6 +2,158 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Цвета интерфейса (тема панели) =====
+   По умолчанию — тёмная тема (как всегда было): клиентский сайт и панель в тёмной теме.
+   Светлая «Графит» — только в панели: <html data-admin-theme="light"> ставит utils/appearance.js.
+   .theme-dark — тёмный участок внутри светлой темы (боковое меню). */
+:root, .theme-dark {
+  --c-bg: #111111;
+  --c-surface: #1a1a1a;
+  --c-card: #1f1f1f;
+  --c-raised: #242424;
+  --c-line: #2e2e2e;
+  --c-line-2: #3a3a3a;
+  --c-line-3: #4b5563;
+  --c-line-4: #4b4b4b;
+  --c-row: #2a2a2a;
+  --c-sunk: #141414;
+  --c-sunk-2: #151515;
+  --c-head: #1a1a1a;
+  --c-grid-hour: #2e2e2e;
+  --c-grid-half: #222222;
+  --c-rail-line: transparent;
+  --c-chip: #2e2e2e;
+  --c-ink: #ffffff;
+  --c-ink-1: #e5e7eb;
+  --c-ink-2: #d1d5db;
+  --c-muted: #9ca3af;
+  --c-faint: #9098a4;
+  --c-faint-2: #8b929e;
+  --c-ok: #34d399;
+  --c-ok-2: #6ee7b7;
+  --c-danger: #f87171;
+  --c-danger-2: #fca5a5;
+  --c-danger-line: #3a2a2a;
+  --c-warn: #fbbf24;
+  --c-warn-2: #f59e0b;
+  --c-warn-line: #92400e;
+  --c-warn-bg: #3b2a12;
+  --c-warn-soft: rgba(253, 230, 138, 0.8);
+  --c-info: #60a5fa;
+  --c-info-2: #93c5fd;
+  --c-violet: #a78bfa;
+  --c-sky: #38bdf8;
+  --c-wa: #25d366;
+  --c-scheme: dark;
+  --c-off-bg: rgba(0, 0, 0, 0.35);
+  --c-off-pattern: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0, rgba(255, 255, 255, 0.035) 6px, transparent 6px, transparent 12px);
+  --c-now: var(--accent);
+  --c-shadow: none;
+  --k-ok-bg: rgba(52, 211, 153, 0.2);
+  --k-ok-line: #34d399;
+  --k-warn-bg: rgba(245, 158, 11, 0.2);
+  --k-warn-line: #f59e0b;
+  --k-info-bg: rgba(96, 165, 250, 0.2);
+  --k-info-line: #60a5fa;
+  --k-done-bg: rgba(156, 163, 175, 0.2);
+  --k-done-line: #9ca3af;
+  --k-bad-bg: rgba(248, 113, 113, 0.2);
+  --k-bad-line: #f87171;
+  --k-off-bg: rgba(144, 152, 164, 0.12);
+  --k-off-line: #9098a4;
+  --accent: var(--acc-d, #db2777);
+  --accent-ink: var(--acc-d-ink, #f472b6);
+  --accent-ink-2: var(--acc-d-ink-2, #f9a8d4);
+  --accent-500: var(--acc-d-500, #ec4899);
+  --accent-soft: var(--acc-d-soft, #2e1f28);
+  --accent-soft-2: var(--acc-d-soft-2, #3a2430);
+  --accent-mid: var(--acc-d-mid, #9d4b75);
+  --on-accent: var(--acc-d-on, #ffffff);
+}
+html[data-admin-theme="light"] {
+  --c-bg: #F4F4F5;
+  --c-surface: #FFFFFF;
+  --c-card: #FFFFFF;
+  --c-raised: #FFFFFF;
+  --c-line: #D4D4D8;
+  --c-line-2: #A1A1AA;
+  --c-line-3: #A1A1AA;
+  --c-line-4: #A1A1AA;
+  --c-row: #E4E4E7;
+  --c-sunk: #FFFFFF;
+  --c-sunk-2: #FFFFFF;
+  --c-head: #FAFAFA;
+  --c-grid-hour: #E4E4E7;
+  --c-grid-half: #F1F1F3;
+  --c-rail-line: #D4D4D8;
+  --c-chip: #F4F4F5;
+  --c-ink: #18181B;
+  --c-ink-1: #27272A;
+  --c-ink-2: #3F3F46;
+  --c-muted: #52525B;
+  --c-faint: #5F5F67;
+  --c-faint-2: #66666E;
+  --c-ok: #15803D;
+  --c-ok-2: #166534;
+  --c-danger: #B91C1C;
+  --c-danger-2: #991B1B;
+  --c-danger-line: #FECACA;
+  --c-warn: #92400E;
+  --c-warn-2: #B45309;
+  --c-warn-line: #FCD34D;
+  --c-warn-bg: #FEF3C7;
+  --c-warn-soft: #92400E;
+  --c-info: #1D4ED8;
+  --c-info-2: #1E40AF;
+  --c-violet: #6D28D9;
+  --c-sky: #0369A1;
+  --c-wa: #15803D;
+  --c-scheme: light;
+  --c-off-bg: #F4F4F5;
+  --c-off-pattern: repeating-linear-gradient(45deg, transparent 0, transparent 6px, #E4E4E7 6px, #E4E4E7 7px);
+  --c-now: #DC2626;
+  --c-shadow: 0 1px 2px rgba(24, 24, 27, 0.06);
+  --k-ok-bg: #DCFCE7;
+  --k-ok-line: #22C55E;
+  --k-warn-bg: #FEF3C7;
+  --k-warn-line: #F59E0B;
+  --k-info-bg: #DBEAFE;
+  --k-info-line: #3B82F6;
+  --k-done-bg: #E4E4E7;
+  --k-done-line: #71717A;
+  --k-bad-bg: #FEE2E2;
+  --k-bad-line: #EF4444;
+  --k-off-bg: #F4F4F5;
+  --k-off-line: #A1A1AA;
+  --accent: var(--acc-l, #DB2777);
+  --accent-ink: var(--acc-l-ink, #BE185D);
+  --accent-ink-2: var(--acc-l-ink-2, #9D174D);
+  --accent-500: var(--acc-l-500, #DB2777);
+  --accent-soft: var(--acc-l-soft, #FCE7F3);
+  --accent-soft-2: var(--acc-l-soft-2, #FBCFE8);
+  --accent-mid: var(--acc-l-mid, #EC4899);
+  --on-accent: var(--acc-l-on, #FFFFFF);
+}
+html[data-admin-theme="light"] .theme-dark {
+  color-scheme: dark;
+}
+html[data-admin-theme="light"] {
+  color-scheme: light;
+}
+html[data-admin-theme="light"] body {
+  background-color: var(--c-bg);
+  color: var(--c-ink);
+}
+/* Плашки (строки списков, кнопки, вкладки) в светлой теме белые — без своей рамки им нужна тонкая обводка,
+   иначе на светлом фоне они пропадают */
+html[data-admin-theme="light"] [style*="background-color: var(--c-raised)"]:not([style*="border"]):not(.theme-dark *) {
+  box-shadow: inset 0 0 0 1px #E4E4E7;
+}
+/* Блок записи в журнале: в светлой теме — рамка цвета статуса и лёгкая тень */
+html[data-admin-theme="light"] .appt-block {
+  box-shadow: inset 0 0 0 1px var(--k-line), 0 1px 2px rgba(24, 24, 27, 0.08);
+}
+
 body {
   background-color: #1a1a1a;
   color: #ffffff;
@@ -30,7 +182,7 @@ html, body {
 .react-tel-input .form-control {
   background-color: transparent !important;
   border: none !important;
-  color: #ffffff !important;
+  color: var(--c-ink) !important;
   font-size: 14px !important;
   width: 100% !important;
   height: auto !important;
@@ -40,36 +192,36 @@ html, body {
 .react-tel-input .flag-dropdown {
   background-color: transparent !important;
   border: none !important;
-  border-right: 1px solid #2e2e2e !important;
+  border-right: 1px solid var(--c-line) !important;
 }
 
 .react-tel-input .flag-dropdown.open .selected-flag {
-  background-color: #2e2e2e !important;
+  background-color: var(--c-line) !important;
 }
 
 .react-tel-input .selected-flag:hover {
-  background-color: #2e2e2e !important;
+  background-color: var(--c-line) !important;
 }
 
 .react-tel-input .country-list {
-  background-color: #242424 !important;
-  border: 1px solid #2e2e2e !important;
+  background-color: var(--c-raised) !important;
+  border: 1px solid var(--c-line) !important;
 }
 
 .react-tel-input .country-list .country:hover {
-  background-color: #2e2e2e !important;
+  background-color: var(--c-line) !important;
 }
 
 .react-tel-input .country-list .country.highlight {
-  background-color: #2e2e2e !important;
+  background-color: var(--c-line) !important;
 }
 
 .react-tel-input .country-list .country-name {
-  color: #ffffff !important;
+  color: var(--c-ink) !important;
 }
 
 .react-tel-input .country-list .dial-code {
-  color: #9ca3af !important;
+  color: var(--c-muted) !important;
 }
 
 /* Прокрутка без видимой полосы (боковая панель, ленты фильтров) */

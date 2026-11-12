@@ -32,7 +32,7 @@ export default class ErrorBoundary extends Component {
         <button
           onClick={this.handleReset}
           className="px-10 py-4 rounded-2xl text-white font-semibold active:scale-95"
-          style={{ backgroundColor: '#db2777' }}
+          style={{ backgroundColor: 'var(--accent)' }}
         >
           {this.props.homeLabel || tr(t('На главную'))}
         </button>

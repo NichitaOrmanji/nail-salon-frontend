@@ -101,14 +101,14 @@ function SidebarContent({ me, isManager, onNavigate, onHide, hideLabel }) {
         <div className="flex-1 min-w-0 pt-1">
           {isManager ? (
             <Link to={SALON_PATH} onClick={onNavigate} title={t('О салоне')}
-              className="block text-white text-base font-bold truncate hover:text-pink-300">
+              className="block text-ink text-base font-bold truncate hover:text-pink-300">
               {me.company?.name}
             </Link>
           ) : (
-            <div className="text-white text-base font-bold truncate">{me.company?.name}</div>
+            <div className="text-ink text-base font-bold truncate">{me.company?.name}</div>
           )}
           {me.role === 'owner' && me.company?.trial_ends_at ? (
-            <div className="text-xs mt-0.5" style={{ color: '#fbbf24' }}>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--c-warn)' }}>
               {t('Пробный период до {date}', { date: new Date(me.company.trial_ends_at).toLocaleDateString(t('ru-RU'), { day: 'numeric', month: 'long' }) })}
             </div>
           ) : (
@@ -120,7 +120,7 @@ function SidebarContent({ me, isManager, onNavigate, onHide, hideLabel }) {
           aria-label={t(hideLabel)}
           title={t(hideLabel)}
           onClick={onHide}
-          className="w-11 h-11 rounded-xl flex items-center justify-center text-gray-400 flex-shrink-0 hover:text-white"
+          className="w-11 h-11 rounded-xl flex items-center justify-center text-gray-400 flex-shrink-0 hover:text-ink"
         >
           {hideLabel === 'Закрыть меню' ? <IconClose /> : <IconPanel />}
         </button>
@@ -138,7 +138,7 @@ function SidebarContent({ me, isManager, onNavigate, onHide, hideLabel }) {
               end={item.end}
               onClick={onNavigate}
               className="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm font-medium"
-              style={({ isActive }) => ({ backgroundColor: isActive ? '#242424' : 'transparent', color: isActive ? '#f472b6' : '#d1d5db' })}
+              style={({ isActive }) => ({ backgroundColor: isActive ? 'var(--c-raised)' : 'transparent', color: isActive ? 'var(--accent-ink)' : 'var(--c-ink-2)' })}
             >
               <item.icon />
               {t(item.label)}
@@ -152,13 +152,13 @@ function SidebarContent({ me, isManager, onNavigate, onHide, hideLabel }) {
         to="/admin-panel/settings"
         onClick={onNavigate}
         className="flex items-center gap-3 px-5 py-3 flex-shrink-0"
-        style={{ borderTop: '1px solid #2e2e2e' }}
+        style={{ borderTop: '1px solid var(--c-line)' }}
       >
-        <span className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0" style={{ backgroundColor: '#2e1f28', color: '#f472b6' }}>
+        <span className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0" style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent-ink)' }}>
           {(me.name || me.username || '?').trim().charAt(0).toUpperCase()}
         </span>
         <span className="flex-1 min-w-0">
-          <span className="block text-white text-sm font-medium truncate">{me.name || me.username}</span>
+          <span className="block text-ink text-sm font-medium truncate">{me.name || me.username}</span>
           <span className="block text-gray-500 text-xs">{t(ROLE_LABELS[me.role] || me.role)} · {t('Настройки')}</span>
         </span>
         <span className="text-gray-500"><IconSettings size={18} /></span>
@@ -233,11 +233,11 @@ export default function AdminLayout() {
   }, [])
 
   return (
-    <div className="h-dvh flex overflow-hidden" style={{ backgroundColor: '#111111' }}>
+    <div className="h-dvh flex overflow-hidden" style={{ backgroundColor: 'var(--c-bg)' }}>
 
       {/* Левая панель (≥ 768px): календарь, журнал, разделы; скрывается кнопкой */}
       {sidebarShown && (
-        <aside className="hidden md:block w-72 flex-shrink-0" style={{ backgroundColor: '#1a1a1a', borderRight: '1px solid #2e2e2e' }}>
+        <aside className="theme-dark hidden md:block w-72 flex-shrink-0" style={{ backgroundColor: 'var(--c-surface)', borderRight: '1px solid var(--c-line)' }}>
           <SidebarContent me={me} isManager={isManager} onNavigate={() => {}} onHide={toggleSidebar} hideLabel={t('Скрыть панель')} />
         </aside>
       )}
@@ -245,7 +245,7 @@ export default function AdminLayout() {
       {/* Выезжающая панель (< 768px) */}
       {menuOpen && (
         <div className="md:hidden fixed inset-0 z-[45] flex">
-          <aside role="dialog" aria-label={t('Меню')} className="w-80 max-w-[88vw] h-full" style={{ backgroundColor: '#1a1a1a', borderRight: '1px solid #2e2e2e' }}>
+          <aside role="dialog" aria-label={t('Меню')} className="theme-dark w-80 max-w-[88vw] h-full" style={{ backgroundColor: 'var(--c-surface)', borderRight: '1px solid var(--c-line)' }}>
             <SidebarContent me={me} isManager={isManager} onNavigate={() => setMenuOpen(false)} onHide={() => setMenuOpen(false)} hideLabel={t('Закрыть меню')} />
           </aside>
           <div className="flex-1" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }} onClick={() => setMenuOpen(false)} />
@@ -255,25 +255,25 @@ export default function AdminLayout() {
       <div className="flex-1 min-w-0 flex flex-col">
         <ImpersonationBar me={me} />
         {outdated && (
-          <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: '#3b2a12', borderBottom: '1px solid #f59e0b' }}>
-            <span className="flex-1 min-w-0 text-sm" style={{ color: '#fbbf24' }}>{t('Вышла новая версия панели')}</span>
+          <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: 'var(--c-warn-bg)', borderBottom: '1px solid var(--c-warn-2)' }}>
+            <span className="flex-1 min-w-0 text-sm" style={{ color: 'var(--c-warn)' }}>{t('Вышла новая версия панели')}</span>
             <button
               type="button"
               onClick={() => window.location.reload()}
               className="min-h-[36px] px-4 rounded-xl text-sm font-medium"
-              style={{ backgroundColor: '#f59e0b', color: '#111111' }}
+              style={{ backgroundColor: 'var(--c-warn-2)', color: 'var(--c-bg)' }}
             >
               {t('Обновить')}
             </button>
           </div>
         )}
         {me.company?.status === 'pending' && (
-          <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: '#2e1f28', borderBottom: '1px solid #db2777' }}>
+          <div className="flex-shrink-0 flex flex-wrap items-center gap-3 px-3 md:px-5 py-2" style={{ backgroundColor: 'var(--accent-soft)', borderBottom: '1px solid var(--accent)' }}>
             <span className="flex-1 min-w-0 text-sm text-gray-200">
               {t('Подтвердите email{email} — до этого клиенты не видят сайт записи.', { email: me.email ? ` (${me.email})` : '' })}
             </span>
             {isManager && (
-              <Link to="/admin-panel/settings" className="min-h-[36px] px-4 rounded-xl text-sm font-medium inline-flex items-center" style={{ backgroundColor: '#db2777', color: '#fff' }}>
+              <Link to="/admin-panel/settings" className="min-h-[36px] px-4 rounded-xl text-sm font-medium inline-flex items-center" style={{ backgroundColor: 'var(--accent)', color: '#fff' }}>
                 {t('Подробнее')}
               </Link>
             )}
@@ -282,7 +282,7 @@ export default function AdminLayout() {
         {/* Шапка: кнопка панели, название салона и бейдж новых записей */}
         <header
           className="flex items-center gap-2 px-3 md:px-5 h-14 flex-shrink-0"
-          style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}
+          style={{ backgroundColor: 'var(--c-surface)', borderBottom: '1px solid var(--c-line)' }}
         >
           <button
             type="button"
@@ -299,7 +299,7 @@ export default function AdminLayout() {
               title={t('Показать панель')}
               onClick={toggleSidebar}
               className="hidden md:flex w-11 h-11 -ml-2 rounded-xl items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: '#db2777', color: '#ffffff' }}
+              style={{ backgroundColor: 'var(--accent)', color: '#ffffff' }}
             >
               <IconPanel />
             </button>
@@ -307,11 +307,11 @@ export default function AdminLayout() {
           <div className="flex-1 min-w-0">
             {isManager ? (
               <Link to={SALON_PATH} title={t('О салоне')}
-                className="inline-block max-w-full align-middle text-white text-sm md:text-base font-semibold truncate hover:text-pink-300">
+                className="inline-block max-w-full align-middle text-ink text-sm md:text-base font-semibold truncate hover:text-pink-300">
                 {me.company?.name}
               </Link>
             ) : (
-              <div className="text-white text-sm md:text-base font-semibold truncate">{me.company?.name}</div>
+              <div className="text-ink text-sm md:text-base font-semibold truncate">{me.company?.name}</div>
             )}
           </div>
           <button
@@ -319,8 +319,8 @@ export default function AdminLayout() {
             onClick={() => setNewListOpen(true)}
             className="min-h-[44px] px-3 rounded-xl text-sm font-medium flex-shrink-0 flex items-center gap-2"
             style={{
-              backgroundColor: pendingCount ? 'rgba(245, 158, 11, 0.15)' : '#242424',
-              color: pendingCount ? '#f59e0b' : '#9ca3af',
+              backgroundColor: pendingCount ? 'rgba(245, 158, 11, 0.15)' : 'var(--c-raised)',
+              color: pendingCount ? 'var(--c-warn-2)' : 'var(--c-muted)',
             }}
           >
             {t('Новые: {count}', { count: pendingCount ?? '…' })}

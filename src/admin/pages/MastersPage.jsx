@@ -155,8 +155,8 @@ function ProfileSection({ master, services, onSaved }) {
                       placeholder={`${Number(s.price)} L`}
                       value={terms[s.id]?.price || ''}
                       onChange={e => changeTerm(s.id, 'price', e.target.value)}
-                      className="w-24 min-h-[40px] px-3 rounded-xl text-white text-sm outline-none"
-                      style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e' }}
+                      className="w-24 min-h-[40px] px-3 rounded-xl text-ink text-sm outline-none"
+                      style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-line)' }}
                     />
                     <input
                       type="text"
@@ -165,8 +165,8 @@ function ProfileSection({ master, services, onSaved }) {
                       placeholder={t('{duration} мин', { duration: s.duration })}
                       value={terms[s.id]?.duration || ''}
                       onChange={e => changeTerm(s.id, 'duration', e.target.value)}
-                      className="w-24 min-h-[40px] px-3 rounded-xl text-white text-sm outline-none"
-                      style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e' }}
+                      className="w-24 min-h-[40px] px-3 rounded-xl text-ink text-sm outline-none"
+                      style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-line)' }}
                     />
                   </div>
                 )}
@@ -187,7 +187,7 @@ function ProfileSection({ master, services, onSaved }) {
         <Checkbox checked={isActive} onChange={v => { setIsActive(v); setDone(false) }} label={t('Активен (виден на сайте записи)')} />
         <ErrorText>{error}</ErrorText>
         <div className="flex items-center justify-end gap-3">
-          {done && <span className="text-xs" style={{ color: '#34d399' }}>{t('Сохранено')}</span>}
+          {done && <span className="text-xs" style={{ color: 'var(--c-ok)' }}>{t('Сохранено')}</span>}
           <Button type="submit" variant="primary" disabled={saving}>
             {saving ? t('Сохраняем...') : isNew ? t('Создать мастера') : t('Сохранить')}
           </Button>
@@ -220,8 +220,8 @@ function SelfScheduleSection({ master, forAll, onChanged }) {
     <Section title={t('Свой график')}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div id={`self-schedule-${master.id}`} className="text-white text-sm">{t('Мастер сам ставит себе график')}</div>
-          <div className="text-xs mt-0.5" style={{ color: on ? '#34d399' : '#9ca3af' }}>{on ? t('Разрешено') : t('Не разрешено')}</div>
+          <div id={`self-schedule-${master.id}`} className="text-ink text-sm">{t('Мастер сам ставит себе график')}</div>
+          <div className="text-xs mt-0.5" style={{ color: on ? 'var(--c-ok)' : 'var(--c-muted)' }}>{on ? t('Разрешено') : t('Не разрешено')}</div>
         </div>
         <Switch checked={on} disabled={busy || forAll} labelledBy={`self-schedule-${master.id}`} onChange={toggle} />
       </div>
@@ -231,7 +231,7 @@ function SelfScheduleSection({ master, forAll, onChanged }) {
           : t('Мастер сможет сам менять рабочие часы, отдельные дни и выходные. Убрать время, на которое уже есть записи, он не сможет. Все изменения видны ниже, в истории.')}
       </p>
       {on && !master.has_access && (
-        <p className="text-xs mt-2" style={{ color: '#f59e0b' }}>{t('У мастера нет доступа в панель — выдайте его ниже, иначе он не сможет войти.')}</p>
+        <p className="text-xs mt-2" style={{ color: 'var(--c-warn-2)' }}>{t('У мастера нет доступа в панель — выдайте его ниже, иначе он не сможет войти.')}</p>
       )}
       <ErrorText className="mt-2">{error}</ErrorText>
     </Section>
@@ -450,14 +450,14 @@ export default function MastersPage() {
         type="button"
         onClick={() => setModal({ id: m.id })}
         className="w-full text-left rounded-2xl px-4 py-3 transition-all active:scale-[0.99]"
-        style={{ backgroundColor: '#242424', opacity: m.is_active ? 1 : 0.55 }}
+        style={{ backgroundColor: 'var(--c-raised)', opacity: m.is_active ? 1 : 0.55 }}
       >
         <div className="flex flex-wrap items-center gap-2">
           {m.photo && <img src={m.photo} alt="" className="w-7 h-7 rounded-full object-cover shrink-0" />}
-          <span className="text-white text-sm font-semibold break-words">{m.name}</span>
-          {!m.is_active && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>{t('скрыт')}</span>}
-          {m.has_access && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#34d399' }}>{t('доступ в панель')}</span>}
-          {m.can_edit_schedule && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#f9a8d4' }}>{t('свой график')}</span>}
+          <span className="text-ink text-sm font-semibold break-words">{m.name}</span>
+          {!m.is_active && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--c-line)', color: 'var(--c-muted)' }}>{t('скрыт')}</span>}
+          {m.has_access && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--c-line)', color: 'var(--c-ok)' }}>{t('доступ в панель')}</span>}
+          {m.can_edit_schedule && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--c-line)', color: 'var(--accent-ink-2)' }}>{t('свой график')}</span>}
         </div>
         <div className="text-gray-500 text-xs mt-1 break-words">{scheduleSummary(m.schedule)}</div>
         <div className="text-gray-600 text-xs mt-0.5 break-words">
@@ -484,7 +484,7 @@ export default function MastersPage() {
             aria-selected={tab === key}
             onClick={() => setSearchParams(key === 'masters' ? {} : { tab: key }, { replace: true })}
             className="px-4 min-h-[40px] rounded-xl text-sm font-medium"
-            style={tab === key ? { backgroundColor: '#db2777', color: '#fff' } : { backgroundColor: '#242424', color: '#d1d5db' }}
+            style={tab === key ? { backgroundColor: 'var(--accent)', color: '#fff' } : { backgroundColor: 'var(--c-raised)', color: 'var(--c-ink-2)' }}
           >
             {label}
           </button>
@@ -496,11 +496,11 @@ export default function MastersPage() {
 
       {masters && tab === 'schedules' && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-4" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+          <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <div id="masters-self-schedule" className="text-white text-sm font-semibold">{t('Мастера сами ведут свой график')}</div>
-                <div className="text-xs mt-0.5" style={{ color: forAll ? '#34d399' : '#9ca3af' }}>
+                <div id="masters-self-schedule" className="text-ink text-sm font-semibold">{t('Мастера сами ведут свой график')}</div>
+                <div className="text-xs mt-0.5" style={{ color: forAll ? 'var(--c-ok)' : 'var(--c-muted)' }}>
                   {forAll ? t('Включено для всех мастеров') : t('Выключено — только тем, кому разрешили в карточке мастера')}
                 </div>
               </div>

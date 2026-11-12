@@ -19,7 +19,7 @@ function MasterAvatar({ master }) {
   if (master?.photo) return <img src={master.photo} alt="" className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
   return (
     <span className="w-12 h-12 rounded-full flex items-center justify-center text-base font-semibold flex-shrink-0"
-      style={{ backgroundColor: '#242424', color: '#d1d5db' }}>
+      style={{ backgroundColor: 'var(--c-raised)', color: 'var(--c-ink-2)' }}>
       {(master?.name || '?').slice(0, 1).toUpperCase()}
     </span>
   )
@@ -34,21 +34,21 @@ export function BookingSection({ a, master, isManager, canEdit, paid, busy, onPa
         <MasterAvatar master={master || a.master} />
         <div className="min-w-0">
           <div className="text-gray-500 text-xs">{t('Мастер')}</div>
-          <div className="text-white font-semibold break-words">
+          <div className="text-ink font-semibold break-words">
             {a.master ? a.master.name : t('Без мастера')}
             {a.master && a.master.is_active === false && <span className="text-gray-500 font-normal">{' '}{t('(скрыт)')}</span>}
           </div>
         </div>
       </div>
-      <div className="mt-3 rounded-xl px-3 py-2.5" style={{ backgroundColor: '#242424' }}>
-        <div className="text-white text-sm font-medium">{formatShortDate(a.date)}</div>
+      <div className="mt-3 rounded-xl px-3 py-2.5" style={{ backgroundColor: 'var(--c-raised)' }}>
+        <div className="text-ink text-sm font-medium">{formatShortDate(a.date)}</div>
         <div className="text-gray-400 text-sm">{a.start_time}–{a.end_time} · {formatDuration(a.duration)}</div>
       </div>
       {(isManager && !paid) || (active && !paid) ? (
         <div className="grid grid-cols-2 gap-2 mt-3">
           {isManager && !paid && <Button disabled={busy} onClick={() => onEdit(a)}>{t('Перенести')}</Button>}
           {active && !paid && (
-            <Button disabled={busy} onClick={() => onStatus('cancelled')} style={{ color: '#f87171' }}
+            <Button disabled={busy} onClick={() => onStatus('cancelled')} style={{ color: 'var(--c-danger)' }}
               className={isManager ? '' : 'col-span-2'}>
               {t('Отменить запись')}
             </Button>
@@ -112,15 +112,15 @@ export function VisitConfirmSection({ a, isManager, canMark }) {
 
   return (
     <Section title={t('Клиент придёт?')}>
-      <div className="text-sm" style={{ color: visit.confirmed ? '#34d399' : '#fbbf24' }}>{visit.text}</div>
+      <div className="text-sm" style={{ color: visit.confirmed ? 'var(--c-ok)' : 'var(--c-warn)' }}>{visit.text}</div>
       {visit.hint && <div className="text-gray-500 text-xs mt-1">{visit.hint}</div>}
       {canMark && (
         <Button className="w-full mt-3" disabled={busy} onClick={() => mark(!visit.confirmed)}>
           {visit.confirmed ? t('Снять отметку') : t('Подтвердил по телефону')}
         </Button>
       )}
-      {error && <p role="alert" className="text-xs mt-2" style={{ color: '#f87171' }}>{error}</p>}
-      <div className="mt-3 pt-3 flex flex-wrap items-center justify-between gap-2" style={{ borderTop: '1px solid #2e2e2e' }}>
+      {error && <p role="alert" className="text-xs mt-2" style={{ color: 'var(--c-danger)' }}>{error}</p>}
+      <div className="mt-3 pt-3 flex flex-wrap items-center justify-between gap-2" style={{ borderTop: '1px solid var(--c-line)' }}>
         <div className="min-w-0">
           <div className="text-gray-500 text-xs">{t('Напоминание о визите')}</div>
           <div className="text-gray-300 text-sm">{reminderText(a.reminder)}</div>
@@ -128,7 +128,7 @@ export function VisitConfirmSection({ a, isManager, canMark }) {
         {isManager && <Button disabled={busy} onClick={remind}>{t('Напомнить сейчас')}</Button>}
       </div>
       {remindState && (
-        <p role="status" className="text-xs mt-2" style={{ color: remindState.ok ? '#34d399' : '#f87171' }}>{remindState.text}</p>
+        <p role="status" className="text-xs mt-2" style={{ color: remindState.ok ? 'var(--c-ok)' : 'var(--c-danger)' }}>{remindState.text}</p>
       )}
     </Section>
   )
@@ -153,9 +153,9 @@ function Row({ title, subtitle, onClick }) {
   return (
     <button type="button" onClick={onClick}
       className="w-full min-h-[52px] flex items-center justify-between gap-3 text-left py-2"
-      style={{ borderTop: '1px solid #2e2e2e' }}>
+      style={{ borderTop: '1px solid var(--c-line)' }}>
       <span className="min-w-0">
-        <span className="block text-white text-sm">{title}</span>
+        <span className="block text-ink text-sm">{title}</span>
         {subtitle && <span className="block text-gray-500 text-xs">{subtitle}</span>}
       </span>
       <span className="text-gray-500" aria-hidden="true">›</span>
@@ -171,11 +171,11 @@ export function ExtrasSection({ a, isManager }) {
       <div className="grid grid-cols-2 gap-3 mb-2">
         <div>
           <div className="text-gray-500 text-xs">{t('Создана')}</div>
-          <div className="text-white text-sm">{a.created_at ? formatShortDate(a.created_at.slice(0, 10)) : '—'}</div>
+          <div className="text-ink text-sm">{a.created_at ? formatShortDate(a.created_at.slice(0, 10)) : '—'}</div>
         </div>
         <div>
           <div className="text-gray-500 text-xs">{t('Источник')}</div>
-          <div className="text-white text-sm">{a.source === 'staff' ? t('Персонал') : t('Онлайн')}</div>
+          <div className="text-ink text-sm">{a.source === 'staff' ? t('Персонал') : t('Онлайн')}</div>
         </div>
       </div>
       {isManager && <Row title={t('Повторить запись')} subtitle={t('Та же запись через неделю, две…')} onClick={() => setModal('repeat')} />}

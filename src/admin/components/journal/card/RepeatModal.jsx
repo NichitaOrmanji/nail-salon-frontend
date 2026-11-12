@@ -43,7 +43,7 @@ export default function RepeatModal({ appointment: a, onClose }) {
         <div className="space-y-3 text-sm">
           {result.created.length > 0 && (
             <div>
-              <div className="text-white font-semibold mb-1">{t('Создано записей: {count}', { count: result.created.length })}</div>
+              <div className="text-ink font-semibold mb-1">{t('Создано записей: {count}', { count: result.created.length })}</div>
               <ul className="text-gray-300 space-y-0.5">
                 {result.created.map(c => <li key={c.id}>{formatShortDate(c.date)}, {c.start_time}</li>)}
               </ul>
@@ -51,7 +51,7 @@ export default function RepeatModal({ appointment: a, onClose }) {
           )}
           {result.skipped.length > 0 && (
             <div>
-              <div className="font-semibold mb-1" style={{ color: '#fbbf24' }}>{t('Пропущено — время занято')}</div>
+              <div className="font-semibold mb-1" style={{ color: 'var(--c-warn)' }}>{t('Пропущено — время занято')}</div>
               <ul className="text-gray-400 space-y-0.5">
                 {result.skipped.map(s => <li key={s.date}>{formatShortDate(s.date)} — {s.reason}</li>)}
               </ul>

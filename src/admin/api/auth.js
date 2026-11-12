@@ -12,6 +12,12 @@ export async function fetchStaffMe() {
   return response.data
 }
 
+// Оформление панели у себя: { theme: dark|light|system, accent: '#RRGGBB' | '' } → новый профиль
+export async function updateStaffAppearance(appearance) {
+  const response = await staffApi.patch('/me/', { appearance })
+  return response.data
+}
+
 // После смены пароля старые токены недействительны — бэк отдаёт новые { access, refresh }
 export async function changePassword(oldPassword, newPassword) {
   const generation = getStaffSessionGeneration()

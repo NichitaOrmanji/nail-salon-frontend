@@ -111,7 +111,7 @@ export default function ProfilePage() {
             onClick={() => { setTab('login'); setError(null) }}
             className="flex-1 py-3 rounded-xl text-sm font-medium transition-all"
             style={{
-              backgroundColor: tab === 'login' ? '#db2777' : 'transparent',
+              backgroundColor: tab === 'login' ? 'var(--accent)' : 'transparent',
               color: tab === 'login' ? '#ffffff' : '#9ca3af'
             }}
           >
@@ -121,7 +121,7 @@ export default function ProfilePage() {
             onClick={() => { setTab('register'); setError(null) }}
             className="flex-1 py-3 rounded-xl text-sm font-medium transition-all"
             style={{
-              backgroundColor: tab === 'register' ? '#db2777' : 'transparent',
+              backgroundColor: tab === 'register' ? 'var(--accent)' : 'transparent',
               color: tab === 'register' ? '#ffffff' : '#9ca3af'
             }}
           >
@@ -184,7 +184,7 @@ export default function ProfilePage() {
           disabled={!canSubmit || loading}
           className="w-full py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
           style={{
-            backgroundColor: '#db2777',
+            backgroundColor: 'var(--accent)',
             opacity: canSubmit && !loading ? 1 : 0.4
           }}
         >

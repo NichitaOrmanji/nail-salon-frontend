@@ -46,16 +46,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center px-4 py-10" style={{ backgroundColor: '#111111' }}>
+    <div className="min-h-dvh flex items-center justify-center px-4 py-10" style={{ backgroundColor: 'var(--c-bg)' }}>
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-2xl p-6 space-y-4"
-        style={{ backgroundColor: '#1a1a1a', border: '1px solid #2e2e2e' }}
+        style={{ backgroundColor: 'var(--c-surface)', border: '1px solid var(--c-line)' }}
       >
         <div className="flex flex-col items-center mb-2">
           {/* Панель общая для всех салонов — знак TimePoint, без логотипа конкретного салона */}
           <BrandLockup />
-          <h1 className="text-white text-xl font-bold">{t('Панель салона')}</h1>
+          <h1 className="text-ink text-xl font-bold">{t('Панель салона')}</h1>
           <p className="text-gray-500 text-sm mt-1">{t('Вход для персонала · TimePoint')}</p>
         </div>
 
@@ -83,13 +83,13 @@ export default function LoginPage() {
         </Button>
 
         {config?.password_reset && (
-          <Link to="/admin-panel/forgot-password" className="block text-center text-sm underline" style={{ color: '#f472b6' }}>
+          <Link to="/admin-panel/forgot-password" className="block text-center text-sm underline" style={{ color: 'var(--accent-ink)' }}>
             {t('Забыли пароль?')}
           </Link>
         )}
         {config?.signup && (
           <p className="text-center text-gray-400 text-sm">
-            {t('Новый салон?')}{' '}<Link to="/admin-panel/signup" className="underline" style={{ color: '#f472b6' }}>{t('Создать за 2 минуты')}</Link>
+            {t('Новый салон?')}{' '}<Link to="/admin-panel/signup" className="underline" style={{ color: 'var(--accent-ink)' }}>{t('Создать за 2 минуты')}</Link>
           </p>
         )}
         <a href="/" className="block text-center text-gray-500 text-xs py-2">{t('Сайт записи ↗')}</a>

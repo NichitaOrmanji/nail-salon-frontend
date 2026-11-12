@@ -29,8 +29,8 @@ export function visitStatus(a) {
 // Значок на блоке в журнале: ✓ — подтвердил; на сегодня и завтра: ⏳ — ждём ответа в Telegram, ☎ — позвонить
 export function visitMark(a, today = todayString()) {
   if (!ACTIVE.includes(a.status)) return null
-  if (a.visit_confirmed) return { icon: '✓', title: t('Клиент подтвердил, что придёт'), color: '#34d399' }
+  if (a.visit_confirmed) return { icon: '✓', title: t('Клиент подтвердил, что придёт'), color: 'var(--c-ok)' }
   if (a.date < today || a.date > addDays(today, 1)) return null
-  if (a.reminder?.telegram) return { icon: '⏳', title: t('Клиент ещё не ответил в Telegram'), color: '#fbbf24' }
-  return { icon: '☎', title: t('Нет Telegram — позвоните клиенту'), color: '#fbbf24' }
+  if (a.reminder?.telegram) return { icon: '⏳', title: t('Клиент ещё не ответил в Telegram'), color: 'var(--c-warn)' }
+  return { icon: '☎', title: t('Нет Telegram — позвоните клиенту'), color: 'var(--c-warn)' }
 }

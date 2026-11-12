@@ -23,20 +23,20 @@ function ClientRow({ client: c, onOpen }) {
       type="button"
       onClick={() => onOpen(c.phone)}
       className="w-full text-left rounded-2xl px-4 py-3 transition-all active:scale-[0.99]"
-      style={{ backgroundColor: '#242424', border: c.blacklist ? '1px solid #f87171' : '1px solid transparent' }}
+      style={{ backgroundColor: 'var(--c-raised)', border: c.blacklist ? '1px solid var(--c-danger)' : '1px solid transparent' }}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <span className="text-white text-sm font-semibold break-words">{c.name || t('Без имени')}</span>
+        <span className="text-ink text-sm font-semibold break-words">{c.name || t('Без имени')}</span>
         <span className="text-gray-400 text-xs">{c.phone}</span>
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs mt-1">
         <span className="text-gray-400">{t('Визитов: {visits}', { visits: c.visits })}</span>
         {c.paid !== '0.00' && <span className="text-gray-400">{t('Оплачено:')}{' '}{formatMoney(c.paid)}</span>}
         {c.last_visit && <span className="text-gray-500">{t('Был(а):')}{' '}{clientDate(c.last_visit)}</span>}
-        {c.next_visit && <span style={{ color: '#34d399' }}>{t('Запись:')}{' '}{clientDate(c.next_visit)}</span>}
-        {c.no_shows > 0 && <span style={{ color: '#f87171' }}>{t('Не пришёл: {no_shows}', { no_shows: c.no_shows })}</span>}
+        {c.next_visit && <span style={{ color: 'var(--c-ok)' }}>{t('Запись:')}{' '}{clientDate(c.next_visit)}</span>}
+        {c.no_shows > 0 && <span style={{ color: 'var(--c-danger)' }}>{t('Не пришёл: {no_shows}', { no_shows: c.no_shows })}</span>}
         {c.blacklist && (
-          <span className="font-semibold" style={{ color: '#f87171' }}>
+          <span className="font-semibold" style={{ color: 'var(--c-danger)' }}>
             {t('⛔ Чёрный список')}{Number(c.blacklist.debt) > 0 ? t(' · долг {value}', { value: formatMoney(c.blacklist.debt) }) : ''}
           </span>
         )}
@@ -129,7 +129,7 @@ function ClientsList() {
         <Button
           aria-pressed={onlyBlacklist}
           onClick={() => setOnlyBlacklist(v => !v)}
-          style={onlyBlacklist ? { backgroundColor: '#f87171', color: '#fff' } : { color: '#f87171' }}
+          style={onlyBlacklist ? { backgroundColor: 'var(--c-danger)', color: '#fff' } : { color: 'var(--c-danger)' }}
         >
           {t('⛔ Чёрный список')}
         </Button>
@@ -169,7 +169,7 @@ export default function ClientsPage() {
   return (
     <div className="px-4 md:px-6 py-5 max-w-3xl">
       <PageHeader title={t('Клиенты')} />
-      <div role="tablist" aria-label={t('Клиенты')} className="inline-flex rounded-xl overflow-hidden mb-4" style={{ border: '1px solid #2e2e2e' }}>
+      <div role="tablist" aria-label={t('Клиенты')} className="inline-flex rounded-xl overflow-hidden mb-4" style={{ border: '1px solid var(--c-line)' }}>
         {TABS.map(([key, label]) => (
           <button
             key={key}
@@ -178,7 +178,7 @@ export default function ClientsPage() {
             aria-selected={tab === key}
             onClick={() => setParams(key === 'all' ? {} : { tab: key }, { replace: true })}
             className="min-h-[44px] px-4 text-sm font-medium"
-            style={{ backgroundColor: tab === key ? '#db2777' : '#242424', color: tab === key ? '#ffffff' : '#9ca3af' }}
+            style={{ backgroundColor: tab === key ? 'var(--accent)' : 'var(--c-raised)', color: tab === key ? '#ffffff' : 'var(--c-muted)' }}
           >
             {t(label)}
           </button>

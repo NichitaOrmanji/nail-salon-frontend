@@ -142,14 +142,14 @@ export default function AppointmentCard({ appointment: a, parts, masters = [], i
     <div
       ref={panelRef}
       className={`fixed inset-0 md:left-[var(--card-left,0px)] z-40 flex-col ${hidden ? 'hidden' : 'flex'}`}
-      style={{ backgroundColor: '#151515' }}
+      style={{ backgroundColor: 'var(--c-sunk-2)' }}
       role="dialog"
       aria-label={t('Карточка записи')}
     >
-      <div className="flex items-center gap-3 pl-4 sm:pl-6 pr-2 py-2.5 flex-shrink-0" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}>
+      <div className="flex items-center gap-3 pl-4 sm:pl-6 pr-2 py-2.5 flex-shrink-0" style={{ backgroundColor: 'var(--c-surface)', borderBottom: '1px solid var(--c-line)' }}>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="text-white text-lg font-semibold break-words">{a.client_name || t('Без имени')}</span>
+            <span className="text-ink text-lg font-semibold break-words">{a.client_name || t('Без имени')}</span>
             <StatusBadge status={a.status} />
           </div>
           <div className="text-gray-400 text-sm">
@@ -162,7 +162,7 @@ export default function AppointmentCard({ appointment: a, parts, masters = [], i
           onClick={requestClose}
           aria-label={t('Закрыть')}
           className="w-11 h-11 rounded-xl flex items-center justify-center text-gray-400 active:scale-90 flex-shrink-0"
-          style={{ backgroundColor: '#242424' }}
+          style={{ backgroundColor: 'var(--c-raised)' }}
         >
           <IconClose />
         </button>

@@ -189,7 +189,7 @@ export default function AccountPage() {
             <button
               onClick={() => navigate('/')}
               className="mt-2 px-8 py-4 rounded-2xl text-white font-semibold active:scale-95"
-              style={{ backgroundColor: '#db2777' }}
+              style={{ backgroundColor: 'var(--accent)' }}
             >
               {t('Записаться')}
             </button>
@@ -224,7 +224,7 @@ export default function AccountPage() {
                   {tooLateToCancel(a) && (
                     <p className="mt-4 text-xs text-gray-500">
                       {t('Отменить онлайн можно не позже чем за {hours} ч до визита.', { hours: company.cancel_hours })}{' '}
-                      {company.phone && <a href={`tel:${company.phone.replace(/\s/g, '')}`} style={{ color: '#f472b6' }}>{t('Позвонить в салон')}</a>}
+                      {company.phone && <a href={`tel:${company.phone.replace(/\s/g, '')}`} style={{ color: 'var(--accent-ink)' }}>{t('Позвонить в салон')}</a>}
                     </p>
                   )}
                   {canCancel(a) && (

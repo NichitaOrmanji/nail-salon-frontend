@@ -97,7 +97,7 @@ export default function SignupPage() {
     return (
       <AuthCard title={t('Регистрация салона')} subtitle={t('TimePoint — онлайн-запись для салонов')}>
         <p className="text-gray-300 text-sm text-center">{t('Регистрация новых салонов скоро откроется.')}</p>
-        <Link to="/admin-panel/login" className="block text-center text-sm underline" style={{ color: '#f472b6' }}>{t('Вход для салонов')}</Link>
+        <Link to="/admin-panel/login" className="block text-center text-sm underline" style={{ color: 'var(--accent-ink)' }}>{t('Вход для салонов')}</Link>
       </AuthCard>
     )
   }
@@ -123,12 +123,12 @@ export default function SignupPage() {
       <div id="slug-status" className="-mt-2 text-xs break-all" aria-live="polite">
         <div className="text-gray-400">{preview}</div>
         {slug && slugState?.slug === slug && (slugOk
-          ? <div style={{ color: '#34d399' }}>{t('✓ Адрес свободен')}</div>
+          ? <div style={{ color: 'var(--c-ok)' }}>{t('✓ Адрес свободен')}</div>
           : (
-            <div style={{ color: '#f87171' }}>
+            <div style={{ color: 'var(--c-danger)' }}>
               {slugState.error}
               {slugState.suggestion && (
-                <button type="button" className="ml-1 underline" style={{ color: '#f472b6' }}
+                <button type="button" className="ml-1 underline" style={{ color: 'var(--accent-ink)' }}
                   onClick={() => setCustomSlug(slugState.suggestion)}>
                   {t('Взять {suggestion}', { suggestion: slugState.suggestion })}
                 </button>
@@ -158,7 +158,7 @@ export default function SignupPage() {
           onChange={e => set('accept_terms', e.target.checked)} />
         <span className="text-gray-400 text-xs leading-relaxed">
           {t('Принимаю')}{' '}
-          <Link to="/admin-panel/terms" target="_blank" className="underline" style={{ color: '#f472b6' }}>{t('условия сервиса')}</Link>
+          <Link to="/admin-panel/terms" target="_blank" className="underline" style={{ color: 'var(--accent-ink)' }}>{t('условия сервиса')}</Link>
           {' '}{t('и обязуюсь обрабатывать данные своих клиентов по закону о защите персональных данных')}
         </span>
       </label>
@@ -168,7 +168,7 @@ export default function SignupPage() {
         {busy ? t('Создаём салон...') : t('Создать салон')}
       </Button>
       <p className="text-center text-gray-500 text-xs">
-        {t('Уже зарегистрированы?')}{' '}<Link to="/admin-panel/login" className="underline" style={{ color: '#f472b6' }}>{t('Войти')}</Link>
+        {t('Уже зарегистрированы?')}{' '}<Link to="/admin-panel/login" className="underline" style={{ color: 'var(--accent-ink)' }}>{t('Войти')}</Link>
       </p>
     </AuthCard>
   )

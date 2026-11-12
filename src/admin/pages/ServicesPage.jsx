@@ -127,7 +127,7 @@ function CategoriesModal({ categories, onClose, onChanged }) {
       {categories.length === 0 && <p className="text-gray-500 text-sm">{t('Категорий пока нет')}</p>}
       <div className="space-y-2">
         {categories.map(c => (
-          <div key={c.id} className="rounded-xl px-3 py-2 flex flex-wrap items-center gap-2" style={{ backgroundColor: '#242424' }}>
+          <div key={c.id} className="rounded-xl px-3 py-2 flex flex-wrap items-center gap-2" style={{ backgroundColor: 'var(--c-raised)' }}>
             {editing?.id === c.id ? (
               <>
                 <TextInput value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} className="flex-1 min-w-[140px]" />
@@ -136,7 +136,7 @@ function CategoriesModal({ categories, onClose, onChanged }) {
               </>
             ) : (
               <>
-                <span className="flex-1 min-w-0 text-white text-sm break-words">{c.name}</span>
+                <span className="flex-1 min-w-0 text-ink text-sm break-words">{c.name}</span>
                 <Button disabled={busy} onClick={() => setEditing({ id: c.id, name: c.name })}>{t('Переименовать')}</Button>
                 <Button variant="danger" disabled={busy} onClick={() => handleDelete(c)}>{t('Удалить')}</Button>
               </>
@@ -227,10 +227,10 @@ export default function ServicesPage() {
                 <div
                   key={s.id}
                   className="rounded-2xl px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2"
-                  style={{ backgroundColor: '#242424', opacity: s.is_active ? 1 : 0.6 }}
+                  style={{ backgroundColor: 'var(--c-raised)', opacity: s.is_active ? 1 : 0.6 }}
                 >
                   <div className="flex-1 min-w-[160px]">
-                    <div className="text-white text-sm font-medium break-words">
+                    <div className="text-ink text-sm font-medium break-words">
                       {s.name}
                       {!s.is_active && <span className="text-gray-500 font-normal">{' '}{t('· скрыта')}</span>}
                     </div>

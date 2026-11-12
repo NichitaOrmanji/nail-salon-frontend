@@ -74,7 +74,7 @@ export function StaffAuthProvider({ children }) {
   const isManager = isManagerRole(me?.role)
 
   return (
-    <StaffAuthContext.Provider value={{ me, loading, meError, login, signIn, logout, refreshMe: loadMe, isManager, logoutMessage }}>
+    <StaffAuthContext.Provider value={{ me, loading, meError, login, signIn, logout, refreshMe: loadMe, replaceMe: setMe, isManager, logoutMessage }}>
       {children}
     </StaffAuthContext.Provider>
   )

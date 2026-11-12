@@ -8,7 +8,7 @@ const UPDATED = '2 ноября 2026'
 function Section({ title, children }) {
   return (
     <section className="mb-5">
-      <h2 className="text-white text-base font-semibold mb-2">{title}</h2>
+      <h2 className="text-ink text-base font-semibold mb-2">{title}</h2>
       <div className="text-gray-300 text-sm leading-relaxed space-y-2">{children}</div>
     </section>
   )
@@ -16,9 +16,9 @@ function Section({ title, children }) {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-dvh px-4 py-8" style={{ backgroundColor: '#111111' }}>
+    <div className="min-h-dvh px-4 py-8" style={{ backgroundColor: 'var(--c-bg)' }}>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-white text-2xl font-bold mb-1">{t('Условия сервиса TimePoint')}</h1>
+        <h1 className="text-ink text-2xl font-bold mb-1">{t('Условия сервиса TimePoint')}</h1>
         <p className="text-gray-500 text-xs mb-6">{t('Редакция от {UPDATED}', { UPDATED: t(UPDATED) })}</p>
 
         <Section title={t('1. Стороны')}>
@@ -58,7 +58,7 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Link to="/admin-panel/signup" className="text-sm underline" style={{ color: '#f472b6' }}>{t('← К регистрации')}</Link>
+        <Link to="/admin-panel/signup" className="text-sm underline" style={{ color: 'var(--accent-ink)' }}>{t('← К регистрации')}</Link>
       </div>
     </div>
   )

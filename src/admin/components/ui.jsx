@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom'
 // Общие элементы панели: кнопки, поля, сообщения. Цвета — как в клиентской части.
 
 const BUTTON_STYLES = {
-  primary: { backgroundColor: '#db2777', color: '#ffffff' },
-  secondary: { backgroundColor: '#242424', color: '#ffffff', border: '1px solid #2e2e2e' },
-  danger: { backgroundColor: '#242424', color: '#f87171', border: '1px solid #2e2e2e' },
-  ghost: { backgroundColor: 'transparent', color: '#9ca3af' },
+  primary: { backgroundColor: 'var(--accent)', color: '#ffffff' },
+  secondary: { backgroundColor: 'var(--c-raised)', color: 'var(--c-ink)', border: '1px solid var(--c-line)' },
+  danger: { backgroundColor: 'var(--c-raised)', color: 'var(--c-danger)', border: '1px solid var(--c-line)' },
+  ghost: { backgroundColor: 'transparent', color: 'var(--c-muted)' },
 }
 
 // Кнопка действия: высота не меньше 44px (удобно пальцем)
@@ -40,14 +40,14 @@ export function Field({ label, hint, error, children, className = '' }) {
       {label && <span className="block text-gray-400 text-xs font-medium mb-1.5">{label}</span>}
       {children}
       {error
-        ? <span role="alert" className="block text-xs mt-1" style={{ color: '#f87171' }}>{error}</span>
+        ? <span role="alert" className="block text-xs mt-1" style={{ color: 'var(--c-danger)' }}>{error}</span>
         : hint && <span className="block text-gray-500 text-xs mt-1">{hint}</span>}
     </label>
   )
 }
 
-const inputClass = 'w-full min-h-[44px] px-3 py-2 rounded-xl text-white text-sm outline-none placeholder-gray-600 focus:ring-1 focus:ring-pink-400'
-const inputStyle = { backgroundColor: '#242424', border: '1px solid #2e2e2e', colorScheme: 'dark' }
+const inputClass = 'w-full min-h-[44px] px-3 py-2 rounded-xl text-ink text-sm outline-none placeholder-gray-600 focus:ring-1 focus:ring-pink-400'
+const inputStyle = { backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-line)', colorScheme: 'var(--c-scheme)' }
 
 export function TextInput({ className = '', style, ...props }) {
   return <input className={`${inputClass} ${className}`} style={{ ...inputStyle, ...style }} {...props} />
@@ -74,9 +74,9 @@ export function Checkbox({ checked, onChange, label, disabled, className = '' })
         disabled={disabled}
         onChange={e => onChange?.(e.target.checked)}
         className="w-5 h-5 flex-shrink-0"
-        style={{ accentColor: '#f472b6' }}
+        style={{ accentColor: 'var(--accent-ink)' }}
       />
-      <span className="text-sm text-white min-w-0">{label}</span>
+      <span className="text-sm text-ink min-w-0">{label}</span>
     </label>
   )
 }
@@ -89,7 +89,7 @@ export function ErrorText({ children, className = '' }) {
 export function WarningText({ children, className = '' }) {
   if (!children) return null
   return (
-    <p className={`text-sm rounded-xl px-3 py-2 ${className}`} style={{ color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
+    <p className={`text-sm rounded-xl px-3 py-2 ${className}`} style={{ color: 'var(--c-warn-2)', backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
       {children}
     </p>
   )
@@ -100,7 +100,7 @@ export function PageHeader({ title, subtitle, children }) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-3 mb-5">
       <div className="min-w-0">
-        <h1 className="text-white text-2xl font-bold tracking-tight">{title}</h1>
+        <h1 className="text-ink text-2xl font-bold tracking-tight">{title}</h1>
         {subtitle && <p className="text-gray-500 text-sm mt-1">{subtitle}</p>}
       </div>
       {children && <div className="flex flex-wrap gap-2">{children}</div>}
@@ -120,7 +120,7 @@ export function Switch({ checked, onChange, labelledBy, label, disabled }) {
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className="relative flex-shrink-0 w-14 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 disabled:opacity-60"
-      style={{ backgroundColor: checked ? '#db2777' : '#3a3a3a' }}
+      style={{ backgroundColor: checked ? 'var(--accent)' : 'var(--c-line-2)' }}
     >
       <span
         className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform"

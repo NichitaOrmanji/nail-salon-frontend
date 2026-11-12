@@ -50,14 +50,14 @@ function ShareCard({ url, name, ready }) {
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
 
   return (
-    <section className="rounded-2xl p-4 mb-5" style={{ backgroundColor: '#1f1f1f', border: `1px solid ${ready ? '#db2777' : '#2e2e2e'}` }}>
-      <h2 className="text-white text-base font-semibold mb-1">{t('Ваша ссылка для записи')}</h2>
+    <section className="rounded-2xl p-4 mb-5" style={{ backgroundColor: 'var(--c-card)', border: `1px solid ${ready ? 'var(--accent)' : 'var(--c-line)'}` }}>
+      <h2 className="text-ink text-base font-semibold mb-1">{t('Ваша ссылка для записи')}</h2>
       {!ready && (
         <p className="text-gray-400 text-xs mb-2">
           {t('Клиенты смогут записаться, когда вы подтвердите email и добавите мастера с услугой и графиком.')}
         </p>
       )}
-      <a href={url} target="_blank" rel="noreferrer" className="block text-sm font-medium underline break-all mb-3" style={{ color: '#f472b6' }}>
+      <a href={url} target="_blank" rel="noreferrer" className="block text-sm font-medium underline break-all mb-3" style={{ color: 'var(--accent-ink)' }}>
         {url}
       </a>
       <div className="flex flex-wrap gap-2 mb-4">
@@ -74,7 +74,7 @@ function ShareCard({ url, name, ready }) {
         <div className="space-y-2 text-sm text-gray-300">
           <div>
             <div className="text-gray-400 text-xs mb-1">{t('Текст для публикации')}</div>
-            <p className="rounded-xl p-3 text-sm break-words" style={{ backgroundColor: '#242424' }}>{post}</p>
+            <p className="rounded-xl p-3 text-sm break-words" style={{ backgroundColor: 'var(--c-raised)' }}>{post}</p>
             <div className="mt-2"><CopyButton text={post} label={t('Скопировать текст')} /></div>
           </div>
           <ul className="text-gray-400 text-xs space-y-1 list-disc pl-4">
@@ -91,7 +91,7 @@ function ShareCard({ url, name, ready }) {
 // Карточка салона: как его видят клиенты (фото, название, адрес, телефон, описание)
 function SalonCard({ company }) {
   return (
-    <section className="rounded-2xl overflow-hidden mb-5" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+    <section className="rounded-2xl overflow-hidden mb-5" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
       {company.main_photo && (
         <img src={company.main_photo} alt="" className="w-full h-36 object-cover" />
       )}
@@ -99,12 +99,12 @@ function SalonCard({ company }) {
         {company.logo
           ? <img src={company.logo} alt="" className="w-14 h-14 rounded-full object-cover flex-shrink-0" />
           : (
-            <span className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0" style={{ backgroundColor: '#2e1f28', color: '#f472b6' }}>
+            <span className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0" style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent-ink)' }}>
               {(company.name || '?').trim().charAt(0).toUpperCase()}
             </span>
           )}
         <div className="flex-1 min-w-0">
-          <h2 className="text-white text-lg font-semibold break-words">{company.name}</h2>
+          <h2 className="text-ink text-lg font-semibold break-words">{company.name}</h2>
           <dl className="mt-1 space-y-0.5 text-sm">
             <div className="flex gap-2"><dt className="text-gray-500 w-16 flex-shrink-0">{t('Адрес')}</dt><dd className="text-gray-200 break-words">{company.address || <span className="text-gray-500">{t('не указан')}</span>}</dd></div>
             <div className="flex gap-2"><dt className="text-gray-500 w-16 flex-shrink-0">{t('Телефон')}</dt><dd className="text-gray-200">{company.phone || <span className="text-gray-500">{t('не указан')}</span>}</dd></div>
@@ -150,12 +150,12 @@ export default function SalonOverview({ asPage = false }) {
   return (
     <section aria-labelledby="salon-overview-title">
       {asPage
-        ? <h1 id="salon-overview-title" className="text-white text-2xl font-bold tracking-tight">{t('О салоне')}</h1>
-        : <h2 id="salon-overview-title" className="text-white text-xl font-bold tracking-tight">{t('О салоне')}</h2>}
+        ? <h1 id="salon-overview-title" className="text-ink text-2xl font-bold tracking-tight">{t('О салоне')}</h1>
+        : <h2 id="salon-overview-title" className="text-ink text-xl font-bold tracking-tight">{t('О салоне')}</h2>}
       <p className="text-gray-500 text-sm mt-1 mb-4">{trialEnds ? t('Пробный период — до {date}', { date: trialEnds }) : t('Как вас видят клиенты и ссылка для записи')}</p>
       {location.state?.welcome && (
-        <div className="rounded-2xl p-4 mb-5 text-sm" style={{ backgroundColor: '#2e1f28', border: '1px solid #db2777' }}>
-          <div className="text-white font-semibold mb-1">{t('Салон «{name}» создан 🎉', { name: me?.company?.name })}</div>
+        <div className="rounded-2xl p-4 mb-5 text-sm" style={{ backgroundColor: 'var(--accent-soft)', border: '1px solid var(--accent)' }}>
+          <div className="text-ink font-semibold mb-1">{t('Салон «{name}» создан 🎉', { name: me?.company?.name })}</div>
           <div className="text-gray-300">
             {t('Пройдите шаги ниже — это займёт 10–15 минут.')}{' '}{location.state?.emailSent !== false
               ? t('Мы отправили письмо на {email} — подтвердите email.', { email: me?.email })
@@ -172,14 +172,14 @@ export default function SalonOverview({ asPage = false }) {
           {data.ready && <ShareCard url={data.public_url} name={me?.company?.name || ''} ready />}
 
           {data.done === data.total ? (
-            <p className="text-sm mb-2" style={{ color: '#34d399' }}>{t('✓ Салон настроен: все шаги выполнены')}</p>
+            <p className="text-sm mb-2" style={{ color: 'var(--c-ok)' }}>{t('✓ Салон настроен: все шаги выполнены')}</p>
           ) : (
           <>
-          <h2 className="text-white text-base font-semibold mb-2">{t('Настройка салона')}</h2>
+          <h2 className="text-ink text-base font-semibold mb-2">{t('Настройка салона')}</h2>
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: '#242424' }}
+            <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--c-raised)' }}
               role="progressbar" aria-valuemin={0} aria-valuemax={data.total} aria-valuenow={data.done} aria-label={t('Настройка салона')}>
-              <div className="h-full rounded-full" style={{ width: `${(data.done / data.total) * 100}%`, backgroundColor: '#34d399' }} />
+              <div className="h-full rounded-full" style={{ width: `${(data.done / data.total) * 100}%`, backgroundColor: 'var(--c-ok)' }} />
             </div>
             <span className="text-gray-400 text-xs">{data.done}{' '}{t('из {total}', { total: data.total })}</span>
           </div>
@@ -189,20 +189,20 @@ export default function SalonOverview({ asPage = false }) {
               const info = STEPS[step.key] || { title: step.key, text: '' }
               return (
                 <li key={step.key} className="rounded-2xl p-4 flex flex-wrap items-start gap-3"
-                  style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+                  style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
                   <span aria-hidden="true" className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                    style={step.done ? { backgroundColor: '#34d399', color: '#111' } : { border: '2px solid #4b4b4b' }}>
+                    style={step.done ? { backgroundColor: 'var(--c-ok)', color: 'var(--c-bg)' } : { border: '2px solid var(--c-line-4)' }}>
                     {step.done ? '✓' : ''}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-white text-sm font-semibold">
+                    <div className="text-ink text-sm font-semibold">
                       {info.title}<span className="sr-only">{step.done ? t(' — готово') : t(' — не сделано')}</span>
                     </div>
                     <div className="text-gray-400 text-xs mt-0.5">{(step.done && info.doneText) || info.text}</div>
                     {step.key === 'email' && !step.done && (
                       <div className="text-xs mt-2">
                         <span className="text-gray-300">{t('Письмо на {email}.', { email: me?.email })}{' '}</span>
-                        <button type="button" onClick={sendAgain} disabled={resend === 'sending'} className="underline" style={{ color: '#f472b6' }}>
+                        <button type="button" onClick={sendAgain} disabled={resend === 'sending'} className="underline" style={{ color: 'var(--accent-ink)' }}>
                           {t('Отправить ещё раз')}
                         </button>
                         {resend && resend !== 'sending' && <div className="text-gray-400 mt-1">{resend}</div>}

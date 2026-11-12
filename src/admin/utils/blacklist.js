@@ -24,7 +24,7 @@ export function isLateCancel(appointment, company) {
 
 export const PENALTY_KIND = tr({ no_show: 'Не пришёл', late_cancel: 'Поздняя отмена' })
 export const PENALTY_STATUS = tr({
-  unpaid: { label: 'не оплачен', color: '#f87171' },
-  paid: { label: 'оплачен', color: '#34d399' },
-  forgiven: { label: 'прощён', color: '#9ca3af' },
+  unpaid: { label: 'не оплачен', color: 'var(--c-danger)' },
+  paid: { label: 'оплачен', color: 'var(--c-ok)' },
+  forgiven: { label: 'прощён', color: 'var(--c-muted)' },
 })

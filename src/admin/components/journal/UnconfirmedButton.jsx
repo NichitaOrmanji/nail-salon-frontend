@@ -38,7 +38,7 @@ export default function UnconfirmedButton() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} style={{ color: '#fbbf24' }}>
+      <Button onClick={() => setOpen(true)} style={{ color: 'var(--c-warn)' }}>
         ☎ {t('Завтра не подтвердили: {count}', { count: list.length })}
       </Button>
       {open && (
@@ -48,21 +48,21 @@ export default function UnconfirmedButton() {
             {t('Клиенты с Telegram получают напоминание с кнопкой «Приду». Здесь — те, кто ещё не ответил или без Telegram. Позвоните им и отметьте, если клиент подтвердил.')}
           </p>
           <ErrorText className="mb-3">{error}</ErrorText>
-          {list.length === 0 && <p className="text-sm" style={{ color: '#34d399' }}>{t('Все клиенты на завтра подтвердили визит')}</p>}
+          {list.length === 0 && <p className="text-sm" style={{ color: 'var(--c-ok)' }}>{t('Все клиенты на завтра подтвердили визит')}</p>}
           <ul className="space-y-2">
             {list.map(a => (
-              <li key={a.id} className="rounded-xl p-3" style={{ backgroundColor: '#242424' }}>
+              <li key={a.id} className="rounded-xl p-3" style={{ backgroundColor: 'var(--c-raised)' }}>
                 <div className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="text-white font-semibold tabular-nums">{a.start_time}</span>
-                  <span className="text-white min-w-0 break-words">{a.client_name}</span>
+                  <span className="text-ink font-semibold tabular-nums">{a.start_time}</span>
+                  <span className="text-ink min-w-0 break-words">{a.client_name}</span>
                   {a.master && <span className="text-gray-500 text-xs">· {a.master.name}</span>}
                 </div>
-                <div className="text-xs mt-1" style={{ color: a.reminder?.telegram ? '#9ca3af' : '#fbbf24' }}>
+                <div className="text-xs mt-1" style={{ color: a.reminder?.telegram ? 'var(--c-muted)' : 'var(--c-warn)' }}>
                   {a.reminder?.telegram ? t('Telegram: не ответил на напоминание') : t('Нет Telegram')}
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   <a href={`tel:${a.client_phone}`} className="min-h-[44px] px-4 rounded-xl text-sm font-medium inline-flex items-center"
-                    style={{ backgroundColor: '#2e2e2e', color: '#fff' }}>
+                    style={{ backgroundColor: 'var(--c-line)', color: 'var(--c-ink)' }}>
                     ☎ {a.client_phone}
                   </a>
                   <Button variant="primary" disabled={busyId === a.id} onClick={() => confirm(a.id)}>{t('Подтвердил')}</Button>

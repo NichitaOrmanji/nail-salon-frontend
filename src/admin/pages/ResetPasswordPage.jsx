@@ -32,7 +32,7 @@ export default function ResetPasswordPage() {
   return (
     <AuthCard title={t('Новый пароль')} onSubmit={done ? undefined : handleSubmit}>
       {done ? (
-        <p className="text-sm text-center" style={{ color: '#34d399' }}>
+        <p className="text-sm text-center" style={{ color: 'var(--c-ok)' }}>
           {t('Пароль изменён. Войдите с новым паролем (логин: {username}).', { username: done.username })}
         </p>
       ) : (
@@ -49,7 +49,7 @@ export default function ResetPasswordPage() {
           </Button>
         </>
       )}
-      <Link to="/admin-panel/login" className="block text-center text-sm underline" style={{ color: '#f472b6' }}>
+      <Link to="/admin-panel/login" className="block text-center text-sm underline" style={{ color: 'var(--accent-ink)' }}>
         {done ? t('Войти') : t('Ко входу')}
       </Link>
       {error && !done && (

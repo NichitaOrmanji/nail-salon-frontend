@@ -1,11 +1,11 @@
 import { tr } from '../../i18n'
-// Статусы записи: подпись и цвет
+// Статусы записи: подпись и цвет текста (CSS-переменные темы — читаются и в светлой, и в тёмной)
 export const STATUSES = tr({
-  pending: { label: 'Ожидает', color: '#f59e0b' },
-  confirmed: { label: 'Подтверждена', color: '#34d399' },
-  completed: { label: 'Пришёл', color: '#9ca3af' },
-  no_show: { label: 'Не пришёл', color: '#f87171' },
-  cancelled: { label: 'Отменена', color: '#9098a4' },
+  pending: { label: 'Ожидает', color: 'var(--c-warn-2)' },
+  confirmed: { label: 'Подтверждена', color: 'var(--c-ok)' },
+  completed: { label: 'Пришёл', color: 'var(--c-muted)' },
+  no_show: { label: 'Не пришёл', color: 'var(--c-danger)' },
+  cancelled: { label: 'Отменена', color: 'var(--c-faint)' },
 })
 
 // Статусы, которые занимают время мастера (как BUSY_STATUSES на бэке)
@@ -14,17 +14,19 @@ export const BUSY_STATUSES = ['pending', 'confirmed', 'completed']
 export const ACTIVE_STATUSES = ['pending', 'confirmed']
 
 export function statusInfo(status) {
-  return STATUSES[status] || { label: status || '—', color: '#9ca3af' }
+  return STATUSES[status] || { label: status || '—', color: 'var(--c-muted)' }
 }
 
-// Цвет записи в журнале: откуда пришла и чем закончилась (легенда — в том же порядке)
+// Цвет записи в журнале: откуда пришла и чем закончилась (легенда — в том же порядке).
+// color — точка в легенде; bg и line — фон и полоска блока (--k-* в index.css; не зависят от акцента)
+const kind = (label, color, k) => ({ label, color, bg: `var(--k-${k}-bg)`, line: `var(--k-${k}-line)` })
 export const KINDS = tr({
-  online_confirmed: { label: 'Онлайн, подтверждена', color: '#34d399' },
-  online_pending: { label: 'Онлайн, ждёт подтверждения', color: '#f59e0b' },
-  staff: { label: 'Записал администратор', color: '#60a5fa' },
-  completed: { label: 'Визит состоялся', color: '#9ca3af' },
-  no_show: { label: 'Не пришёл', color: '#f87171' },
-  cancelled: { label: 'Отменена', color: '#9098a4' },
+  online_confirmed: kind('Онлайн, подтверждена', 'var(--k-ok-line)', 'ok'),
+  online_pending: kind('Онлайн, ждёт подтверждения', 'var(--k-warn-line)', 'warn'),
+  staff: kind('Записал администратор', 'var(--k-info-line)', 'info'),
+  completed: kind('Визит состоялся', 'var(--k-done-line)', 'done'),
+  no_show: kind('Не пришёл', 'var(--k-bad-line)', 'bad'),
+  cancelled: kind('Отменена', 'var(--k-off-line)', 'off'),
 })
 
 export function appointmentKind(a) {

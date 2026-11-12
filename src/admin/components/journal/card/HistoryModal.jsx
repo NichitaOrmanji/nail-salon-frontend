@@ -101,9 +101,9 @@ export default function HistoryModal({ appointment: a, onClose }) {
       {items && items.length > 0 && (
         <ol className="space-y-3 text-sm">
           {items.map(entry => (
-            <li key={entry.id} className="rounded-xl px-3 py-2" style={{ backgroundColor: '#242424' }}>
+            <li key={entry.id} className="rounded-xl px-3 py-2" style={{ backgroundColor: 'var(--c-raised)' }}>
               <div className="flex justify-between gap-3">
-                <span className="text-white font-medium">{t(ACTIONS[entry.action] || entry.action)}</span>
+                <span className="text-ink font-medium">{t(ACTIONS[entry.action] || entry.action)}</span>
                 <span className="text-gray-500 text-xs whitespace-nowrap">{whenText(entry.at)}</span>
               </div>
               <div className="text-gray-500 text-xs">{who(entry)}</div>

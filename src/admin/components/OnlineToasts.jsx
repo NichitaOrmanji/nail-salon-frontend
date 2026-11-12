@@ -44,11 +44,11 @@ export default function OnlineToasts() {
   return (
     <div className="fixed z-40 bottom-4 right-4 left-4 sm:left-auto sm:w-80 space-y-2" aria-live="polite">
       {toasts.map(a => (
-        <div key={a.id} role="status" className="rounded-2xl p-4 shadow-xl" style={{ backgroundColor: '#242424', border: '1px solid #3a3a3a' }}>
+        <div key={a.id} role="status" className="rounded-2xl p-4 shadow-xl" style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-line-2)' }}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-xs font-semibold mb-1" style={{ color: '#f472b6' }}>{t('Новая онлайн-запись')}</div>
-              <div className="text-white text-sm font-medium truncate">{a.client_name}</div>
+              <div className="text-xs font-semibold mb-1" style={{ color: 'var(--accent-ink)' }}>{t('Новая онлайн-запись')}</div>
+              <div className="text-ink text-sm font-medium truncate">{a.client_name}</div>
               <div className="text-gray-400 text-xs mt-0.5 truncate">
                 {[a.service?.name, a.master?.name].filter(Boolean).join(' · ')}
               </div>
@@ -60,7 +60,7 @@ export default function OnlineToasts() {
             type="button"
             onClick={() => { dismiss(a.id); navigate(`/admin-panel?view=day&date=${a.date}&open=${a.id}`) }}
             className="mt-3 w-full min-h-[36px] rounded-xl text-sm font-medium text-white"
-            style={{ backgroundColor: '#db2777' }}
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             {t('Открыть запись')}
           </button>

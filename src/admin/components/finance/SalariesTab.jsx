@@ -150,9 +150,9 @@ export default function SalariesTab({ range }) {
     <div>
       <ErrorText className="mb-3">{error}</ErrorText>
       {rows.some(r => r.overlapping_payouts?.length) && (
-        <div role="alert" className="rounded-xl px-3 py-2.5 mb-3 text-sm" style={{ backgroundColor: 'rgba(251,191,36,0.1)', border: '1px solid #92400e', color: '#fbbf24' }}>
+        <div role="alert" className="rounded-xl px-3 py-2.5 mb-3 text-sm" style={{ backgroundColor: 'rgba(251,191,36,0.1)', border: '1px solid var(--c-warn-line)', color: 'var(--c-warn)' }}>
           <div className="font-medium">{t('Есть выплаты, которые частично захватывают этот период')}</div>
-          <div className="text-xs mt-1 text-amber-200/80">{t('Они не входят в «Выплачено» — проверьте, чтобы не заплатить за одни и те же дни дважды.')}</div>
+          <div className="text-xs mt-1 text-amber-200">{t('Они не входят в «Выплачено» — проверьте, чтобы не заплатить за одни и те же дни дважды.')}</div>
           <ul className="text-xs mt-1.5 space-y-0.5">
             {rows.filter(r => r.overlapping_payouts?.length).map(r => (
               <li key={r.master.id}>{r.master.name}: {overlapText(r.overlapping_payouts)}</li>
@@ -171,14 +171,14 @@ export default function SalariesTab({ range }) {
           { key: 'revenue', label: t('Выручка'), align: 'right', render: r => formatMoney(r.revenue) },
           { key: 'accrued', label: t('Начислено'), align: 'right', render: r => formatMoney(r.accrued) },
           { key: 'paid', label: t('Выплачено'), align: 'right', render: r => formatMoney(r.paid) },
-          { key: 'due', label: t('К выплате'), align: 'right', render: r => <span style={{ color: Number(r.due) > 0 ? '#f472b6' : '#9ca3af' }}>{formatMoney(r.due)}</span> },
+          { key: 'due', label: t('К выплате'), align: 'right', render: r => <span style={{ color: Number(r.due) > 0 ? 'var(--accent-ink)' : 'var(--c-muted)' }}>{formatMoney(r.due)}</span> },
           { key: 'actions', label: '', align: 'right', render: r => <Button onClick={() => setModal({ type: 'payout', row: r })}>{t('Выплатить')}</Button> },
         ]}
       />
 
       {rows.some(r => r.payouts.length) && (
         <div className="mt-6">
-          <h2 className="text-white text-base font-semibold mb-2">{t('Выплаты за период')}</h2>
+          <h2 className="text-ink text-base font-semibold mb-2">{t('Выплаты за период')}</h2>
           <Table
             rows={rows.flatMap(r => r.payouts.map(p => ({ ...p, master: r.master.name })))}
             columns={[

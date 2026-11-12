@@ -179,7 +179,7 @@ export default function ConfirmationPage() {
   if (sent) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ backgroundColor: '#1a1a1a' }}>
-        <div className="mb-6" style={{ color: '#f472b6' }}>
+        <div className="mb-6" style={{ color: 'var(--accent-ink)' }}>
           <IconSuccess />
         </div>
         <h2 className="text-white text-2xl font-bold mb-2 tracking-tight">
@@ -199,7 +199,7 @@ export default function ConfirmationPage() {
           {booked?.token
             ? t('Планы изменились — перенесите или отмените запись по кнопке ниже.')
             : t('Не можете прийти — отмените запись в личном кабинете или позвоните в салон.')}{' '}
-          <Link to="/rules" className="underline" style={{ color: '#f472b6' }}>{t('Правила салона')}</Link>
+          <Link to="/rules" className="underline" style={{ color: 'var(--accent-ink)' }}>{t('Правила салона')}</Link>
         </p>
         {booked && (
           <div className="w-full max-w-xs grid grid-cols-2 gap-2 mb-3">
@@ -208,7 +208,7 @@ export default function ConfirmationPage() {
                 type="button"
                 onClick={() => navigate(`/manage/${booked.token}`)}
                 className="py-3 rounded-2xl text-sm font-medium active:scale-95"
-                style={{ backgroundColor: '#242424', color: '#f9a8d4' }}
+                style={{ backgroundColor: '#242424', color: 'var(--accent-ink-2)' }}
               >
                 {t('Перенести или отменить')}
               </button>
@@ -246,7 +246,7 @@ export default function ConfirmationPage() {
         <button
           onClick={() => navigate('/services')}
           className="w-full max-w-xs py-4 rounded-2xl font-semibold transition-all active:scale-95 mb-3"
-          style={telegramUrl ? { backgroundColor: '#242424', color: '#d1d5db' } : { backgroundColor: '#db2777', color: '#fff' }}
+          style={telegramUrl ? { backgroundColor: '#242424', color: '#d1d5db' } : { backgroundColor: 'var(--accent)', color: '#fff' }}
         >
           {t('Записаться ещё')}
         </button>
@@ -388,7 +388,7 @@ export default function ConfirmationPage() {
                   aria-checked={reminder === value}
                   onClick={() => setReminder(value)}
                   className="px-3 py-2 rounded-xl text-sm active:scale-95"
-                  style={{ backgroundColor: reminder === value ? '#db2777' : '#242424', color: reminder === value ? '#fff' : '#d1d5db' }}
+                  style={{ backgroundColor: reminder === value ? 'var(--accent)' : '#242424', color: reminder === value ? '#fff' : '#d1d5db' }}
                 >
                   {t(label)}
                 </button>
@@ -411,7 +411,7 @@ export default function ConfirmationPage() {
                 { hours: company.late_cancel_hours, percent: company.penalty_percent })
               : t('Если вы не придёте на запись, при следующем визите нужно будет оплатить штраф {percent}% стоимости пропущенной услуги. Оплата — на месте в салоне.',
                 { percent: company.penalty_percent })}{' '}
-            <Link to="/rules" className="underline" style={{ color: '#f472b6' }}>{t('Правила салона')}</Link>
+            <Link to="/rules" className="underline" style={{ color: 'var(--accent-ink)' }}>{t('Правила салона')}</Link>
           </p>
         )}
 
@@ -429,7 +429,7 @@ export default function ConfirmationPage() {
           />
           <span className="text-gray-400 text-xs leading-relaxed">
             {t('Согласен(на) на обработку моих персональных данных для записи и напоминаний —')}{' '}
-            <Link to="/privacy" className="underline" style={{ color: '#f472b6' }}>{t('политика конфиденциальности')}</Link>
+            <Link to="/privacy" className="underline" style={{ color: 'var(--accent-ink)' }}>{t('политика конфиденциальности')}</Link>
           </span>
         </label>
 
@@ -444,7 +444,7 @@ export default function ConfirmationPage() {
           disabled={!canSubmit || submitting}
           className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"
           style={{
-            backgroundColor: '#db2777',
+            backgroundColor: 'var(--accent)',
             opacity: canSubmit && !submitting ? 1 : 0.4
           }}
         >

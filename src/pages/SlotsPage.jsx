@@ -184,7 +184,7 @@ export default function SlotsPage() {
                             onClick={() => selectSlot(slot)}
                             className="py-3 rounded-xl text-sm font-medium transition-all active:scale-95"
                             style={{
-                              backgroundColor: selectedSlot === slot ? '#db2777' : '#242424',
+                              backgroundColor: selectedSlot === slot ? 'var(--accent)' : '#242424',
                               color: selectedSlot === slot ? '#ffffff' : '#9ca3af'
                             }}
                           >
@@ -226,7 +226,7 @@ export default function SlotsPage() {
           <button
             onClick={() => navigate(getNextRoute('slots'))}
             className="w-full py-4 rounded-2xl font-semibold text-white transition-all active:scale-95"
-            style={{ backgroundColor: '#db2777' }}
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             <div className="text-sm font-semibold">{t('Далее')}</div>
             <div className="text-xs opacity-75 mt-0.5">{t('{date} в {time}', { date: formatDisplayDate(selectedDate, { withYear: false, lang: getLang() }), time: selectedSlot })}</div>

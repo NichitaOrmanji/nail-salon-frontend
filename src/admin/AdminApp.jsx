@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { StaffAuthProvider } from './context/StaffAuthContext'
+import { AppearanceProvider } from './context/AppearanceContext'
 import { useLang } from '../i18n'
 import RequireStaff from './components/RequireStaff'
 import ManagerOnly from './components/ManagerOnly'
@@ -27,7 +28,8 @@ export default function AdminApp() {
   const lang = useLang()
   return (
     <StaffAuthProvider>
-      <div key={lang} className="min-h-dvh text-white" style={{ backgroundColor: '#111111' }}>
+      <AppearanceProvider>
+      <div key={lang} className="min-h-dvh text-ink" style={{ backgroundColor: 'var(--c-bg)' }}>
         <Routes>
           <Route path="login" element={<LoginPage />} />
           {/* Без входа: регистрация салона, подтверждение email, восстановление пароля, условия */}
@@ -52,6 +54,7 @@ export default function AdminApp() {
           <Route path="*" element={<Navigate to="/admin-panel" replace />} />
         </Routes>
       </div>
+      </AppearanceProvider>
     </StaffAuthProvider>
   )
 }

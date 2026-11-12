@@ -25,7 +25,7 @@ export default function NotFoundPage() {
       <button
         onClick={() => navigate('/')}
         className="flex items-center gap-2 px-8 py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
-        style={{ backgroundColor: '#db2777' }}
+        style={{ backgroundColor: 'var(--accent)' }}
       >
         <IconHome />
         {t('На главную')}
