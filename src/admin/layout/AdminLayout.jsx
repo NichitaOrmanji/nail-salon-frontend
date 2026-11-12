@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import ImpersonationBar from '../components/ImpersonationBar'
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
-import { STAFF_ACCESS_KEY, tokenUserId } from '../api/staffClient'
 import { fetchPendingCount, fetchStaffMonthLoad } from '../api/appointments'
 import { useAutoRefresh } from '../utils/events'
 import { useNewVersion } from '../utils/version'
@@ -222,17 +221,6 @@ export default function AdminLayout() {
       document.removeEventListener('focusout', onFocusOut)
       window.visualViewport?.removeEventListener('resize', reset)
     }
-  }, [])
-
-  // В другой вкладке вошли под другим логином или вышли — эта вкладка показывает старый аккаунт,
-  // а запросы уже идут от нового. Перезагружаем, чтобы экран совпадал с тем, кто вошёл
-  useEffect(() => {
-    const onStorage = e => {
-      if (e.key !== STAFF_ACCESS_KEY) return
-      if (tokenUserId(e.oldValue) !== tokenUserId(e.newValue)) window.location.reload()
-    }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
   return (

@@ -73,7 +73,7 @@ test('администратор не видит финансы, мастер �
   await page.goto('/admin-panel/finance')
   await expect(page.getByRole('heading', { name: 'Финансы' })).toHaveCount(0)
 
-  await page.evaluate(() => localStorage.clear())
+  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear() })
   await staffLogin(page, 'e2e_master')
   await page.goto('/admin-panel/clients')
   await expect(page).toHaveURL(/\/admin-panel(\?|$)/)
