@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button, Select, TextArea } from '../../ui'
-import { remindAppointment } from '../../../api/appointments'
+import { remindAppointment, setVisitConfirmed } from '../../../api/appointments'
+import { visitStatus } from '../../../utils/visit'
 import { notifyDataChanged } from '../../../utils/events'
 import { formatShortDate } from '../../../utils/time'
 import { formatDuration } from '../../../../utils/format'
@@ -65,6 +66,22 @@ export default function DetailsColumn({ a, master, isManager, canEdit, paid, bus
   }
 
   const upcoming = ['pending', 'confirmed'].includes(a.status)
+  const visit = visitStatus(a)
+  const [visitBusy, setVisitBusy] = useState(false)
+  const [visitError, setVisitError] = useState(null)
+
+  async function markVisit(confirmed) {
+    setVisitBusy(true)
+    setVisitError(null)
+    try {
+      await setVisitConfirmed(a.id, confirmed)
+      notifyDataChanged()
+    } catch (err) {
+      setVisitError(err.message)
+    } finally {
+      setVisitBusy(false)
+    }
+  }
 
   return (
     <div className="space-y-3">
@@ -102,6 +119,19 @@ export default function DetailsColumn({ a, master, isManager, canEdit, paid, bus
 
       {isManager && (
         <Tile title={t('Повторение записи')} subtitle={t('Та же запись через неделю, две…')} onClick={() => setModal('repeat')} />
+      )}
+      {upcoming && (
+        <div className="rounded-2xl p-3" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+          <div className="text-white text-sm font-semibold">{t('Клиент придёт?')}</div>
+          <div className="text-xs mt-0.5" style={{ color: visit.confirmed ? '#34d399' : '#fbbf24' }}>{visit.text}</div>
+          {visit.hint && <div className="text-gray-500 text-xs mt-1">{visit.hint}</div>}
+          {canEdit && (
+            <Button className="w-full mt-2" disabled={visitBusy} onClick={() => markVisit(!visit.confirmed)}>
+              {visit.confirmed ? t('Снять отметку') : t('Подтвердил по телефону')}
+            </Button>
+          )}
+          {visitError && <p role="alert" className="text-xs mt-2" style={{ color: '#f87171' }}>{visitError}</p>}
+        </div>
       )}
       <Tile title={t('Напоминание о визите')} subtitle={reminderText(a.reminder)}>
         {isManager && upcoming && (
