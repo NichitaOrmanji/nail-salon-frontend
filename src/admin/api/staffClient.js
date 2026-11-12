@@ -10,6 +10,17 @@ const staffApi = axios.create({
 })
 
 const ACCESS_KEY = 'staff_access_token'
+export const STAFF_ACCESS_KEY = ACCESS_KEY
+
+// Кто вошёл: user_id из токена (без проверки подписи — только сравнить вкладки)
+export function tokenUserId(token) {
+  try {
+    const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    return JSON.parse(atob(part)).user_id ?? null
+  } catch {
+    return null
+  }
+}
 const REFRESH_KEY = 'staff_refresh_token'
 
 export const LOGIN_PATH = '/admin-panel/login'
