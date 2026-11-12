@@ -1,7 +1,8 @@
 import staffApi, { expectArray } from './staffClient'
 
 // owner/admin — все мастера салона, master — только он сам:
-// { id, name, description, is_active, photo, services: [ids], schedule: [7], user?, has_access }
+// { id, name, description, is_active, photo, services: [ids], schedule: [7], user?, has_access,
+//   self_schedule, can_edit_schedule }
 export async function fetchStaffMasters() {
   const response = await staffApi.get('/masters/')
   return expectArray(response.data)
@@ -89,5 +90,11 @@ export async function saveMasterDays(masterId, body) {
 // Рабочие дни по датам всех мастеров (для журнала): [{ master, date, start_time, end_time, break_start, break_end }]
 export async function fetchWorkDays({ dateFrom, dateTo }) {
   const response = await staffApi.get('/work-days/', { params: { date_from: dateFrom, date_to: dateTo } })
+  return expectArray(response.data)
+}
+
+// История изменений графика: [{ at, text, by_master, user }]
+export async function fetchScheduleHistory(masterId) {
+  const response = await staffApi.get(`/masters/${masterId}/schedule-history/`)
   return expectArray(response.data)
 }
