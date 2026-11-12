@@ -140,7 +140,7 @@ function ClientNote({ phone, initial }) {
   )
 }
 
-// Правая колонка карточки: клиент, связь, метка, статистика, данные записи
+// Клиент: контакты, связь, метка, чёрный список, примечание; статистика визитов
 export default function ClientColumn({ a, isManager, canEdit, onNavigateAway }) {
   const [card, setCard] = useState(null)
   const phone = a.client_phone
@@ -155,10 +155,10 @@ export default function ClientColumn({ a, isManager, canEdit, onNavigateAway }) 
   const isNew = card && card.total <= 1
 
   return (
-    <div className="space-y-3">
-      <Section>
+    <>
+      <Section title={t('Клиент')}>
         <div className="flex items-center gap-3">
-          <span className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-semibold flex-shrink-0"
+          <span className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0"
             style={{ backgroundColor: '#2e1f28', color: '#f472b6' }}>
             {(a.client_name || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase()}
           </span>
@@ -198,7 +198,7 @@ export default function ClientColumn({ a, isManager, canEdit, onNavigateAway }) 
       </Section>
 
       {isManager && card && (
-        <Section title={t('Статистика')}>
+        <Section title={t('Визиты клиента')}>
           <div className="grid grid-cols-2 gap-3">
             <Stat label={t('Последний визит')} value={card.last_visit ? formatShortDate(card.last_visit) : '—'} />
             <Stat label={t('Всего визитов')} value={card.visits} />
@@ -210,12 +210,6 @@ export default function ClientColumn({ a, isManager, canEdit, onNavigateAway }) 
         </Section>
       )}
 
-      <Section title={t('Данные записи')}>
-        <div className="grid grid-cols-2 gap-3">
-          <Stat label={t('Создана')} value={a.created_at ? formatShortDate(a.created_at.slice(0, 10)) : '—'} />
-          <Stat label={t('Источник')} value={a.source === 'staff' ? t('Персонал') : t('Онлайн')} />
-        </div>
-      </Section>
-    </div>
+    </>
   )
 }
