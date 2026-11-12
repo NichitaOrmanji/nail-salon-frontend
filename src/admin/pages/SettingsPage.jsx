@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useSyncExternalStore } from 'react'
 import { deleteCompanyPhoto, fetchStaffCompany, updateStaffCompany, uploadCompanyPhoto } from '../api/company'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { ROLE_LABELS } from '../utils/statuses'
@@ -115,8 +115,20 @@ function HelpButton() {
   )
 }
 
+// Две колонки — от 1280px (xl): справа «О салоне». Уже — одна колонка, «О салоне» перед формой салона
+const WIDE_QUERY = '(min-width: 1280px)'
+function subscribeWide(callback) {
+  const query = window.matchMedia(WIDE_QUERY)
+  query.addEventListener('change', callback)
+  return () => query.removeEventListener('change', callback)
+}
+function useWide() {
+  return useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE_QUERY).matches, () => true)
+}
+
 export default function SettingsPage() {
   const { isManager } = useStaffAuth()
+  const wide = useWide()
   return (
     <div className={`px-4 md:px-6 py-5 ${isManager ? 'max-w-6xl' : 'max-w-2xl'}`}>
       <PageHeader title={t('Настройки')} subtitle={isManager ? t('Аккаунт, данные салона и ссылка для клиентов') : t('Ваш аккаунт')} />
@@ -124,10 +136,10 @@ export default function SettingsPage() {
         <div className="min-w-0">
           <AccountSection />
           <HelpButton />
+          {isManager && !wide && <div className="mt-8"><SalonOverview /></div>}
           {isManager && <SalonSettings />}
         </div>
-        {/* До xl колонки идут друг под другом: шаги настройки и ссылка — первыми */}
-        {isManager && <div className="min-w-0 order-first xl:order-none"><SalonOverview /></div>}
+        {isManager && wide && <div className="min-w-0"><SalonOverview /></div>}
       </div>
     </div>
   )

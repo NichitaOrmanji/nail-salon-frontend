@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import ImpersonationBar from '../components/ImpersonationBar'
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
+import { STAFF_ACCESS_KEY, tokenUserId } from '../api/staffClient'
 import { fetchPendingCount, fetchStaffMonthLoad } from '../api/appointments'
 import { useAutoRefresh } from '../utils/events'
 import { useNewVersion } from '../utils/version'
@@ -203,6 +204,36 @@ export default function AdminLayout() {
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
   }, [menuOpen])
+
+  // Панель прокручивается внутри себя, сама страница — никогда. iPhone при вводе сдвигает страницу,
+  // чтобы показать поле над клавиатурой, а после закрытия клавиатуры иногда оставляет её сдвинутой:
+  // внизу пустое место и две прокрутки. Когда поле не в фокусе — возвращаем страницу на место
+  useEffect(() => {
+    const isField = el => el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable)
+    const reset = () => {
+      if (!isField(document.activeElement) && (window.scrollY || window.scrollX)) window.scrollTo(0, 0)
+    }
+    const onFocusOut = () => setTimeout(reset, 100)
+    window.addEventListener('scroll', reset, { passive: true })
+    document.addEventListener('focusout', onFocusOut)
+    window.visualViewport?.addEventListener('resize', reset)
+    return () => {
+      window.removeEventListener('scroll', reset)
+      document.removeEventListener('focusout', onFocusOut)
+      window.visualViewport?.removeEventListener('resize', reset)
+    }
+  }, [])
+
+  // В другой вкладке вошли под другим логином или вышли — эта вкладка показывает старый аккаунт,
+  // а запросы уже идут от нового. Перезагружаем, чтобы экран совпадал с тем, кто вошёл
+  useEffect(() => {
+    const onStorage = e => {
+      if (e.key !== STAFF_ACCESS_KEY) return
+      if (tokenUserId(e.oldValue) !== tokenUserId(e.newValue)) window.location.reload()
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
 
   return (
     <div className="h-dvh flex overflow-hidden" style={{ backgroundColor: '#111111' }}>
