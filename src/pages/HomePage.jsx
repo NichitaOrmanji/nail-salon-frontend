@@ -194,7 +194,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
                 target="_blank"
                 rel="noreferrer"
                 className="inline-block text-sm mb-6"
-                style={{ color: '#f472b6' }}
+                style={{ color: 'var(--accent-ink)' }}
               >
                 {t('Открыть в Google Maps ↗')}
               </a>
@@ -208,7 +208,7 @@ function SalonInfoSheet({ open, onClose, onBook }) {
           <button
             onClick={onBook}
             className="w-full py-4 rounded-2xl text-white font-semibold transition-all active:scale-95"
-            style={{ backgroundColor: '#db2777' }}
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             {t('Записаться')}
           </button>
@@ -265,7 +265,7 @@ export default function HomePage() {
       <div className="relative h-52 md:h-72">
         {salon.main_photo
           ? <img src={salon.main_photo} alt={t('Салон')} className="w-full h-full object-cover" />
-          : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #3a2430, #1a1a1a 70%)' }} />}
+          : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, var(--accent-soft-2), #1a1a1a 70%)' }} />}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 50%, #1a1a1a 100%)' }} />
 
         <LanguageSwitch className="absolute top-4 left-4" />
@@ -311,7 +311,7 @@ export default function HomePage() {
           <button
             onClick={() => navigate(getNextRoute('home'))}
             className="w-full flex items-center justify-between px-5 py-4 rounded-2xl mb-3 transition-all active:scale-95"
-            style={{ backgroundColor: '#2e1f28', border: '1px solid #f472b6' }}
+            style={{ backgroundColor: 'var(--accent-soft)', border: '1px solid var(--accent-ink)' }}
           >
             <div className="text-left">
               <div className="text-white text-base font-medium">{t('Продолжить запись')}</div>
@@ -323,7 +323,7 @@ export default function HomePage() {
                   .filter(Boolean).join(' · ')}
               </div>
             </div>
-            <span className="flex-shrink-0" style={{ color: '#f472b6' }}><IconChevronRight /></span>
+            <span className="flex-shrink-0" style={{ color: 'var(--accent-ink)' }}><IconChevronRight /></span>
           </button>
         )}
 
@@ -338,7 +338,7 @@ export default function HomePage() {
             >
               <div className="flex items-center gap-4">
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: '#2e2e2e', color: '#f472b6' }}>
+                  style={{ backgroundColor: '#2e2e2e', color: 'var(--accent-ink)' }}>
                   {item.icon}
                 </div>
                 <div className="text-left">

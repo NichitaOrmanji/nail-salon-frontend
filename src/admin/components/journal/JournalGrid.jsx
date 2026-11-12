@@ -23,15 +23,15 @@ const SCREEN_GUTTER_PX = 16
 
 // Заштрихованная (нерабочая) область колонки
 const OFF_STYLE = {
-  backgroundColor: 'rgba(0, 0, 0, 0.35)',
-  backgroundImage: 'repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0, rgba(255, 255, 255, 0.035) 6px, transparent 6px, transparent 12px)',
+  backgroundColor: 'var(--c-off-bg)',
+  backgroundImage: 'var(--c-off-pattern)',
 }
 
 // Линии сетки: час — заметнее, полчаса — тоньше
 const GRID_LINES = {
   backgroundImage: [
-    `repeating-linear-gradient(to bottom, #2e2e2e 0, #2e2e2e 1px, transparent 1px, transparent ${SLOT_PX * 2}px)`,
-    `repeating-linear-gradient(to bottom, #222222 0, #222222 1px, transparent 1px, transparent ${SLOT_PX}px)`,
+    `repeating-linear-gradient(to bottom, var(--c-grid-hour) 0, var(--c-grid-hour) 1px, transparent 1px, transparent ${SLOT_PX * 2}px)`,
+    `repeating-linear-gradient(to bottom, var(--c-grid-half) 0, var(--c-grid-half) 1px, transparent 1px, transparent ${SLOT_PX}px)`,
   ].join(', '),
 }
 
@@ -93,7 +93,7 @@ function ColumnMenu({ anchorRef, onClose, children }) {
         ref={menuRef}
         role="menu"
         className="fixed z-50 rounded-xl overflow-hidden shadow-xl"
-        style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e', maxWidth: `calc(100vw - ${SCREEN_GUTTER_PX * 2}px)` }}
+        style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-line)', maxWidth: `calc(100vw - ${SCREEN_GUTTER_PX * 2}px)` }}
       >
         {children}
       </div>
@@ -110,7 +110,7 @@ function MasterAvatar({ master, dim, size = 40 }) {
     <span
       aria-hidden="true"
       className="rounded-full flex items-center justify-center font-semibold flex-shrink-0"
-      style={{ ...style, backgroundColor: '#2e1f28', color: '#f472b6', fontSize: Math.round(size * 0.38) }}
+      style={{ ...style, backgroundColor: 'var(--accent-soft)', color: 'var(--accent-ink)', fontSize: Math.round(size * 0.38) }}
     >
       {(master.name || '?').trim().charAt(0).toUpperCase()}
     </span>
@@ -133,30 +133,30 @@ function MasterInfoModal({ col, colAppointments, canManage, onToggleDayOff, onCl
     <Modal title={t('Мастер')} onClose={onClose} maxWidth="sm:max-w-md">
       <div className="flex flex-col items-center text-center gap-2">
         <MasterAvatar master={master} size={72} />
-        <h3 className="text-white text-lg font-semibold">{master.name}</h3>
+        <h3 className="text-ink text-lg font-semibold">{master.name}</h3>
         {master.is_active === false && <span className="text-xs text-gray-400">{t('Мастер скрыт')}</span>}
         {master.description && <p className="text-gray-400 text-sm whitespace-pre-line">{master.description}</p>}
       </div>
 
       <dl className="grid grid-cols-2 gap-2 mt-5">
-        <div className="rounded-xl px-3 py-2.5" style={{ backgroundColor: '#242424' }}>
+        <div className="rounded-xl px-3 py-2.5" style={{ backgroundColor: 'var(--c-raised)' }}>
           <dt className="text-xs text-gray-500">{t('Часы в этот день')}</dt>
-          <dd className="text-sm text-white mt-0.5">{columnHours(col)}</dd>
+          <dd className="text-sm text-ink mt-0.5">{columnHours(col)}</dd>
         </div>
-        <div className="rounded-xl px-3 py-2.5" style={{ backgroundColor: '#242424' }}>
+        <div className="rounded-xl px-3 py-2.5" style={{ backgroundColor: 'var(--c-raised)' }}>
           <dt className="text-xs text-gray-500">{t('Записей')}</dt>
-          <dd className="text-sm text-white mt-0.5">
+          <dd className="text-sm text-ink mt-0.5">
             {active.length}{workMin > 0 && busy > 0 ? ` · ${t('занято {percent}%', { percent: Math.min(100, Math.round(busy / workMin * 100)) })}` : ''}
           </dd>
         </div>
       </dl>
 
       {active.length > 0 && (
-        <ul className="mt-4 rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }}>
+        <ul className="mt-4 rounded-xl overflow-hidden" style={{ border: '1px solid var(--c-line)' }}>
           {active.map(a => (
-            <li key={a.id} className="flex items-center gap-3 px-3 py-2 text-sm" style={{ borderTop: '1px solid #2e2e2e' }}>
+            <li key={a.id} className="flex items-center gap-3 px-3 py-2 text-sm" style={{ borderTop: '1px solid var(--c-line)' }}>
               <span className="text-gray-400 tabular-nums flex-shrink-0">{a.start_time}–{a.end_time}</span>
-              <span className="text-white min-w-0 truncate">{a.client_name}</span>
+              <span className="text-ink min-w-0 truncate">{a.client_name}</span>
             </li>
           ))}
         </ul>
@@ -210,7 +210,7 @@ function ColumnHeader({ col, colAppointments, canManage, onToggleDayOff }) {
           <button
             type="button"
             role="menuitem"
-            className="w-full text-left px-4 py-2 min-h-[44px] text-sm text-white"
+            className="w-full text-left px-4 py-2 min-h-[44px] text-sm text-ink"
             onClick={() => {
               setMenuOpen(false)
               onToggleDayOff(col)
@@ -224,7 +224,7 @@ function ColumnHeader({ col, colAppointments, canManage, onToggleDayOff }) {
   )
 
   const hoursLine = (
-    <div className="text-xs truncate" style={{ color: col.work.working || !col.master ? '#9ca3af' : '#9098a4' }}>
+    <div className="text-xs truncate" style={{ color: col.work.working || !col.master ? 'var(--c-muted)' : 'var(--c-faint)' }}>
       {columnHours(col)}
     </div>
   )
@@ -234,7 +234,7 @@ function ColumnHeader({ col, colAppointments, canManage, onToggleDayOff }) {
     return (
       <div
         className="sticky top-0 z-20 min-w-0"
-        style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e', borderLeft: '1px solid #2e2e2e' }}
+        style={{ backgroundColor: 'var(--c-head)', borderBottom: '1px solid var(--c-line)', borderLeft: '1px solid var(--c-line)' }}
       >
         <button
           type="button"
@@ -245,12 +245,12 @@ function ColumnHeader({ col, colAppointments, canManage, onToggleDayOff }) {
           <MasterAvatar master={col.master} dim={col.hidden} />
           <span
             className="text-sm font-semibold leading-tight line-clamp-2 break-words max-w-full"
-            style={{ opacity: col.hidden ? 0.6 : 1, color: '#ffffff' }}
+            style={{ opacity: col.hidden ? 0.6 : 1, color: 'var(--c-ink)' }}
           >
             {col.master.name}
           </span>
           {col.hidden && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>{t('скрыт')}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--c-line)', color: 'var(--c-muted)' }}>{t('скрыт')}</span>
           )}
           <span className="max-w-full">{hoursLine}</span>
         </button>
@@ -273,18 +273,18 @@ function ColumnHeader({ col, colAppointments, canManage, onToggleDayOff }) {
   return (
     <div
       className="sticky top-0 z-20 flex items-start gap-1 pl-3 pr-0.5 py-1 min-w-0"
-      style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e', borderLeft: '1px solid #2e2e2e' }}
+      style={{ backgroundColor: 'var(--c-head)', borderBottom: '1px solid var(--c-line)', borderLeft: '1px solid var(--c-line)' }}
     >
       <div className="flex-1 min-w-0 py-1">
         <div className="flex items-center gap-1.5 min-w-0">
           <span
             className="text-sm font-semibold truncate"
-            style={{ opacity: col.hidden ? 0.6 : 1, color: col.week && col.isToday ? '#f472b6' : '#ffffff' }}
+            style={{ opacity: col.hidden ? 0.6 : 1, color: col.week && col.isToday ? 'var(--accent-ink)' : 'var(--c-ink)' }}
           >
             {col.week ? formatWeekDay(col.date) : col.master ? col.master.name : t('Без мастера')}
           </span>
           {col.hidden && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>{t('скрыт')}</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: 'var(--c-line)', color: 'var(--c-muted)' }}>{t('скрыт')}</span>
           )}
         </div>
         {hoursLine}
@@ -318,22 +318,23 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, showMa
         e.stopPropagation()
         onClick(a)
       }}
-      className="absolute rounded-lg text-left overflow-hidden px-1.5 py-0.5 flex flex-col justify-start items-stretch"
+      className="appt-block absolute rounded-lg text-left overflow-hidden px-1.5 py-0.5 flex flex-col justify-start items-stretch"
       style={{
         top: top + 1,
         height: height - 2,
         left: `calc(${lane * width}% + 2px)`,
         width: `calc(${width}% - 4px)`,
-        backgroundColor: `${info.color}${muted ? '1f' : '33'}`,
-        borderLeft: `3px solid ${info.color}`,
-        outline: selected ? '2px solid #f472b6' : 'none',
+        backgroundColor: info.bg,
+        borderLeft: `3px solid ${info.line}`,
+        '--k-line': info.line,
+        outline: selected ? '2px solid var(--accent-ink)' : 'none',
         opacity: muted ? 0.6 : 1,
         zIndex: selected ? 6 : 5,
       }}
       title={`${a.start_time}–${a.end_time} ${a.blacklist ? t('⛔ чёрный список · ') : ''}${a.client_name}${a.master ? ' · ' + a.master.name : ''}${a.service ? ' · ' + a.service.name : ''} — ${info.label}${mark ? ' · ' + mark.title : ''}`}
     >
       {/* Время не переносится по символам, имя и услуга обрезаются многоточием */}
-      <div className={`min-w-0 text-[11px] leading-tight text-white ${muted ? 'line-through' : ''}`}>
+      <div className={`min-w-0 text-[11px] leading-tight text-ink ${muted ? 'line-through' : ''}`}>
         {height < COMPACT_BLOCK_PX ? (
           <div className="truncate">
             <span className="font-semibold">{a.start_time}</span> {mark && <span title={mark.title} style={{ color: mark.color }}>{mark.icon} </span>}{a.blacklist && <span title={t('Чёрный список')}>⛔</span>}{a.client_name}
@@ -411,7 +412,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
     // Прокручиваемая сетка: фокус с клавиатуры (Tab) и стрелки для прокрутки, подпись для экранного диктора
     <div ref={scrollRef} tabIndex={0} role="region" aria-label={t('Сетка журнала')}
       className="flex-1 min-h-0 overflow-auto overscroll-contain focus:outline-none focus-visible:ring-1 focus-visible:ring-pink-400"
-      style={{ backgroundColor: '#141414' }}>
+      style={{ backgroundColor: 'var(--c-sunk)' }}>
       <div
         className="grid"
         style={{
@@ -420,25 +421,25 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
         }}
       >
         {/* Угол над колонкой времени */}
-        <div className="sticky top-0 left-0 z-30" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }} />
+        <div className="sticky top-0 left-0 z-30" style={{ backgroundColor: 'var(--c-head)', borderBottom: '1px solid var(--c-line)' }} />
 
         {layout.map(({ col, colAppointments }) => (
           <ColumnHeader key={col.key} col={col} colAppointments={colAppointments} canManage={canManage} onToggleDayOff={onToggleDayOff} />
         ))}
 
         {/* Колонка времени */}
-        <div className="sticky left-0 z-10" style={{ height: totalPx, backgroundColor: '#1a1a1a' }}>
+        <div className="sticky left-0 z-10" style={{ height: totalPx, backgroundColor: 'var(--c-head)', boxShadow: 'inset -1px 0 0 var(--c-rail-line)' }}>
           {slots.map((m, i) => (
             <div
               key={m}
               className="absolute right-2 text-[11px] leading-none"
-              style={{ top: i === 0 ? 4 : i * SLOT_PX - 5, color: m % 60 === 0 ? '#9ca3af' : '#8b929e' }}
+              style={{ top: i === 0 ? 4 : i * SLOT_PX - 5, color: m % 60 === 0 ? 'var(--c-muted)' : 'var(--c-faint-2)' }}
             >
               {minToTime(m)}
             </div>
           ))}
           {nowVisible && (
-            <div className="absolute right-0 w-2 h-2 rounded-full" style={{ top: nowTop - 4, backgroundColor: '#db2777' }} />
+            <div className="absolute right-0 w-2 h-2 rounded-full" style={{ top: nowTop - 4, backgroundColor: 'var(--c-now)' }} />
           )}
         </div>
 
@@ -449,7 +450,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
             <div
               key={col.key}
               className="relative cursor-pointer"
-              style={{ height: totalPx, borderLeft: '1px solid #2e2e2e', ...GRID_LINES }}
+              style={{ height: totalPx, borderLeft: '1px solid var(--c-line)', ...GRID_LINES }}
               onClick={e => handleColumnClick(e, col)}
             >
               {/* Нерабочие часы */}
@@ -470,7 +471,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
                     height: Math.max(0, Math.min(work.breakEnd, range.end) - Math.max(work.breakStart, range.start)) * PX_PER_MIN,
                   }}
                 >
-                  <span className="text-[10px] mt-0.5" style={{ color: '#fbbf24' }}>{t('обед')}</span>
+                  <span className="text-[10px] mt-0.5" style={{ color: 'var(--c-warn)' }}>{t('обед')}</span>
                 </div>
               )}
 
@@ -488,7 +489,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
               ))}
 
               {nowVisible && col.isToday && (
-                <div className="absolute inset-x-0 pointer-events-none" style={{ top: nowTop, height: 2, backgroundColor: '#db2777', zIndex: 7 }} />
+                <div className="absolute inset-x-0 pointer-events-none" style={{ top: nowTop, height: 2, backgroundColor: 'var(--c-now)', zIndex: 7 }} />
               )}
             </div>
           )

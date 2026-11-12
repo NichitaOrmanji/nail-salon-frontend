@@ -162,12 +162,12 @@ export default function SalonForm({ part }) {
 
   return (
     <div>
-      <h2 className="text-white text-base font-semibold mb-1">{info ? t('Данные салона') : t('Правила записи')}</h2>
+      <h2 className="text-ink text-base font-semibold mb-1">{info ? t('Данные салона') : t('Правила записи')}</h2>
       <p className="text-gray-500 text-xs mb-4">{info ? t('Как салон выглядит на сайте записи') : t('Отмена записи, подтверждение и штрафы')}</p>
       <ErrorText className="mb-3">{loadError}</ErrorText>
       {!form && !loadError && <Spinner />}
       {info && photos && (
-        <section className="rounded-2xl p-4 mb-5 space-y-5" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+        <section className="rounded-2xl p-4 mb-5 space-y-5" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
           <PhotoField
             label={t('Главное фото салона')}
             hint={t('Шапка сайта записи. Лучше горизонтальное. Сохраняется сразу.')}
@@ -223,7 +223,7 @@ export default function SalonForm({ part }) {
           >
             <TextInput inputMode="numeric" value={form.cancel_hours} onChange={e => set('cancel_hours', e.target.value.replace(/\D/g, ''))} placeholder="0" />
           </Field>
-          <label className="flex items-start gap-3 rounded-2xl p-4 cursor-pointer" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+          <label className="flex items-start gap-3 rounded-2xl p-4 cursor-pointer" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
             <input
               type="checkbox"
               className="mt-1 w-4 h-4 accent-pink-500"
@@ -231,17 +231,17 @@ export default function SalonForm({ part }) {
               onChange={e => set('auto_confirm', e.target.checked)}
             />
             <span>
-              <span className="block text-white text-sm font-semibold">{t('Подтверждать онлайн-записи автоматически')}</span>
+              <span className="block text-ink text-sm font-semibold">{t('Подтверждать онлайн-записи автоматически')}</span>
               <span className="block text-gray-500 text-xs mt-1">
                 {t('Включено — запись с сайта сразу «подтверждена». Выключено — запись «ожидает», пока салон не подтвердит её в журнале. В обоих случаях клиенты с Telegram получают напоминание за сутки с кнопкой «Приду», а в журнале видно, кто подтвердил визит и кому позвонить.')}
               </span>
             </span>
           </label>
-          <div className="rounded-2xl p-4 space-y-3" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+          <div className="rounded-2xl p-4 space-y-3" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div id="penalty-title" className="text-white text-sm font-semibold">{t('Штрафы и чёрный список')}</div>
-                <div className="text-xs mt-0.5 font-medium" style={{ color: penaltyOn ? '#34d399' : '#9ca3af' }}>
+                <div id="penalty-title" className="text-ink text-sm font-semibold">{t('Штрафы и чёрный список')}</div>
+                <div className="text-xs mt-0.5 font-medium" style={{ color: penaltyOn ? 'var(--c-ok)' : 'var(--c-muted)' }}>
                   {penaltyOn ? t('Включены') : t('Выключены')}
                 </div>
               </div>
@@ -252,7 +252,7 @@ export default function SalonForm({ part }) {
                 aria-labelledby="penalty-title"
                 onClick={() => togglePenalty(!penaltyOn)}
                 className="relative flex-shrink-0 w-14 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
-                style={{ backgroundColor: penaltyOn ? '#db2777' : '#3a3a3a' }}
+                style={{ backgroundColor: penaltyOn ? 'var(--accent)' : 'var(--c-line-2)' }}
               >
                 <span
                   className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform"
@@ -281,7 +281,7 @@ export default function SalonForm({ part }) {
           </>}
           <ErrorText>{error}</ErrorText>
           <div className="flex items-center justify-end gap-3">
-            {done && <span className="text-xs" style={{ color: '#34d399' }}>{t('Сохранено')}</span>}
+            {done && <span className="text-xs" style={{ color: 'var(--c-ok)' }}>{t('Сохранено')}</span>}
             <Button type="submit" variant="primary" disabled={saving}>{saving ? t('Сохраняем...') : t('Сохранить')}</Button>
           </div>
         </form>

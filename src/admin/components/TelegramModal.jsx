@@ -65,7 +65,7 @@ export default function TelegramModal({ onClose }) {
   } else if (status.connected) {
     body = (
       <div className="space-y-4">
-        <p className="text-white text-sm">{t('✅ Telegram подключён. Сюда приходят новые записи и отмены клиентами.')}</p>
+        <p className="text-ink text-sm">{t('✅ Telegram подключён. Сюда приходят новые записи и отмены клиентами.')}</p>
         <Button variant="danger" onClick={handleDisconnect} disabled={busy}>{t('Отключить')}</Button>
       </div>
     )

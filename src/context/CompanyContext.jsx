@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react'
 import { fetchCompany } from '../api/company'
 import { SLUG } from '../api/client'
 import { t } from '../i18n'
+import { applyBookingAccent, clearAppearance } from '../utils/appearance'
 // Картинки JC — из сборки: имя с хэшем, кэш браузера на год
 import jcLogo from '../assets/jc-logo.webp'
 import jcSalon from '../assets/jc-salon.webp'
@@ -50,6 +51,13 @@ export function CompanyProvider({ children }) {
       })
       .catch(err => { if (err?.status === 404) setNotFound(true) })
   }, [])
+
+  // Цвет кнопок и выбранных дат — тот, что выбрал владелец салона
+  const bookingAccent = company.booking_accent
+  useEffect(() => {
+    applyBookingAccent(bookingAccent)
+    return () => clearAppearance()
+  }, [bookingAccent])
 
   if (notFound) return <SalonNotFound />
 

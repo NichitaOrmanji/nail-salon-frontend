@@ -86,7 +86,7 @@ export default function TelegramLogin({ onTokens }) {
         onClick={verify}
         disabled={code.length !== 6 || busy}
         className="w-full py-3 rounded-xl text-white font-semibold transition-all active:scale-95"
-        style={{ backgroundColor: '#db2777', opacity: code.length === 6 && !busy ? 1 : 0.4 }}
+        style={{ backgroundColor: 'var(--accent)', opacity: code.length === 6 && !busy ? 1 : 0.4 }}
       >
         {busy ? t('Проверяем...') : t('Подтвердить код')}
       </button>

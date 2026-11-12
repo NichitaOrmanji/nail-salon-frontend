@@ -12,9 +12,9 @@ import { t } from '../../../i18n'
 
 function Total({ label, value, color }) {
   return (
-    <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+    <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
       <div className="text-gray-500 text-xs">{label}</div>
-      <div className="text-lg font-bold" style={{ color: color || '#ffffff' }}>{value}</div>
+      <div className="text-lg font-bold" style={{ color: color || 'var(--c-ink)' }}>{value}</div>
     </div>
   )
 }
@@ -26,22 +26,22 @@ function DebtorRow({ debtor, onOpen }) {
       type="button"
       onClick={() => onOpen(debtor.phone)}
       className="w-full text-left rounded-2xl px-4 py-3 transition-all active:scale-[0.99]"
-      style={{ backgroundColor: '#242424', border: '1px solid #3a2a2a' }}
+      style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-danger-line)' }}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-white text-sm font-semibold break-words">⛔ {debtor.name || t('Без имени')}</div>
+          <div className="text-ink text-sm font-semibold break-words">⛔ {debtor.name || t('Без имени')}</div>
           <div className="text-gray-400 text-xs">{debtor.phone}</div>
         </div>
         <div className="text-right">
-          <div className="text-base font-bold" style={{ color: '#f87171' }}>{formatMoney(debtor.debt)}</div>
+          <div className="text-base font-bold" style={{ color: 'var(--c-danger)' }}>{formatMoney(debtor.debt)}</div>
           <div className="text-gray-500 text-[11px]">{t('долг')}</div>
         </div>
       </div>
 
       <div className="mt-2 text-xs">
         {visit ? (
-          <span style={{ color: '#34d399' }}>
+          <span style={{ color: 'var(--c-ok)' }}>
             {t('Придёт')}{' '}{formatShortDate(visit.date)}, {visit.time}{visit.master ? ` · ${visit.master}` : ''}{' '}{t('— получить при визите')}
           </span>
         ) : (
@@ -96,9 +96,9 @@ export default function DebtorsView() {
       {data && (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-5">
-            <Total label={t('Общий долг')} value={formatMoney(data.total_debt)} color={Number(data.total_debt) ? '#f87171' : undefined} />
+            <Total label={t('Общий долг')} value={formatMoney(data.total_debt)} color={Number(data.total_debt) ? 'var(--c-danger)' : undefined} />
             <Total label={t('Должников')} value={data.debtors} />
-            <Total label={t('Оплачено штрафов в этом месяце')} value={formatMoney(data.paid_this_month)} color="#34d399" />
+            <Total label={t('Оплачено штрафов в этом месяце')} value={formatMoney(data.paid_this_month)} color="var(--c-ok)" />
           </div>
           {data.results.length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-10">{t('Должников нет')}</p>

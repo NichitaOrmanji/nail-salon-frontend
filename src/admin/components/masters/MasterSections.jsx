@@ -11,8 +11,8 @@ import { t } from '../../../i18n'
 
 export function Section({ title, children }) {
   return (
-    <section className="rounded-2xl p-4" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
-      <h3 className="text-white text-sm font-semibold mb-3">{title}</h3>
+    <section className="rounded-2xl p-4" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
+      <h3 className="text-ink text-sm font-semibold mb-3">{title}</h3>
       {children}
     </section>
   )
@@ -113,10 +113,10 @@ export function ScheduleSection({ master, readOnly, onSaved, hint }) {
       )}
       <div className="space-y-2">
         {rows.map(r => (
-          <div key={r.day_of_week} className="flex flex-wrap items-center gap-x-3 gap-y-1 min-h-[44px] py-1" style={{ borderTop: r.day_of_week ? '1px solid #2a2a2a' : 'none' }}>
+          <div key={r.day_of_week} className="flex flex-wrap items-center gap-x-3 gap-y-1 min-h-[44px] py-1" style={{ borderTop: r.day_of_week ? '1px solid var(--c-row)' : 'none' }}>
             <span className="w-7 text-sm text-gray-400 flex-shrink-0">{WEEKDAYS_SHORT[r.day_of_week]}</span>
             {readOnly ? (
-              <span className="text-sm" style={{ color: r.is_working ? '#ffffff' : '#9098a4' }}>
+              <span className="text-sm" style={{ color: r.is_working ? 'var(--c-ink)' : 'var(--c-faint)' }}>
                 {r.is_working ? hoursLabel(r) : t('Выходной')}
                 {r.is_working && lunchLabel(r) && <span className="text-gray-500">{' '}{t('· обед')}{' '}{lunchLabel(r)}</span>}
               </span>
@@ -148,7 +148,7 @@ export function ScheduleSection({ master, readOnly, onSaved, hint }) {
       <ErrorText className="mt-3 whitespace-pre-line">{error}</ErrorText>
       {!readOnly && (
         <div className="flex flex-wrap items-center justify-end gap-3 mt-3">
-          {done && !changed && <span className="text-xs" style={{ color: '#34d399' }}>{t('Сохранено')}</span>}
+          {done && !changed && <span className="text-xs" style={{ color: 'var(--c-ok)' }}>{t('Сохранено')}</span>}
           {canCopyLunch && <Button onClick={copyLunch}>{t('Обед во все рабочие дни')}</Button>}
           <Button variant="primary" disabled={!changed || saving} onClick={handleSave}>
             {saving ? t('Сохраняем...') : t('Сохранить график')}
@@ -244,7 +244,7 @@ export function DaysOffSection({ master, readOnly }) {
           <Button type="submit" variant="primary" disabled={!newDate || busy}>{t('Добавить')}</Button>
         </form>
       )}
-      {message && <p className="text-xs mb-3" style={{ color: '#34d399' }}>{message}</p>}
+      {message && <p className="text-xs mb-3" style={{ color: 'var(--c-ok)' }}>{message}</p>}
       <WarningText className="mb-3">{warning}</WarningText>
       <ErrorText className="mb-3 whitespace-pre-line">{error}</ErrorText>
       {items === null && !error && <p className="text-gray-500 text-sm">{t('Загрузка...')}</p>}
@@ -253,9 +253,9 @@ export function DaysOffSection({ master, readOnly }) {
         <div className="space-y-1">
           {items.map(d => (
             <div key={d.id ?? d.date} className="flex items-center justify-between gap-2 min-h-[44px]">
-              <span className="text-white text-sm">{formatShortDate(d.date)}</span>
+              <span className="text-ink text-sm">{formatShortDate(d.date)}</span>
               {!readOnly && (
-                <Button variant="ghost" disabled={busy} onClick={() => handleRemove(d.date)} style={{ color: '#f87171' }}>{t('Удалить')}</Button>
+                <Button variant="ghost" disabled={busy} onClick={() => handleRemove(d.date)} style={{ color: 'var(--c-danger)' }}>{t('Удалить')}</Button>
               )}
             </div>
           ))}
@@ -330,7 +330,7 @@ export function AccessSection({ master, onChanged }) {
       {master.has_access ? (
         <>
           <p className="text-sm text-gray-400 mb-3">
-            {t('Логин:')}{' '}<span className="text-white">{master.user || '—'}</span>
+            {t('Логин:')}{' '}<span className="text-ink">{master.user || '—'}</span>
           </p>
           {changingPassword ? (
             <form onSubmit={handleGrant} className="space-y-3">
@@ -365,7 +365,7 @@ export function AccessSection({ master, onChanged }) {
         </form>
       )}
       <ErrorText className="mt-3">{error}</ErrorText>
-      {message && <p className="text-xs mt-3" style={{ color: '#34d399' }}>{message}</p>}
+      {message && <p className="text-xs mt-3" style={{ color: 'var(--c-ok)' }}>{message}</p>}
     </Section>
   )
 }

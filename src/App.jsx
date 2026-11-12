@@ -122,7 +122,7 @@ export default function App() {
             <ErrorBoundary homePath="/admin-panel" homeLabel="В панель салона">
               <Suspense
                 fallback={
-                  <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#111111' }}>
+                  <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--c-bg)' }}>
                     <Spinner />
                   </div>
                 }

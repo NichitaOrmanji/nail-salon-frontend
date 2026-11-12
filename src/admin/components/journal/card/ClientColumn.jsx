@@ -10,8 +10,8 @@ import { t } from '../../../../i18n'
 
 export function Section({ title, children, className = '' }) {
   return (
-    <section className={`rounded-2xl p-4 ${className}`} style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
-      {title && <h3 className="text-white text-sm font-semibold mb-3">{title}</h3>}
+    <section className={`rounded-2xl p-4 ${className}`} style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
+      {title && <h3 className="text-ink text-sm font-semibold mb-3">{title}</h3>}
       {children}
     </section>
   )
@@ -21,7 +21,7 @@ function Stat({ label, value }) {
   return (
     <div>
       <div className="text-gray-500 text-xs">{label}</div>
-      <div className="text-white text-sm font-medium">{value}</div>
+      <div className="text-ink text-sm font-medium">{value}</div>
     </div>
   )
 }
@@ -31,9 +31,9 @@ function Messengers({ phone }) {
   const digits = (phone || '').replace(/\D/g, '')
   if (!digits) return null
   const links = [
-    { label: 'WhatsApp', href: `https://wa.me/${digits}`, color: '#25d366' },
-    { label: 'Viber', href: `viber://chat?number=%2B${digits}`, color: '#a78bfa' },
-    { label: 'Telegram', href: `https://t.me/+${digits}`, color: '#38bdf8' },
+    { label: 'WhatsApp', href: `https://wa.me/${digits}`, color: 'var(--c-wa)' },
+    { label: 'Viber', href: `viber://chat?number=%2B${digits}`, color: 'var(--c-violet)' },
+    { label: 'Telegram', href: `https://t.me/+${digits}`, color: 'var(--c-sky)' },
   ]
   return (
     <div>
@@ -42,7 +42,7 @@ function Messengers({ phone }) {
         {links.map(l => (
           <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer"
             className="min-h-[40px] px-3 rounded-xl inline-flex items-center text-sm font-medium"
-            style={{ backgroundColor: '#242424', color: l.color, border: '1px solid #2e2e2e' }}>
+            style={{ backgroundColor: 'var(--c-raised)', color: l.color, border: '1px solid var(--c-line)' }}>
             {l.label}
           </a>
         ))}
@@ -160,12 +160,12 @@ export default function ClientColumn({ a, isManager, canEdit, onNavigateAway }) 
       <Section title={t('Клиент')}>
         <div className="flex items-center gap-3">
           <span className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0"
-            style={{ backgroundColor: '#2e1f28', color: '#f472b6' }}>
+            style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent-ink)' }}>
             {(a.client_name || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase()}
           </span>
           <div className="min-w-0">
-            <div className="text-white font-semibold truncate">{a.client_name || t('Без имени')}</div>
-            {phone ? <a href={`tel:${phone}`} className="text-sm" style={{ color: '#f472b6' }}>{phone}</a> : <span className="text-gray-500 text-sm">—</span>}
+            <div className="text-ink font-semibold truncate">{a.client_name || t('Без имени')}</div>
+            {phone ? <a href={`tel:${phone}`} className="text-sm" style={{ color: 'var(--accent-ink)' }}>{phone}</a> : <span className="text-gray-500 text-sm">—</span>}
             {a.client_email && <div className="text-gray-400 text-xs truncate">{a.client_email}</div>}
           </div>
         </div>
@@ -174,7 +174,7 @@ export default function ClientColumn({ a, isManager, canEdit, onNavigateAway }) 
           {card && (
             <div className="flex flex-wrap gap-2 items-center">
               <span className="rounded-lg px-2 py-1 text-xs font-medium"
-                style={isNew ? { backgroundColor: 'rgba(96,165,250,0.15)', color: '#93c5fd' } : { backgroundColor: 'rgba(52,211,153,0.15)', color: '#6ee7b7' }}>
+                style={isNew ? { backgroundColor: 'rgba(96,165,250,0.15)', color: 'var(--c-info-2)' } : { backgroundColor: 'rgba(52,211,153,0.15)', color: 'var(--c-ok-2)' }}>
                 {isNew ? t('Новый клиент') : t('Постоянный клиент')}
               </span>
               {isManager && (
@@ -186,8 +186,8 @@ export default function ClientColumn({ a, isManager, canEdit, onNavigateAway }) 
           )}
           {a.blacklist && (
             <div className="rounded-xl px-3 py-2 text-sm" role="alert"
-              style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid #f87171', color: '#fca5a5' }}>
-              <div className="font-semibold" style={{ color: '#f87171' }}>{t('⛔ Клиент в чёрном списке')}</div>
+              style={{ backgroundColor: 'rgba(248, 113, 113, 0.12)', border: '1px solid var(--c-danger)', color: 'var(--c-danger-2)' }}>
+              <div className="font-semibold" style={{ color: 'var(--c-danger)' }}>{t('⛔ Клиент в чёрном списке')}</div>
               {Number(a.blacklist.debt) > 0
                 ? <div>{t('Долг')}{' '}{formatMoney(a.blacklist.debt)}{' '}{t('— получить при оплате этого визита')}</div>
                 : <div>{t('Долгов нет, нарушений: {count}', { count: a.blacklist.count })}</div>}

@@ -104,7 +104,7 @@ export default function LoadCalendar({
               className="relative flex items-center justify-center mx-auto rounded-full text-sm transition-all active:scale-90"
               style={{
                 width: cell, height: cell,
-                backgroundColor: isSelected ? '#db2777' : 'transparent',
+                backgroundColor: isSelected ? 'var(--accent)' : 'transparent',
                 // Недоступный день у клиента — приглушён (кнопка выключена); в панели прошедшие дни
                 // кликабельны — серый, но читаемый (контраст ≥ 4.5:1)
                 color: disabled ? '#4b5563' : isPast || dayOff ? '#9ca3af' : '#ffffff',
@@ -126,7 +126,7 @@ export default function LoadCalendar({
                 </svg>
               )}
               {isToday && !isSelected && (
-                <span className="absolute bottom-0.5 w-1 h-1 rounded-full" style={{ backgroundColor: '#f472b6' }} />
+                <span className="absolute bottom-0.5 w-1 h-1 rounded-full" style={{ backgroundColor: 'var(--accent-ink)' }} />
               )}
               <span className="relative">{day}</span>
             </button>

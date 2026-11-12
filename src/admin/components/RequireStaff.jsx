@@ -11,7 +11,7 @@ export default function RequireStaff({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#111111' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--c-bg)' }}>
         <Spinner />
       </div>
     )
@@ -20,7 +20,7 @@ export default function RequireStaff({ children }) {
   // Токен есть, но сервер не ответил — даём повторить, а не выкидываем
   if (!me && meError) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center" style={{ backgroundColor: '#111111' }}>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6 text-center" style={{ backgroundColor: 'var(--c-bg)' }}>
         <p className="text-red-400 text-sm">{meError}</p>
         <div className="flex gap-2">
           <Button variant="primary" onClick={() => refreshMe().catch(() => {})}>{t('Повторить')}</Button>

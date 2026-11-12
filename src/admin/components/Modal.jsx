@@ -70,23 +70,23 @@ export default function Modal({ title, onClose, children, footer, maxWidth = 'sm
         aria-modal="true"
         aria-label={title}
         className={`w-full h-full sm:h-auto sm:max-h-[90vh] ${maxWidth} sm:rounded-2xl flex flex-col overflow-hidden`}
-        style={{ backgroundColor: '#1a1a1a', border: '1px solid #2e2e2e' }}
+        style={{ backgroundColor: 'var(--c-surface)', border: '1px solid var(--c-line)' }}
       >
-        <div className={`flex items-center gap-3 ${backLabel ? 'pl-2 pr-5' : 'pl-5 pr-2'} py-2 flex-shrink-0`} style={{ borderBottom: '1px solid #2e2e2e' }}>
+        <div className={`flex items-center gap-3 ${backLabel ? 'pl-2 pr-5' : 'pl-5 pr-2'} py-2 flex-shrink-0`} style={{ borderBottom: '1px solid var(--c-line)' }}>
           {backLabel && (
             <button
               type="button"
               onClick={onClose}
               aria-label={backLabel}
               title={backLabel}
-              className="h-11 pl-1 pr-3 rounded-xl flex items-center gap-1 text-gray-300 text-sm font-medium flex-shrink-0 active:scale-95 hover:text-white"
-              style={{ backgroundColor: '#242424' }}
+              className="h-11 pl-1 pr-3 rounded-xl flex items-center gap-1 text-gray-300 text-sm font-medium flex-shrink-0 active:scale-95 hover:text-ink"
+              style={{ backgroundColor: 'var(--c-raised)' }}
             >
               <IconChevronLeft size={20} />
               {t('Назад')}
             </button>
           )}
-          <h2 className="flex-1 min-w-0 text-white text-base font-semibold truncate">{title}</h2>
+          <h2 className="flex-1 min-w-0 text-ink text-base font-semibold truncate">{title}</h2>
           {!backLabel && (
             <button
               type="button"
@@ -102,7 +102,7 @@ export default function Modal({ title, onClose, children, footer, maxWidth = 'sm
           {children}
         </div>
         {footer && (
-          <div className="flex-shrink-0 px-5 py-3 flex flex-wrap gap-2 justify-end" style={{ borderTop: '1px solid #2e2e2e' }}>
+          <div className="flex-shrink-0 px-5 py-3 flex flex-wrap gap-2 justify-end" style={{ borderTop: '1px solid var(--c-line)' }}>
             {footer}
           </div>
         )}

@@ -20,7 +20,7 @@ const MODES = tr([
   { key: 'template', label: 'Как в шаблоне' },
 ])
 
-const PINK = '#f472b6'
+const PINK = 'var(--accent-ink)'
 
 function monthStart(dateStr) {
   return `${dateStr.slice(0, 7)}-01`
@@ -53,7 +53,7 @@ function DayCell({ day, date, today, selected, readOnly, onToggle }) {
   const past = date < today
   const source = day?.source
   const working = day?.is_working
-  const border = selected ? `2px solid ${PINK}` : source === 'custom' ? '1px solid #9d4b75' : '1px solid #2e2e2e'
+  const border = selected ? `2px solid ${PINK}` : source === 'custom' ? '1px solid var(--accent-mid)' : '1px solid var(--c-line)'
   return (
     <button
       type="button"
@@ -63,31 +63,31 @@ function DayCell({ day, date, today, selected, readOnly, onToggle }) {
       aria-label={formatShortDate(date)}
       className="relative rounded-xl p-1 text-left min-h-[64px] flex flex-col transition-all active:scale-95"
       style={{
-        backgroundColor: selected ? '#3a2430' : working ? '#242424' : '#1a1a1a',
+        backgroundColor: selected ? 'var(--accent-soft-2)' : working ? 'var(--c-raised)' : 'var(--c-surface)',
         border,
         opacity: past ? 0.4 : 1,
       }}
     >
-      <span className="text-xs font-semibold" style={{ color: date === today ? PINK : '#d1d5db' }}>
+      <span className="text-xs font-semibold" style={{ color: date === today ? PINK : 'var(--c-ink-2)' }}>
         {Number(date.slice(8))}
       </span>
       {day && working && (
         <>
-          <span className="text-[10px] leading-tight text-white">{short(day.start_time)}–{short(day.end_time)}</span>
+          <span className="text-[10px] leading-tight text-ink">{short(day.start_time)}–{short(day.end_time)}</span>
           {day.break_start && (
-            <span className="text-[10px] leading-tight" style={{ color: '#fbbf24' }}>
+            <span className="text-[10px] leading-tight" style={{ color: 'var(--c-warn)' }}>
               {t('обед')}{' '}{short(day.break_start)}
             </span>
           )}
         </>
       )}
       {day && !working && (
-        <span className="text-[10px] leading-tight" style={{ color: source === 'off' ? '#f87171' : '#9098a4' }}>
+        <span className="text-[10px] leading-tight" style={{ color: source === 'off' ? 'var(--c-danger)' : 'var(--c-faint)' }}>
           {source === 'off' ? t('выходной') : t('не работает')}
         </span>
       )}
       {day?.appointments > 0 && (
-        <span className="absolute top-1 right-1 text-[9px] px-1 rounded" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>
+        <span className="absolute top-1 right-1 text-[9px] px-1 rounded" style={{ backgroundColor: 'var(--c-line)', color: 'var(--c-muted)' }}>
           {day.appointments}
         </span>
       )}
@@ -124,8 +124,8 @@ function Editor({ selection, days, onApply, onCancel, saving }) {
   }
 
   return (
-    <div className="rounded-2xl p-4 mt-4 space-y-3" style={{ backgroundColor: '#1f1f1f', border: `1px solid ${PINK}` }}>
-      <div className="text-white text-sm font-semibold">
+    <div className="rounded-2xl p-4 mt-4 space-y-3" style={{ backgroundColor: 'var(--c-card)', border: `1px solid ${PINK}` }}>
+      <div className="text-ink text-sm font-semibold">
         {t('Выбрано дней: {length}', { length: selection.length })}
         {selection.length <= 3 && <span className="text-gray-400 font-normal"> ({selection.map(formatShortDate).join(', ')})</span>}
       </div>
@@ -138,7 +138,7 @@ function Editor({ selection, days, onApply, onCancel, saving }) {
             aria-checked={mode === m.key}
             onClick={() => { setMode(m.key); setError(null) }}
             className="px-3 min-h-[40px] rounded-xl text-sm"
-            style={mode === m.key ? { backgroundColor: PINK, color: '#fff' } : { backgroundColor: '#242424', color: '#d1d5db' }}
+            style={mode === m.key ? { backgroundColor: PINK, color: '#fff' } : { backgroundColor: 'var(--c-raised)', color: 'var(--c-ink-2)' }}
           >
             {m.label}
           </button>
@@ -264,7 +264,7 @@ export default function MonthSchedule({ masters, readOnly = false }) {
               aria-checked={m.id === masterId}
               onClick={() => changeMaster(m.id)}
               className="px-3 min-h-[40px] rounded-xl text-sm font-medium"
-              style={m.id === masterId ? { backgroundColor: PINK, color: '#fff' } : { backgroundColor: '#242424', color: '#d1d5db' }}
+              style={m.id === masterId ? { backgroundColor: PINK, color: '#fff' } : { backgroundColor: 'var(--c-raised)', color: 'var(--c-ink-2)' }}
             >
               {m.name}
             </button>
@@ -274,7 +274,7 @@ export default function MonthSchedule({ masters, readOnly = false }) {
 
       <div className="flex items-center justify-between mb-3">
         <Button onClick={() => changeMonth(-1)} disabled={month <= firstMonth} aria-label={t('Предыдущий месяц')}>‹</Button>
-        <div className="text-white text-base font-semibold">
+        <div className="text-ink text-base font-semibold">
           {MONTHS[Number(month.slice(5, 7)) - 1]} {month.slice(0, 4)}
           {master && !readOnly && <span className="text-gray-500 text-sm font-normal"> · {master.name}</span>}
         </div>
@@ -302,9 +302,9 @@ export default function MonthSchedule({ masters, readOnly = false }) {
             ))}
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-gray-500">
-            <span><span style={{ color: '#9d4b75' }}>▢</span>{' '}{t('свои часы на дату')}</span>
-            <span><span style={{ color: '#f87171' }}>{t('выходной')}</span>{' '}{t('— по дате')}</span>
-            <span><span style={{ color: '#fbbf24' }}>{t('обед')}</span>{' '}{t('— начало обеда')}</span>
+            <span><span style={{ color: 'var(--accent-mid)' }}>▢</span>{' '}{t('свои часы на дату')}</span>
+            <span><span style={{ color: 'var(--c-danger)' }}>{t('выходной')}</span>{' '}{t('— по дате')}</span>
+            <span><span style={{ color: 'var(--c-warn)' }}>{t('обед')}</span>{' '}{t('— начало обеда')}</span>
             <span>{t('цифра в углу — записи')}</span>
           </div>
           {!readOnly && !selected.length && !result && (
@@ -320,9 +320,9 @@ export default function MonthSchedule({ masters, readOnly = false }) {
 
       {result && (
         <div className="mt-4 space-y-2">
-          <p className="text-xs" style={{ color: '#34d399' }}>{t('Сохранено дней: {count}', { count: result.count })}</p>
+          <p className="text-xs" style={{ color: 'var(--c-ok)' }}>{t('Сохранено дней: {count}', { count: result.count })}</p>
           {result.conflicts.length > 0 && (
-            <div className="text-sm rounded-xl px-3 py-2" style={{ color: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
+            <div className="text-sm rounded-xl px-3 py-2" style={{ color: 'var(--c-warn-2)', backgroundColor: 'rgba(245, 158, 11, 0.1)' }}>
               {t('Записи вне нового графика — перенесите или отмените их в журнале:')}
               <ul className="mt-1 space-y-0.5">
                 {result.conflicts.map(c => (

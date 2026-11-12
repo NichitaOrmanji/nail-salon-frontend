@@ -35,8 +35,8 @@ export default function VerifyEmailPage() {
       <ErrorText className="text-center">{error}</ErrorText>
       {result && (
         <div className="space-y-3 text-center">
-          <p className="text-sm" style={{ color: '#34d399' }}>{t('✓ Email подтверждён — салон виден клиентам. Ваша ссылка для записи:')}</p>
-          <a href={result.public_url} target="_blank" rel="noreferrer" className="block text-sm underline break-all" style={{ color: '#f472b6' }}>
+          <p className="text-sm" style={{ color: 'var(--c-ok)' }}>{t('✓ Email подтверждён — салон виден клиентам. Ваша ссылка для записи:')}</p>
+          <a href={result.public_url} target="_blank" rel="noreferrer" className="block text-sm underline break-all" style={{ color: 'var(--accent-ink)' }}>
             {result.public_url}
           </a>
         </div>
@@ -44,7 +44,7 @@ export default function VerifyEmailPage() {
       {(result || error) && (
         <Link to={me ? '/admin-panel/salon' : '/admin-panel/login'}
           className="flex items-center justify-center w-full min-h-[44px] rounded-xl text-sm font-semibold"
-          style={{ backgroundColor: '#db2777', color: '#ffffff' }}>
+          style={{ backgroundColor: 'var(--accent)', color: '#ffffff' }}>
           {me ? t('Продолжить настройку') : t('Войти в панель')}
         </Link>
       )}

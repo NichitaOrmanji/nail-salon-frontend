@@ -26,11 +26,11 @@ export default function ReportTab({ range }) {
   return (
     <div>
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <Stat label={t('Выручка')} value={formatMoney(data.revenue)} hint={t('{visits} визитов', { visits: data.visits })} color="#34d399" />
+        <Stat label={t('Выручка')} value={formatMoney(data.revenue)} hint={t('{visits} визитов', { visits: data.visits })} color="var(--c-ok)" />
         <Stat label={t('Средний чек')} value={formatMoney(data.average_check)} hint={t('скидки {value}', { value: formatMoney(data.discounts) })} />
-        <Stat label={t('Расходы')} value={formatMoney(data.expenses)} hint={t('из них зарплаты {value}', { value: formatMoney(data.salaries) })} color="#f87171" />
+        <Stat label={t('Расходы')} value={formatMoney(data.expenses)} hint={t('из них зарплаты {value}', { value: formatMoney(data.salaries) })} color="var(--c-danger)" />
         <Stat label={t('Прочие приходы')} value={formatMoney(data.other_income)} />
-        <Stat label={t('Прибыль')} value={formatMoney(data.profit)} hint={t('выручка + приходы − расходы (внесение и изъятие из кассы не считаются)')} color={Number(data.profit) < 0 ? '#f87171' : '#f472b6'} />
+        <Stat label={t('Прибыль')} value={formatMoney(data.profit)} hint={t('выручка + приходы − расходы (внесение и изъятие из кассы не считаются)')} color={Number(data.profit) < 0 ? 'var(--c-danger)' : 'var(--accent-ink)'} />
       </div>
 
       {(data.unpaid_visits > 0 || data.no_shows > 0) && (

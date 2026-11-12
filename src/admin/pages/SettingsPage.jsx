@@ -5,6 +5,7 @@ import ChangePasswordModal from '../components/ChangePasswordModal'
 import TelegramModal from '../components/TelegramModal'
 import { IconLogout, IconHelp } from '../components/Icons'
 import SalonForm from '../components/SalonForm'
+import AppearanceSection from '../components/AppearanceSection'
 import { Link } from 'react-router-dom'
 import { LANGS, setLang, t, useLang } from '../../i18n'
 import { Button, PageHeader } from '../components/ui'
@@ -15,21 +16,21 @@ function AccountSection() {
   const [telegramOpen, setTelegramOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
   return (
-    <section aria-labelledby="account-title" className="rounded-2xl p-4 mb-6" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
-      <h2 id="account-title" className="text-white text-base font-semibold mb-3">{t('Аккаунт')}</h2>
+    <section aria-labelledby="account-title" className="rounded-2xl p-4 mb-6" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
+      <h2 id="account-title" className="text-ink text-base font-semibold mb-3">{t('Аккаунт')}</h2>
       <div className="flex items-center gap-3 mb-4">
-        <span className="w-11 h-11 rounded-full flex items-center justify-center text-base font-semibold flex-shrink-0" style={{ backgroundColor: '#2e1f28', color: '#f472b6' }}>
+        <span className="w-11 h-11 rounded-full flex items-center justify-center text-base font-semibold flex-shrink-0" style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent-ink)' }}>
           {(me.name || me.username || '?').trim().charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <div className="text-white text-sm font-medium truncate">{me.name || me.username}</div>
+          <div className="text-ink text-sm font-medium truncate">{me.name || me.username}</div>
           <div className="text-gray-400 text-xs">{t(ROLE_LABELS[me.role] || me.role)}{me.email ? ` · ${me.email}` : ''}</div>
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => setTelegramOpen(true)}>{t('Уведомления в Telegram')}</Button>
         <Button onClick={() => setPasswordOpen(true)}>{t('Сменить пароль')}</Button>
-        <Button onClick={logout} style={{ color: '#f87171' }}>
+        <Button onClick={logout} style={{ color: 'var(--c-danger)' }}>
           <span className="inline-flex items-center gap-2"><IconLogout size={16} />{t('Выйти')}</span>
         </Button>
       </div>
@@ -46,9 +47,9 @@ const LANG_NAMES = { ru: 'Русский', ro: 'Română' }
 function LanguagePicker() {
   const lang = useLang()
   return (
-    <div className="mt-4 pt-4" style={{ borderTop: '1px solid #2e2e2e' }}>
+    <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--c-line)' }}>
       <div id="ui-lang" className="text-gray-400 text-xs mb-2">{t('Язык интерфейса')}</div>
-      <div role="radiogroup" aria-labelledby="ui-lang" className="inline-flex rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }}>
+      <div role="radiogroup" aria-labelledby="ui-lang" className="inline-flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--c-line)' }}>
         {LANGS.map(code => (
           <button
             key={code}
@@ -57,7 +58,7 @@ function LanguagePicker() {
             aria-checked={lang === code}
             onClick={() => setLang(code)}
             className="min-h-[40px] px-4 text-sm font-medium"
-            style={{ backgroundColor: lang === code ? '#db2777' : '#242424', color: lang === code ? '#ffffff' : '#9ca3af' }}
+            style={{ backgroundColor: lang === code ? 'var(--accent)' : 'var(--c-raised)', color: lang === code ? '#ffffff' : 'var(--c-muted)' }}
           >
             {LANG_NAMES[code]}
           </button>
@@ -73,16 +74,16 @@ function HelpButton() {
     <Link
       to="/admin-panel/help"
       className="flex items-center gap-4 rounded-2xl p-4 mb-6 transition-all active:scale-[0.99]"
-      style={{ backgroundColor: '#2e1f28', border: '1px solid #db2777' }}
+      style={{ backgroundColor: 'var(--accent-soft)', border: '1px solid var(--accent)' }}
     >
-      <span className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#db2777', color: '#ffffff' }}>
+      <span className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'var(--accent)', color: '#ffffff' }}>
         <IconHelp size={26} />
       </span>
       <span className="flex-1 min-w-0">
-        <span className="block text-white text-base font-semibold">{t('Помощь')}</span>
+        <span className="block text-ink text-base font-semibold">{t('Помощь')}</span>
         <span className="block text-gray-300 text-sm">{t('Как пользоваться панелью: журнал, клиенты, мастера, оплата')}</span>
       </span>
-      <span className="text-2xl" style={{ color: '#f472b6' }} aria-hidden="true">→</span>
+      <span className="text-2xl" style={{ color: 'var(--accent-ink)' }} aria-hidden="true">→</span>
     </Link>
   )
 }
@@ -92,10 +93,10 @@ function SalonLink() {
     <Link
       to="/admin-panel/salon"
       className="flex items-center gap-4 rounded-2xl p-4 mb-8 transition-all active:scale-[0.99]"
-      style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}
+      style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}
     >
       <span className="flex-1 min-w-0">
-        <span className="block text-white text-base font-semibold">{t('О салоне')}</span>
+        <span className="block text-ink text-base font-semibold">{t('О салоне')}</span>
         <span className="block text-gray-400 text-sm">{t('Название, адрес, фото, ссылка для записи и QR-код')}</span>
       </span>
       <span className="text-2xl text-gray-500" aria-hidden="true">→</span>
@@ -109,6 +110,7 @@ export default function SettingsPage() {
     <div className="px-4 md:px-6 py-5 max-w-2xl">
       <PageHeader title={t('Настройки')} subtitle={isManager ? t('Аккаунт и правила записи') : t('Ваш аккаунт')} />
       <AccountSection />
+      <AppearanceSection />
       <HelpButton />
       {isManager && <SalonLink />}
       {isManager && <SalonForm part="rules" />}

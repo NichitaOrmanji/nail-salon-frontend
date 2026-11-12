@@ -132,7 +132,7 @@ export default function ManagePage() {
         <div className="px-6 py-16 text-center">
           <p className="text-white text-base font-medium mb-2">{t('Запись не найдена')}</p>
           <p className="text-gray-500 text-sm mb-6">{t('Ссылка устарела или набрана с ошибкой. Позвоните в салон или запишитесь заново.')}</p>
-          <button onClick={() => navigate('/')} className="px-6 py-3 rounded-2xl text-white text-sm font-medium" style={{ backgroundColor: '#db2777' }}>
+          <button onClick={() => navigate('/')} className="px-6 py-3 rounded-2xl text-white text-sm font-medium" style={{ backgroundColor: 'var(--accent)' }}>
             {t('На главную')}
           </button>
         </div>
@@ -200,7 +200,7 @@ export default function ManagePage() {
               type="button"
               onClick={() => { setMoving(true); setNotice(null) }}
               className="w-full py-4 rounded-2xl text-white font-semibold active:scale-95"
-              style={{ backgroundColor: '#db2777' }}
+              style={{ backgroundColor: 'var(--accent)' }}
             >
               {t('Перенести на другое время')}
             </button>
@@ -226,7 +226,7 @@ export default function ManagePage() {
           ) : (
             <p className="text-gray-500 text-xs text-center pt-2">
               {t('Изменить запись онлайн уже нельзя.')}
-              {appointment.salon.phone && <> {t('Позвоните в салон:')} <a href={`tel:${appointment.salon.phone}`} className="underline" style={{ color: '#f472b6' }}>{appointment.salon.phone}</a></>}
+              {appointment.salon.phone && <> {t('Позвоните в салон:')} <a href={`tel:${appointment.salon.phone}`} className="underline" style={{ color: 'var(--accent-ink)' }}>{appointment.salon.phone}</a></>}
             </p>
           )}
           {!appointment.can_reschedule && appointment.can_cancel && (
@@ -270,7 +270,7 @@ export default function ManagePage() {
                         onClick={() => setSlot(s)}
                         aria-pressed={slot === s}
                         className="py-3 rounded-xl text-sm font-medium active:scale-95"
-                        style={{ backgroundColor: slot === s ? '#db2777' : '#242424', color: slot === s ? '#fff' : '#9ca3af' }}
+                        style={{ backgroundColor: slot === s ? 'var(--accent)' : '#242424', color: slot === s ? '#fff' : '#9ca3af' }}
                       >
                         {s}
                       </button>
@@ -290,7 +290,7 @@ export default function ManagePage() {
             onClick={confirmMove}
             disabled={busy}
             className="w-full py-4 rounded-2xl font-semibold text-white active:scale-95"
-            style={{ backgroundColor: '#db2777', opacity: busy ? 0.6 : 1 }}
+            style={{ backgroundColor: 'var(--accent)', opacity: busy ? 0.6 : 1 }}
           >
             <div className="text-sm font-semibold">{busy ? t('Переносим...') : t('Перенести')}</div>
             <div className="text-xs opacity-75 mt-0.5">{t('{date} в {time}', { date: formatDisplayDate(day, { withYear: false, lang }), time: slot })}</div>
@@ -300,7 +300,7 @@ export default function ManagePage() {
 
       {!active && (
         <div className="mx-6 mt-6">
-          <Link to="/services" className="block w-full py-4 rounded-2xl text-white font-semibold text-center" style={{ backgroundColor: '#db2777' }}>
+          <Link to="/services" className="block w-full py-4 rounded-2xl text-white font-semibold text-center" style={{ backgroundColor: 'var(--accent)' }}>
             {t('Записаться снова')}
           </Link>
         </div>

@@ -37,9 +37,9 @@ export default function MySalaryPage() {
       {data && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <Stat label={t('Начислено')} value={formatMoney(data.accrued)} hint={t('{visits} визитов, {days} дн.', { visits: data.visits, days: data.days })} color="#34d399" />
+            <Stat label={t('Начислено')} value={formatMoney(data.accrued)} hint={t('{visits} визитов, {days} дн.', { visits: data.visits, days: data.days })} color="var(--c-ok)" />
             <Stat label={t('Выплачено')} value={formatMoney(data.paid)} />
-            <Stat label={t('К выплате')} value={formatMoney(data.due)} color="#f472b6" />
+            <Stat label={t('К выплате')} value={formatMoney(data.due)} color="var(--accent-ink)" />
             <Stat label={t('Выручка по визитам')} value={formatMoney(data.revenue)} />
           </div>
           <Section title={t('Оплаченные визиты')}>

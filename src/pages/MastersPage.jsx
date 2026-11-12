@@ -193,10 +193,10 @@ export default function MastersPage() {
                 {/* Радио */}
                 <div
                   className="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                  style={{ borderColor: isSelected ? '#f472b6' : '#374151' }}
+                  style={{ borderColor: isSelected ? 'var(--accent-ink)' : '#374151' }}
                 >
                   {isSelected && (
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#db2777' }} />
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />
                   )}
                 </div>
               </button>
@@ -211,7 +211,7 @@ export default function MastersPage() {
                         onClick={() => pickNearest(m, near.date, slot)}
                         aria-label={t('{date} в {time}', { date: dayLabel(near.date), time: slot })}
                         className="px-3 py-1.5 rounded-lg text-xs font-medium active:scale-95"
-                        style={{ backgroundColor: '#242424', color: '#f9a8d4' }}
+                        style={{ backgroundColor: '#242424', color: 'var(--accent-ink-2)' }}
                       >
                         {slot}
                       </button>

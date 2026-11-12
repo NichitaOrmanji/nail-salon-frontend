@@ -13,10 +13,10 @@ import { Section } from './ClientColumn'
 
 // Статус записи — решение салона: ждёт подтверждения → подтверждена → пришёл / не пришёл
 const STATUS_BUTTONS = [
-  { key: 'pending', label: 'Ожидает', icon: '⏳', color: '#fbbf24' },
-  { key: 'confirmed', label: 'Подтверждена', icon: '✓', color: '#34d399' },
-  { key: 'completed', label: 'Пришёл', icon: '★', color: '#60a5fa' },
-  { key: 'no_show', label: 'Не пришёл', icon: '✕', color: '#f87171' },
+  { key: 'pending', label: 'Ожидает', icon: '⏳', color: 'var(--c-warn)' },
+  { key: 'confirmed', label: 'Подтверждена', icon: '✓', color: 'var(--c-ok)' },
+  { key: 'completed', label: 'Пришёл', icon: '★', color: 'var(--c-info)' },
+  { key: 'no_show', label: 'Не пришёл', icon: '✕', color: 'var(--c-danger)' },
 ]
 
 // Итог части визита: цена минус скидка в процентах
@@ -54,7 +54,7 @@ export function StatusSection({ a, busy, paid, error, onStatus }) {
   return (
     <Section title={t('Статус записи')}>
       {a.status === 'cancelled' && (
-        <div className="rounded-xl px-3 py-2 mb-3 text-sm font-medium" style={{ backgroundColor: 'rgba(156,163,175,0.12)', color: '#d1d5db', border: '1px solid #4b5563' }}>
+        <div className="rounded-xl px-3 py-2 mb-3 text-sm font-medium" style={{ backgroundColor: 'rgba(156,163,175,0.12)', color: 'var(--c-ink-2)', border: '1px solid var(--c-line-3)' }}>
           {t('Запись отменена')}
         </div>
       )}
@@ -67,9 +67,9 @@ export function StatusSection({ a, busy, paid, error, onStatus }) {
               onClick={() => onStatus(s.key)}
               className="min-h-[52px] px-2 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-1.5 disabled:cursor-default"
               style={{
-                backgroundColor: current ? `${s.color}26` : '#242424',
-                color: current ? s.color : '#e5e7eb',
-                border: `1px solid ${current ? s.color : '#2e2e2e'}`,
+                backgroundColor: current ? `color-mix(in srgb, ${s.color} 15%, transparent)` : 'var(--c-raised)',
+                color: current ? s.color : 'var(--c-ink-1)',
+                border: `1px solid ${current ? s.color : 'var(--c-line)'}`,
                 opacity: !current && !can ? 0.4 : 1,
               }}>
               <span aria-hidden="true">{s.icon}</span>{t(s.label)}
@@ -97,8 +97,8 @@ function PriceEditor({ part, canEdit, busy, onPatch }) {
     return (
       <div className="text-right">
         {Number(part.discount) > 0 && <div className="text-gray-500 text-xs line-through">{formatMoney(part.service?.price)}</div>}
-        <div className="text-white text-sm font-semibold">{formatMoney(partTotal(part))}</div>
-        {Number(part.discount) > 0 && <div className="text-xs" style={{ color: '#fbbf24' }}>−{Number(part.discount)}%</div>}
+        <div className="text-ink text-sm font-semibold">{formatMoney(partTotal(part))}</div>
+        {Number(part.discount) > 0 && <div className="text-xs" style={{ color: 'var(--c-warn)' }}>−{Number(part.discount)}%</div>}
       </div>
     )
   }
@@ -114,7 +114,7 @@ function PriceEditor({ part, canEdit, busy, onPatch }) {
       </label>
       <div className="text-right min-w-[72px] pb-2.5">
         <div className="text-gray-500 text-xs">{t('Итого')}</div>
-        <div className="text-white text-sm font-semibold">
+        <div className="text-ink text-sm font-semibold">
           {formatMoney(Math.round((Number(normalizeDecimal(price)) || 0) * (100 - (discountNum || 0))) / 100)}
         </div>
       </div>
@@ -133,10 +133,10 @@ function Part({ part, main, isManager, isOwner, busy, onPatch, onPay, onRemovePa
   const active = ACTIVE_STATUSES.includes(part.status) || part.status === 'completed'
   const canPay = isManager && !paid && active && part.date <= todayString()
   return (
-    <li className="rounded-xl p-3" style={{ backgroundColor: '#242424', border: main ? '1px solid #db2777' : '1px solid #2e2e2e' }}>
+    <li className="rounded-xl p-3" style={{ backgroundColor: 'var(--c-raised)', border: main ? '1px solid var(--accent)' : '1px solid var(--c-line)' }}>
       <div className="flex flex-wrap gap-3 justify-between">
         <div className="min-w-0">
-          <div className="text-white text-sm font-semibold">
+          <div className="text-ink text-sm font-semibold">
             {part.service ? part.service.name : t('Не указана')}
             {part.service && part.service.is_active === false && <span className="text-gray-500 font-normal">{' '}{t('(скрыта)')}</span>}
           </div>
@@ -144,7 +144,7 @@ function Part({ part, main, isManager, isOwner, busy, onPatch, onPay, onRemovePa
             {part.start_time}–{part.end_time} · {formatDuration(part.duration)}
             {!main && part.master && ` · ${part.master.name}`}
           </div>
-          {part.status === 'cancelled' && <div className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>{t('Отменена')}</div>}
+          {part.status === 'cancelled' && <div className="text-xs mt-0.5" style={{ color: 'var(--c-muted)' }}>{t('Отменена')}</div>}
         </div>
         {part.service && (
           <PriceEditor key={`${part.service.price}-${part.discount}`} part={part} busy={busy} onPatch={onPatch}
@@ -153,7 +153,7 @@ function Part({ part, main, isManager, isOwner, busy, onPatch, onPay, onRemovePa
       </div>
       <div className="flex flex-wrap items-center gap-2 mt-2">
         {paid ? (
-          <span className="text-sm" style={{ color: '#34d399' }}>
+          <span className="text-sm" style={{ color: 'var(--c-ok)' }}>
             {t('Оплачено')}: {formatMoney(part.payment.amount)} · {methodLabel(part.payment.method)}
             {Number(part.payment.discount) > 0 && <span className="text-gray-500">{' '}{t('(скидка')}{' '}{formatMoney(part.payment.discount)})</span>}
           </span>
@@ -217,7 +217,7 @@ function AddService({ a, master, onDone }) {
 
   if (!open) return <Button onClick={() => setOpen(true)}>{t('+ Услуга')}</Button>
   return (
-    <div className="w-full rounded-xl p-3 space-y-2" style={{ backgroundColor: '#242424', border: '1px solid #2e2e2e' }}>
+    <div className="w-full rounded-xl p-3 space-y-2" style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-line)' }}>
       <div className="flex gap-2">
         <TextInput autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder={t('Поиск по услугам')} aria-label={t('Поиск по услугам')} />
         <Button onClick={() => setOpen(false)}>{t('Закрыть')}</Button>
@@ -225,13 +225,13 @@ function AddService({ a, master, onDone }) {
       {error && <ErrorText>{error}</ErrorText>}
       {!services && !error && <p className="text-gray-500 text-sm">{t('Загрузка...')}</p>}
       {services && list.length === 0 && <p className="text-gray-500 text-sm">{t('Ничего не найдено')}</p>}
-      <ul className="max-h-64 overflow-y-auto divide-y divide-[#2e2e2e]">
+      <ul className="max-h-64 overflow-y-auto divide-y divide-[color:var(--c-line)]">
         {list.map(s => (
           <li key={s.id}>
             <button type="button" disabled={saving} onClick={() => add(s)}
               className="w-full min-h-[44px] flex justify-between gap-3 items-center text-left py-2 disabled:opacity-50">
               <span className="min-w-0">
-                <span className="block text-white text-sm truncate">{s.name}</span>
+                <span className="block text-ink text-sm truncate">{s.name}</span>
                 <span className="block text-gray-500 text-xs">{s.category_name ? `${s.category_name} · ` : ''}{formatDuration(s.duration)}</span>
               </span>
               <span className="text-gray-300 text-sm whitespace-nowrap">{formatMoney(s.price)}</span>
@@ -258,11 +258,11 @@ export function ServicesSection({ a, parts, master, isManager, isOwner, busy, on
             onPatch={onPatch} onPay={onPay} onRemovePayment={onRemovePayment} />
         ))}
       </ul>
-      <div className="flex flex-wrap items-center gap-3 mt-3 pt-3" style={{ borderTop: '1px solid #2e2e2e' }}>
+      <div className="flex flex-wrap items-center gap-3 mt-3 pt-3" style={{ borderTop: '1px solid var(--c-line)' }}>
         {canAdd && <AddService a={a} master={master} />}
         <div className="ml-auto text-right">
           <div className="text-gray-500 text-xs">{t('К оплате')}</div>
-          <div className="text-white text-xl font-semibold">{formatMoney(toPay)}</div>
+          <div className="text-ink text-xl font-semibold">{formatMoney(toPay)}</div>
         </div>
       </div>
     </Section>

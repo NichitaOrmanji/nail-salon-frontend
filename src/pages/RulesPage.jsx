@@ -80,7 +80,7 @@ export default function RulesPage() {
         <Rule icon="🔒" title={t('Ваши данные')}>
           <p>
             {t('Имя и телефон нужны только для записи и напоминаний.')}{' '}
-            <Link to="/privacy" className="underline" style={{ color: '#f472b6' }}>{t('Политика конфиденциальности')}</Link>
+            <Link to="/privacy" className="underline" style={{ color: 'var(--accent-ink)' }}>{t('Политика конфиденциальности')}</Link>
           </p>
           <p>{t('Удалить свои данные можно в личном кабинете («Удалить аккаунт») или попросив салон.')}</p>
         </Rule>
@@ -88,7 +88,7 @@ export default function RulesPage() {
         {company.phone && (
           <p className="text-gray-500 text-sm text-center mt-6">
             {t('Вопросы — по телефону салона:')}{' '}
-            <a href={`tel:${company.phone.replace(/[^\d+]/g, '')}`} className="underline" style={{ color: '#f472b6' }}>{company.phone}</a>
+            <a href={`tel:${company.phone.replace(/[^\d+]/g, '')}`} className="underline" style={{ color: 'var(--accent-ink)' }}>{company.phone}</a>
           </p>
         )}
       </div>

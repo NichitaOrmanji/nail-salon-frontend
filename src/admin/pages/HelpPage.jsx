@@ -9,12 +9,12 @@ import { getLang, t } from '../../i18n'
 
 function Topic({ title, open, onToggle, children }) {
   return (
-    <section className="rounded-2xl mb-2" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+    <section className="rounded-2xl mb-2" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="w-full flex items-center justify-between gap-3 px-4 min-h-[52px] text-left text-white text-sm font-semibold"
+        className="w-full flex items-center justify-between gap-3 px-4 min-h-[52px] text-left text-ink text-sm font-semibold"
       >
         {title}
         <span className="text-gray-500" aria-hidden="true">{open ? '−' : '+'}</span>
@@ -24,7 +24,7 @@ function Topic({ title, open, onToggle, children }) {
   )
 }
 
-const B = ({ children }) => <b className="text-white font-semibold">{children}</b>
+const B = ({ children }) => <b className="text-ink font-semibold">{children}</b>
 
 const TOPICS = [
   {
@@ -269,7 +269,7 @@ export default function HelpPage() {
     <div className="px-4 md:px-6 py-5 max-w-3xl">
       <Link
         to="/admin-panel/settings"
-        className="inline-flex items-center gap-1.5 min-h-[44px] -ml-1 pr-3 mb-1 rounded-xl text-sm font-semibold text-gray-300 hover:text-white"
+        className="inline-flex items-center gap-1.5 min-h-[44px] -ml-1 pr-3 mb-1 rounded-xl text-sm font-semibold text-gray-300 hover:text-ink"
       >
         <IconChevronLeft size={20} />
         {t('Настройки')}
