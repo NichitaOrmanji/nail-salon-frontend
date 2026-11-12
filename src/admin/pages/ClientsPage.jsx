@@ -57,6 +57,8 @@ function ClientsList() {
   const [error, setError] = useState(null)
   // Карточку можно открыть из журнала: navigate('/admin-panel/clients', { state: { phone } })
   const [openPhone, setOpenPhone] = useState(() => location.state?.phone || null)
+  // Открыт из карточки записи — «Назад» вернёт в неё (адрес журнала с ?open=)
+  const back = typeof location.state?.back === 'string' && location.state.back.startsWith('/admin-panel') ? location.state.back : null
   const requestRef = useRef(0)
 
   useEffect(() => {
@@ -90,6 +92,10 @@ function ClientsList() {
   }
 
   function closeCard() {
+    if (back) {
+      navigate(back)
+      return
+    }
     setOpenPhone(null)
     // Карточка, открытая из журнала, не должна открыться снова при обновлении страницы
     if (location.state?.phone) navigate(location.pathname, { replace: true, state: null })
@@ -148,7 +154,8 @@ function ClientsList() {
         </div>
       )}
 
-      {openPhone && <ClientCardModal phone={openPhone} onClose={closeCard} onRebook={rebook} onForgotten={forgotten} />}
+      {openPhone && <ClientCardModal phone={openPhone} onClose={closeCard} onRebook={rebook} onForgotten={forgotten}
+        backLabel={back ? t('Назад к записи') : undefined} />}
     </div>
   )
 }

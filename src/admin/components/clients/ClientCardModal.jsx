@@ -173,7 +173,7 @@ function ForgetSection({ phone, onForgotten }) {
   )
 }
 
-export default function ClientCardModal({ phone, onClose, onRebook, onForgotten }) {
+export default function ClientCardModal({ phone, onClose, onRebook, onForgotten, backLabel }) {
   const [card, setCard] = useState(null)
   const [error, setError] = useState(null)
 
@@ -188,7 +188,7 @@ export default function ClientCardModal({ phone, onClose, onRebook, onForgotten 
   useEffect(() => load(), [load])
 
   return (
-    <Modal title={card?.name || t('Клиент')} onClose={onClose} maxWidth="sm:max-w-2xl">
+    <Modal title={card?.name || t('Клиент')} onClose={onClose} maxWidth="sm:max-w-2xl" backLabel={backLabel}>
       <ErrorText>{error}</ErrorText>
       {!card && !error && <Spinner />}
       {card && (

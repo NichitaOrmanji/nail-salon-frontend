@@ -10,7 +10,7 @@ import { t, tr } from '../../i18n'
 
 const STEPS = tr({
   email: { title: 'Подтвердите email', text: 'Пока email не подтверждён, клиенты не видят сайт записи.', doneText: 'Email подтверждён — сайт записи виден клиентам.' },
-  salon: { title: 'Адрес и телефон салона', text: 'Клиенты увидят их на сайте; можно добавить фото и точку на карте.', to: '/admin-panel/settings', action: 'Настройки' },
+  salon: { title: 'Адрес и телефон салона', text: 'Клиенты увидят их на сайте; можно добавить фото и точку на карте.', to: '/admin-panel/salon', action: 'О салоне' },
   services: { title: 'Услуги и цены', text: 'Что вы делаете, сколько длится и стоит.', to: '/admin-panel/services', action: 'Услуги' },
   masters: { title: 'Мастера', text: 'Добавьте мастеров и отметьте, какие услуги делает каждый.', to: '/admin-panel/masters', action: 'Мастера' },
   schedule: { title: 'График работы', text: 'Рабочие дни, часы и обед — клиенты запишутся только в рабочее время.', to: '/admin-panel/masters?tab=schedules', action: 'Графики' },
@@ -116,9 +116,9 @@ function SalonCard({ company }) {
   )
 }
 
-// «О салоне» (правая колонка настроек): карточка салона, ссылка и QR для клиентов;
+// «О салоне»: карточка салона, ссылка и QR для клиентов;
 // шаги настройки — пока она не закончена
-export default function SalonOverview() {
+export default function SalonOverview({ asPage = false }) {
   const { me, refreshMe } = useStaffAuth()
   const location = useLocation()
   const [data, setData] = useState(null)
@@ -149,8 +149,10 @@ export default function SalonOverview() {
 
   return (
     <section aria-labelledby="salon-overview-title">
-      <h2 id="salon-overview-title" className="text-white text-xl font-bold tracking-tight">{t('О салоне')}</h2>
-      <p className="text-gray-500 text-sm mb-4">{trialEnds ? t('Пробный период — до {date}', { date: trialEnds }) : t('Как вас видят клиенты и ссылка для записи')}</p>
+      {asPage
+        ? <h1 id="salon-overview-title" className="text-white text-2xl font-bold tracking-tight">{t('О салоне')}</h1>
+        : <h2 id="salon-overview-title" className="text-white text-xl font-bold tracking-tight">{t('О салоне')}</h2>}
+      <p className="text-gray-500 text-sm mt-1 mb-4">{trialEnds ? t('Пробный период — до {date}', { date: trialEnds }) : t('Как вас видят клиенты и ссылка для записи')}</p>
       {location.state?.welcome && (
         <div className="rounded-2xl p-4 mb-5 text-sm" style={{ backgroundColor: '#2e1f28', border: '1px solid #db2777' }}>
           <div className="text-white font-semibold mb-1">{t('Салон «{name}» создан 🎉', { name: me?.company?.name })}</div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Button, Checkbox, ErrorText, TextArea, TextInput } from '../../ui'
 import { fetchClientCard, saveClientNote } from '../../../api/clients'
 import { updateAppointment } from '../../../api/appointments'
@@ -142,6 +142,7 @@ function ClientNote({ phone, initial }) {
 
 // Клиент: контакты, связь, метка, чёрный список, примечание; статистика визитов
 export default function ClientColumn({ a, isManager, canEdit, onNavigateAway }) {
+  const location = useLocation()
   const [card, setCard] = useState(null)
   const phone = a.client_phone
 
@@ -177,7 +178,7 @@ export default function ClientColumn({ a, isManager, canEdit, onNavigateAway }) 
                 {isNew ? t('Новый клиент') : t('Постоянный клиент')}
               </span>
               {isManager && (
-                <Link to="/admin-panel/clients" state={{ phone }} onClick={onNavigateAway} className="text-xs text-gray-400 underline">
+                <Link to="/admin-panel/clients" state={{ phone, back: location.pathname + location.search }} onClick={onNavigateAway} className="text-xs text-gray-400 underline">
                   {t('Профиль клиента')}
                 </Link>
               )}
