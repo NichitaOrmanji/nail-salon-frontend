@@ -1,10 +1,13 @@
 import { t } from '../../../i18n'
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import { timeToMin, minToTime, nowMinutes, formatWeekDay } from '../../utils/time'
 import { appointmentKind } from '../../utils/statuses'
 import { SLOT_MINUTES, SLOT_PX, PX_PER_MIN, MIN_BLOCK_PX, layoutBlocks } from '../../utils/journal'
 import { IconMoreVertical } from '../Icons'
+import Modal from '../Modal'
+import { Button } from '../ui'
 
 const TIME_COL_PX = 56
 const COL_MIN_PX = 140
@@ -98,33 +101,179 @@ function ColumnMenu({ anchorRef, onClose, children }) {
   )
 }
 
-function MasterAvatar({ master, dim }) {
+function MasterAvatar({ master, dim, size = 40 }) {
+  const style = { width: size, height: size, opacity: dim ? 0.6 : 1 }
   return master.photo ? (
-    <img src={master.photo} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0 mt-1 mr-1" style={{ opacity: dim ? 0.6 : 1 }} />
+    <img src={master.photo} alt="" className="rounded-full object-cover flex-shrink-0" style={style} />
   ) : (
     <span
       aria-hidden="true"
-      className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 mt-1 mr-1"
-      style={{ backgroundColor: '#2e1f28', color: '#f472b6', opacity: dim ? 0.6 : 1 }}
+      className="rounded-full flex items-center justify-center font-semibold flex-shrink-0"
+      style={{ ...style, backgroundColor: '#2e1f28', color: '#f472b6', fontSize: Math.round(size * 0.38) }}
     >
       {(master.name || '?').trim().charAt(0).toUpperCase()}
     </span>
   )
 }
 
-function ColumnHeader({ col, canManage, onToggleDayOff }) {
+// Окно мастера: нажатие на имя в шапке журнала — кто это, часы и записи на день
+function MasterInfoModal({ col, colAppointments, canManage, onToggleDayOff, onClose }) {
+  const master = col.master
+  const work = col.work
+  const active = colAppointments
+    .filter(a => a.status !== 'cancelled')
+    .sort((a, b) => (timeToMin(a.start_time) ?? 0) - (timeToMin(b.start_time) ?? 0))
+  const busy = active.reduce((sum, a) => sum + Math.max(0, (timeToMin(a.end_time) ?? 0) - (timeToMin(a.start_time) ?? 0)), 0)
+  const breakMin = work.working && work.breakStart != null ? Math.max(0, work.breakEnd - work.breakStart) : 0
+  const workMin = work.working ? Math.max(0, work.end - work.start - breakMin) : 0
+  const canToggle = canManage && master.is_active !== false
+
+  return (
+    <Modal title={t('Мастер')} onClose={onClose} maxWidth="sm:max-w-md">
+      <div className="flex flex-col items-center text-center gap-2">
+        <MasterAvatar master={master} size={72} />
+        <h3 className="text-white text-lg font-semibold">{master.name}</h3>
+        {master.is_active === false && <span className="text-xs text-gray-400">{t('Мастер скрыт')}</span>}
+        {master.description && <p className="text-gray-400 text-sm whitespace-pre-line">{master.description}</p>}
+      </div>
+
+      <dl className="grid grid-cols-2 gap-2 mt-5">
+        <div className="rounded-xl px-3 py-2.5" style={{ backgroundColor: '#242424' }}>
+          <dt className="text-xs text-gray-500">{t('Часы в этот день')}</dt>
+          <dd className="text-sm text-white mt-0.5">{columnHours(col)}</dd>
+        </div>
+        <div className="rounded-xl px-3 py-2.5" style={{ backgroundColor: '#242424' }}>
+          <dt className="text-xs text-gray-500">{t('Записей')}</dt>
+          <dd className="text-sm text-white mt-0.5">
+            {active.length}{workMin > 0 && busy > 0 ? ` · ${t('занято {percent}%', { percent: Math.min(100, Math.round(busy / workMin * 100)) })}` : ''}
+          </dd>
+        </div>
+      </dl>
+
+      {active.length > 0 && (
+        <ul className="mt-4 rounded-xl overflow-hidden" style={{ border: '1px solid #2e2e2e' }}>
+          {active.map(a => (
+            <li key={a.id} className="flex items-center gap-3 px-3 py-2 text-sm" style={{ borderTop: '1px solid #2e2e2e' }}>
+              <span className="text-gray-400 tabular-nums flex-shrink-0">{a.start_time}–{a.end_time}</span>
+              <span className="text-white min-w-0 truncate">{a.client_name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {canManage && (
+        <div className="flex flex-col gap-2 mt-5">
+          {canToggle && (
+            <Button
+              className="w-full"
+              onClick={() => {
+                onClose()
+                onToggleDayOff(col)
+              }}
+            >
+              {work.dayOff ? t('Снять выходной') : t('Сделать выходным в этот день')}
+            </Button>
+          )}
+          <Link to="/admin-panel/masters" className="min-h-[44px] rounded-xl text-sm font-medium inline-flex items-center justify-center text-pink-400">
+            {t('Открыть в разделе «Мастера»')}
+          </Link>
+        </div>
+      )}
+    </Modal>
+  )
+}
+
+function ColumnHeader({ col, colAppointments, canManage, onToggleDayOff }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [infoOpen, setInfoOpen] = useState(false)
   const buttonRef = useRef(null)
   const showMenu = canManage && col.master && col.master.is_active !== false
   const closeMenu = useCallback(() => setMenuOpen(false), [])
+  const masterDay = !col.week && col.master
+
+  const menu = showMenu && (
+    <div className={masterDay ? 'absolute top-0 right-0' : 'flex-shrink-0'}>
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-label={t('Меню колонки')}
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen(o => !o)}
+        className="w-11 h-11 rounded-lg flex items-center justify-center text-gray-400"
+      >
+        <IconMoreVertical size={18} />
+      </button>
+      {menuOpen && (
+        <ColumnMenu anchorRef={buttonRef} onClose={closeMenu}>
+          <button
+            type="button"
+            role="menuitem"
+            className="w-full text-left px-4 py-2 min-h-[44px] text-sm text-white"
+            onClick={() => {
+              setMenuOpen(false)
+              onToggleDayOff(col)
+            }}
+          >
+            {col.work.dayOff ? t('Снять выходной') : t('Сделать выходным в этот день')}
+          </button>
+        </ColumnMenu>
+      )}
+    </div>
+  )
+
+  const hoursLine = (
+    <div className="text-xs truncate" style={{ color: col.work.working || !col.master ? '#9ca3af' : '#9098a4' }}>
+      {columnHours(col)}
+    </div>
+  )
+
+  // День: фото сверху, под ним полное имя (нажатие — окно мастера), ниже часы
+  if (masterDay) {
+    return (
+      <div
+        className="sticky top-0 z-20 min-w-0"
+        style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e', borderLeft: '1px solid #2e2e2e' }}
+      >
+        <button
+          type="button"
+          onClick={() => setInfoOpen(true)}
+          aria-label={t('{name}: о мастере', { name: col.master.name })}
+          className="w-full flex flex-col items-center text-center gap-1 px-2 pt-2 pb-1.5 min-w-0 rounded-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-pink-400"
+        >
+          <MasterAvatar master={col.master} dim={col.hidden} />
+          <span
+            className="text-sm font-semibold leading-tight line-clamp-2 break-words max-w-full"
+            style={{ opacity: col.hidden ? 0.6 : 1, color: '#ffffff' }}
+          >
+            {col.master.name}
+          </span>
+          {col.hidden && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>{t('скрыт')}</span>
+          )}
+          <span className="max-w-full">{hoursLine}</span>
+        </button>
+        {menu}
+        {/* Окно — поверх всей страницы: шапка колонки закреплена и иначе перекрывает его соседними шапками */}
+        {infoOpen && createPortal(
+          <MasterInfoModal
+            col={col}
+            colAppointments={colAppointments}
+            canManage={canManage}
+            onToggleDayOff={onToggleDayOff}
+            onClose={() => setInfoOpen(false)}
+          />,
+          document.body
+        )}
+      </div>
+    )
+  }
 
   return (
     <div
       className="sticky top-0 z-20 flex items-start gap-1 pl-3 pr-0.5 py-1 min-w-0"
       style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e', borderLeft: '1px solid #2e2e2e' }}
     >
-      {/* День: фото и имя мастера, как в карточках журнала Altegio */}
-      {!col.week && col.master && <MasterAvatar master={col.master} dim={col.hidden} />}
       <div className="flex-1 min-w-0 py-1">
         <div className="flex items-center gap-1.5 min-w-0">
           <span
@@ -137,9 +286,7 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
             <span className="text-[10px] px-1.5 py-0.5 rounded flex-shrink-0" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>{t('скрыт')}</span>
           )}
         </div>
-        <div className="text-xs truncate" style={{ color: col.work.working || !col.master ? '#9ca3af' : '#9098a4' }}>
-          {columnHours(col)}
-        </div>
+        {hoursLine}
         {col.laneNames?.length > 1 && (
           <div className="flex mt-1 -ml-1">
             {col.laneNames.map((name, i) => (
@@ -148,36 +295,7 @@ function ColumnHeader({ col, canManage, onToggleDayOff }) {
           </div>
         )}
       </div>
-      {showMenu && (
-        <div className="flex-shrink-0">
-          <button
-            ref={buttonRef}
-            type="button"
-            aria-label={t('Меню колонки')}
-            aria-haspopup="menu"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(o => !o)}
-            className="w-11 h-11 rounded-lg flex items-center justify-center text-gray-400"
-          >
-            <IconMoreVertical size={18} />
-          </button>
-          {menuOpen && (
-            <ColumnMenu anchorRef={buttonRef} onClose={closeMenu}>
-              <button
-                type="button"
-                role="menuitem"
-                className="w-full text-left px-4 py-2 min-h-[44px] text-sm text-white"
-                onClick={() => {
-                  setMenuOpen(false)
-                  onToggleDayOff(col)
-                }}
-              >
-                {col.work.dayOff ? t('Снять выходной') : t('Сделать выходным в этот день')}
-              </button>
-            </ColumnMenu>
-          )}
-        </div>
-      )}
+      {menu}
     </div>
   )
 }
@@ -302,8 +420,8 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
         {/* Угол над колонкой времени */}
         <div className="sticky top-0 left-0 z-30" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }} />
 
-        {columns.map(col => (
-          <ColumnHeader key={col.key} col={col} canManage={canManage} onToggleDayOff={onToggleDayOff} />
+        {layout.map(({ col, colAppointments }) => (
+          <ColumnHeader key={col.key} col={col} colAppointments={colAppointments} canManage={canManage} onToggleDayOff={onToggleDayOff} />
         ))}
 
         {/* Колонка времени */}

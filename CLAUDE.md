@@ -9,11 +9,11 @@
 |---|---|
 | Бэкенд (Django + DRF, Postgres) | github.com/C001tea/online-registration-site |
 | Фронтенд (React + Vite + Tailwind) | github.com/NichitaOrmanji/nail-salon-frontend |
-| Сайт | https://nail-salon-frontend.vercel.app (Vercel; `vercel.json` проксирует `/api` на api.timepoint.tech) |
+| Сайт | https://timepoint.tech, салоны — `https://<slug>.timepoint.tech` (Vercel; `vercel.json` проксирует `/api` на api.timepoint.tech; старый адрес nail-salon-frontend.vercel.app работает) |
 | API | https://api.timepoint.tech (сервер Oracle, Docker, Caddy; деплой — GitHub Actions) |
-| Лендинг | `/welcome` (на `timepoint.tech` и `www` станет главной) |
+| Лендинг | https://timepoint.tech (и `/welcome` на любом адресе) |
 | Регистрация салона / вход | `/admin-panel/signup`, `/admin-panel/login` |
-| Домен | timepoint.tech (Namecheap); `*.timepoint.tech` для салонов в Vercel ещё НЕ подключён |
+| Домен | timepoint.tech куплен на get.tech (доступ у коллеги владельца); DNS — Vercel DNS; `timepoint.tech`, `www`, `*.timepoint.tech` подключены в Vercel |
 
 Адрес салона: `?salon=<slug>` или поддомен `<slug>.timepoint.tech`; салон по умолчанию — `jcnails`.
 
@@ -47,7 +47,7 @@ Dependabot + `npm audit`/`pip-audit` в CI.
    (файлы `src/admin/pages/TermsPage.jsx`, `src/pages/PrivacyPage.jsx`). Ждём данные у владельца (юрлица пока нет).
 2. Убрать тестовый салон `tp-mail-test-2203` (скрыт): Django admin → Companies → «Заблокирован».
 3. Подтвердить телефон в Brevo (баннер «Verify now»). Блокировку неизвестных IP в Brevo НЕ включать.
-4. Подключить `*.timepoint.tech` в Vercel + DNS, затем Server settings: `SALON_URL_TEMPLATE=https://{slug}.timepoint.tech`.
+4. ~~`*.timepoint.tech`~~ — сделано 12.11.2026 (SALON_URL_TEMPLATE и PANEL_URL на сервере переключены).
 5. Применить логотип J: favicon, шапка панели и страницы входа (сейчас там «TP» на градиенте), клиентский сайт — по решению владельца.
 6. Оплата подписки (этап 4) — нужны решения: платёжный сервис, тарифы, срок пробного периода, юрлицо, политика при неоплате.
 7. Перед настоящим запуском JC Nails: очистка тестовых данных (Actions → JC test data → inspect/cleanup;

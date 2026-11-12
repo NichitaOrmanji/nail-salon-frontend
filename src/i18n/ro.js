@@ -953,4 +953,8 @@ export default {
   'Пн–Пт 9:00–18:00': 'Lu–Vi 9:00–18:00',
   'Пн–Сб 9:00–19:00': 'Lu–Sâ 9:00–19:00',
   'Каждый день 10:00–20:00': 'Zilnic 10:00–20:00',
+  'Часы в этот день': 'Program în această zi',
+  'Записей': 'Programări',
+  'Открыть в разделе «Мастера»': 'Deschide în secțiunea «Specialiști»',
+  '{name}: о мастере': '{name}: despre specialist',
 }
