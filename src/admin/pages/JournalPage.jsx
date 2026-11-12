@@ -12,6 +12,7 @@ import { buildColumns, buildRange, buildWeekColumns, weekStart, DISCARD_CONFIRM 
 import JournalGrid from '../components/journal/JournalGrid'
 import AppointmentCard from '../components/journal/AppointmentCard'
 import AppointmentFormModal from '../components/journal/AppointmentFormModal'
+import UnconfirmedButton from '../components/journal/UnconfirmedButton'
 import { Button, Checkbox, ErrorText, Select } from '../components/ui'
 import { IconChevronLeft, IconChevronRight } from '../components/Icons'
 import Spinner from '../../components/layout/Spinner'
@@ -335,6 +336,7 @@ export default function JournalPage() {
           {view === 'week' ? weekTitle(rangeFrom) : formatDayTitle(date)}
         </div>
         <Checkbox checked={showCancelled} onChange={setShowCancelled} label={t('Показывать отменённые')} className="mr-auto lg:mr-0" />
+        <UnconfirmedButton />
         <Button variant="primary" onClick={() => openCreate(null, '')}>{t('+ Запись')}</Button>
       </div>
 

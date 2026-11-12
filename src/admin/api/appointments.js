@@ -92,3 +92,15 @@ export async function addServiceToVisit(id, data) {
   const response = await staffApi.post(`/appointments/${id}/add-service/`, data)
   return response.data
 }
+
+// Клиент подтвердил визит по телефону (confirmed=true) или снять отметку → запись целиком
+export async function setVisitConfirmed(id, confirmed) {
+  const response = await staffApi.post(`/appointments/${id}/visit-confirm/`, { confirmed })
+  return response.data
+}
+
+// Записи на завтра, где клиент не подтвердил визит → { date, appointments }
+export async function fetchUnconfirmed(date) {
+  const response = await staffApi.get('/appointments/unconfirmed/', { params: date ? { date } : {} })
+  return response.data
+}

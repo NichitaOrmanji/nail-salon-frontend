@@ -19,6 +19,8 @@ const ACTIONS = {
   cancelled_by_client: 'Клиент отменил запись',
   rescheduled_by_client: 'Клиент перенёс запись',
   confirmed_by_client: 'Клиент подтвердил запись',
+  visit_confirmed: 'Клиент подтвердил, что придёт',
+  visit_unconfirmed: 'Снята отметка «клиент подтвердил»',
 }
 
 const FIELDS = {
@@ -61,6 +63,9 @@ function Details({ entry }) {
   }
   if (entry.action === 'paid') {
     return <div className="mt-1 text-gray-400">{formatMoney(d.amount)} · {methodLabel(d.method)}{Number(d.discount) > 0 ? ` · ${t('скидка')} ${formatMoney(d.discount)}` : ''}</div>
+  }
+  if (entry.action === 'visit_confirmed') {
+    return <div className="mt-1 text-gray-400">{d.channel === 'telegram' ? t('в Telegram') : t('по телефону')}</div>
   }
   if (entry.action === 'reminded') {
     return <div className="mt-1 text-gray-400">{d.channel === 'email' ? 'Email' : 'Telegram'}</div>

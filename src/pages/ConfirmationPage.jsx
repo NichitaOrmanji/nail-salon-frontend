@@ -230,9 +230,7 @@ export default function ConfirmationPage() {
         {telegramUrl && (
           <>
             <p className="text-gray-500 text-xs text-center mb-3 max-w-xs">
-              {confirmed
-                ? t('Хотите напоминание за сутки и за час до визита? Подключите Telegram — это необязательно.')
-                : t('Есть Telegram? Подтвердите запись там сразу и получите напоминания. Это необязательно.')}
+              {t('Хотите напоминание за сутки и за час до визита? Подключите Telegram — это необязательно.')}
             </p>
             <a
               href={telegramUrl}
@@ -241,7 +239,7 @@ export default function ConfirmationPage() {
               className="w-full max-w-xs py-4 rounded-2xl text-white font-semibold text-center transition-all active:scale-95 mb-3"
               style={{ backgroundColor: '#1479a8' }}
             >
-              {confirmed ? t('Напоминания в Telegram') : t('Подтвердить в Telegram')}
+              {t('Напоминания в Telegram')}
             </a>
           </>
         )}
