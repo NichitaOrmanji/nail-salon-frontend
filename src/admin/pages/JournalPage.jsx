@@ -395,7 +395,6 @@ export default function JournalPage() {
           masters={current.masters}
           isManager={isManager}
           hidden={formVisible}
-          topAnchorRef={toolbarRef}
           onDirtyChange={handleCardDirty}
           onClose={closeCard}
           onEdit={a => openForm({ appointment: a })}

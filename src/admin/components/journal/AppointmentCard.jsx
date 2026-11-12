@@ -12,18 +12,19 @@ import { notifyDataChanged } from '../../utils/events'
 import { formatShortDate } from '../../utils/time'
 import { DISCARD_CONFIRM } from '../../utils/journal'
 import { t } from '../../../i18n'
-import DetailsColumn from './card/DetailsColumn'
-import VisitColumn from './card/VisitColumn'
+import { BookingSection, VisitConfirmSection, CommentSection, ExtrasSection } from './card/BookingSections'
+import { StatusSection, ServicesSection } from './card/VisitColumn'
 import ClientColumn from './card/ClientColumn'
 
-// Карточка записи в три колонки (как в Altegio): слева — мастер, время, перерыв, комментарий,
-// повтор, напоминание и история; в центре — статусы, услуги визита, цены и оплата;
-// справа — клиент, связь, статистика. На узком экране колонки идут друг под другом.
-// Боковая панель начинается под панелью дня; на телефоне — весь экран.
+// Карточка записи на весь экран рядом с боковой панелью (на телефоне — весь экран).
+// Широкий экран — три колонки: слева мастер и время, придёт ли клиент, комментарий;
+// в центре статус записи, услуги и оплата; справа клиент. На узком — одна колонка,
+// сверху самое нужное: статус и оплата. Колонки на узком экране — display: contents,
+// порядок блоков задаётся order.
 // Заметка хранится локально — опрос журнала не сбрасывает её, пока не сохранили.
 // hidden — карточка спрятана под открытой формой, но не размонтирована (ввод сохраняется).
 // parts — все записи этого визита (несколько услуг подряд), masters — мастера журнала.
-export default function AppointmentCard({ appointment: a, parts, masters = [], isManager, hidden = false, topAnchorRef, onDirtyChange, onClose, onEdit }) {
+export default function AppointmentCard({ appointment: a, parts, masters = [], isManager, hidden = false, onDirtyChange, onClose, onEdit }) {
   const serverNotes = a.notes || ''
   const [notes, setNotes] = useState(serverNotes)
   const [baseNotes, setBaseNotes] = useState(serverNotes)
@@ -77,23 +78,23 @@ export default function AppointmentCard({ appointment: a, parts, masters = [], i
     return () => window.removeEventListener('keydown', onKey)
   }, [hidden])
 
-  // Боковая панель начинается под панелью дня (её высота меняется при переносе строк)
+  // Карточка занимает всё справа от боковой панели: левый край — край основной области
   useLayoutEffect(() => {
-    const anchor = topAnchorRef?.current
     const panel = panelRef.current
-    if (!anchor || !panel) return
+    const main = document.querySelector('main')
+    if (!panel || !main) return
     const update = () => {
-      panel.style.setProperty('--card-top', `${Math.max(0, Math.round(anchor.getBoundingClientRect().bottom))}px`)
+      panel.style.setProperty('--card-left', `${Math.max(0, Math.round(main.getBoundingClientRect().left))}px`)
     }
     update()
     const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null
-    observer?.observe(anchor)
+    observer?.observe(main)
     window.addEventListener('resize', update)
     return () => {
       observer?.disconnect()
       window.removeEventListener('resize', update)
     }
-  }, [topAnchorRef, hidden])
+  }, [hidden])
 
   async function run(action) {
     setError(null)
@@ -134,42 +135,72 @@ export default function AppointmentCard({ appointment: a, parts, masters = [], i
     }
   }
 
+  const active = ['pending', 'confirmed'].includes(a.status)
+  const column = 'contents xl:flex xl:flex-col xl:gap-4 xl:min-w-0'
+
   return (
     <div
       ref={panelRef}
-      className={`fixed inset-0 sm:left-auto sm:top-[var(--card-top,0px)] sm:w-[420px] xl:w-[min(1080px,calc(100vw-80px))] z-40 flex-col shadow-2xl ${hidden ? 'hidden' : 'flex'}`}
-      style={{ backgroundColor: '#1a1a1a', borderLeft: '1px solid #2e2e2e' }}
+      className={`fixed inset-0 md:left-[var(--card-left,0px)] z-40 flex-col ${hidden ? 'hidden' : 'flex'}`}
+      style={{ backgroundColor: '#151515' }}
       role="dialog"
       aria-label={t('Карточка записи')}
     >
-      <div className="flex items-center gap-3 pl-5 pr-2 py-2 flex-shrink-0" style={{ borderBottom: '1px solid #2e2e2e' }}>
+      <div className="flex items-center gap-3 pl-4 sm:pl-6 pr-2 py-2.5 flex-shrink-0" style={{ backgroundColor: '#1a1a1a', borderBottom: '1px solid #2e2e2e' }}>
         <div className="flex-1 min-w-0">
-          <div className="text-white text-base font-semibold truncate">{a.client_name || t('Без имени')}</div>
-          <div className="text-gray-500 text-xs">{formatShortDate(a.date)}, {a.start_time}–{a.end_time}</div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-white text-lg font-semibold break-words">{a.client_name || t('Без имени')}</span>
+            <StatusBadge status={a.status} />
+          </div>
+          <div className="text-gray-400 text-sm">
+            {formatShortDate(a.date)}, {a.start_time}–{a.end_time}
+            {a.master && <span className="text-gray-500"> · {t('Мастер')}: {a.master.name}</span>}
+          </div>
         </div>
-        <StatusBadge status={a.status} />
         <button
           type="button"
           onClick={requestClose}
           aria-label={t('Закрыть')}
-          className="w-11 h-11 rounded-xl flex items-center justify-center text-gray-400 active:scale-90"
+          className="w-11 h-11 rounded-xl flex items-center justify-center text-gray-400 active:scale-90 flex-shrink-0"
+          style={{ backgroundColor: '#242424' }}
         >
           <IconClose />
         </button>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4">
-        <div className="flex flex-col gap-3 xl:grid xl:grid-cols-[260px_minmax(0,1fr)_280px] xl:items-start">
-          <div className="order-2 xl:order-1">
-            <DetailsColumn a={a} master={master} isManager={isManager} canEdit={canEdit} paid={paid} busy={busy}
-              notes={notes} setNotes={setNotes} notesChanged={notesChanged} serverNotes={serverNotes}
-              onPatch={patch} onEdit={onEdit} />
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-6">
+        <div className="max-w-3xl xl:max-w-none mx-auto flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)] xl:items-start">
+          {/* Слева: мастер и время, придёт ли клиент, комментарий */}
+          <div className={column}>
+            <div className="order-4 xl:order-none">
+              <BookingSection a={a} master={master} isManager={isManager} canEdit={canEdit} paid={paid} busy={busy}
+                onPatch={patch} onEdit={onEdit} onStatus={changeStatus} />
+            </div>
+            {active && (
+              <div className="order-3 xl:order-none">
+                <VisitConfirmSection a={a} isManager={isManager} canMark={canEdit || !isManager} />
+              </div>
+            )}
+            <div className="order-7 xl:order-none">
+              <CommentSection notes={notes} setNotes={setNotes} notesChanged={notesChanged} serverNotes={serverNotes}
+                busy={busy} onPatch={patch} />
+            </div>
           </div>
-          <div className="order-1 xl:order-2">
-            <VisitColumn a={a} parts={visitParts} master={master} isManager={isManager} isOwner={isOwner} busy={busy}
-              error={error} onStatus={changeStatus} onPatch={patchPart} onPay={setCheckoutPart} onRemovePayment={removePayment} />
+          {/* В центре: статус, услуги и оплата, дополнительно */}
+          <div className={column}>
+            <div className="order-1 xl:order-none">
+              <StatusSection a={a} busy={busy} paid={paid} error={error} onStatus={changeStatus} />
+            </div>
+            <div className="order-2 xl:order-none">
+              <ServicesSection a={a} parts={visitParts} master={master} isManager={isManager} isOwner={isOwner} busy={busy}
+                onPatch={patchPart} onPay={setCheckoutPart} onRemovePayment={removePayment} />
+            </div>
+            <div className="order-8 xl:order-none">
+              <ExtrasSection a={a} isManager={isManager} />
+            </div>
           </div>
-          <div className="order-3">
+          {/* Справа: клиент */}
+          <div className="order-5 xl:order-none flex flex-col gap-4 min-w-0">
             <ClientColumn a={a} isManager={isManager} canEdit={canEdit}
               onNavigateAway={e => { if (notesChanged && !window.confirm(t(DISCARD_CONFIRM))) e.preventDefault() }} />
           </div>

@@ -11,9 +11,10 @@ import { formatDuration } from '../../../../utils/format'
 import { t } from '../../../../i18n'
 import { Section } from './ClientColumn'
 
+// Статус записи — решение салона: ждёт подтверждения → подтверждена → пришёл / не пришёл
 const STATUS_BUTTONS = [
-  { key: 'pending', label: 'Ожидание', icon: '⏳', color: '#fbbf24' },
-  { key: 'confirmed', label: 'Подтвердил', icon: '✓', color: '#34d399' },
+  { key: 'pending', label: 'Ожидает', icon: '⏳', color: '#fbbf24' },
+  { key: 'confirmed', label: 'Подтверждена', icon: '✓', color: '#34d399' },
   { key: 'completed', label: 'Пришёл', icon: '★', color: '#60a5fa' },
   { key: 'no_show', label: 'Не пришёл', icon: '✕', color: '#f87171' },
 ]
@@ -25,8 +26,23 @@ function partTotal(a) {
   return Math.round(price * (100 - discount)) / 100
 }
 
-// Ряд статусов иконками: какой сейчас и куда можно переключить
-export function StatusBar({ a, busy, paid, onStatus }) {
+// Подсказка под статусами: что значит текущий статус и что делать дальше
+function statusHint(a, paid) {
+  const future = a.date > todayString()
+  if (a.status === 'pending') return t('Онлайн-запись ждёт подтверждения салона. Если время подходит — нажмите «Подтверждена».')
+  if (a.status === 'confirmed') {
+    return future
+      ? t('Запись подтверждена. В день визита отметьте «Пришёл» или «Не пришёл».')
+      : t('Клиент пришёл? Отметьте «Пришёл» или «Не пришёл».')
+  }
+  if (a.status === 'completed') return paid ? t('Визит состоялся и оплачен.') : t('Визит состоялся. Не забудьте принять оплату ниже.')
+  if (a.status === 'no_show') return t('Клиент не пришёл.')
+  if (a.status === 'cancelled') return t('Запись отменена. Вернуть её можно кнопкой «Подтверждена».')
+  return ''
+}
+
+// Статусы одной строкой: какой сейчас и куда можно переключить
+export function StatusSection({ a, busy, paid, error, onStatus }) {
   const isActive = ACTIVE_STATUSES.includes(a.status)
   const canMark = isActive && a.date <= todayString()
   function allowed(key) {
@@ -36,37 +52,34 @@ export function StatusBar({ a, busy, paid, onStatus }) {
     return canMark
   }
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label={t('Статус')}>
-      {STATUS_BUTTONS.map(s => {
-        const current = a.status === s.key
-        return (
-          <button key={s.key} type="button" disabled={busy || !allowed(s.key)} aria-pressed={current}
-            onClick={() => onStatus(s.key)}
-            className="min-h-[44px] px-3 rounded-xl text-sm font-medium inline-flex items-center gap-1.5 disabled:cursor-default"
-            style={{
-              backgroundColor: current ? `${s.color}26` : '#242424',
-              color: current ? s.color : '#d1d5db',
-              border: `1px solid ${current ? s.color : '#2e2e2e'}`,
-              opacity: !current && !allowed(s.key) ? 0.45 : 1,
-            }}>
-            <span aria-hidden="true">{s.icon}</span>{t(s.label)}
-          </button>
-        )
-      })}
+    <Section title={t('Статус записи')}>
       {a.status === 'cancelled' && (
-        <span className="min-h-[44px] px-3 rounded-xl text-sm font-medium inline-flex items-center"
-          style={{ backgroundColor: 'rgba(156,163,175,0.15)', color: '#9ca3af', border: '1px solid #4b5563' }}>
-          {t('Отменена')}
-        </span>
+        <div className="rounded-xl px-3 py-2 mb-3 text-sm font-medium" style={{ backgroundColor: 'rgba(156,163,175,0.12)', color: '#d1d5db', border: '1px solid #4b5563' }}>
+          {t('Запись отменена')}
+        </div>
       )}
-      {isActive && !paid && (
-        <button type="button" disabled={busy} onClick={() => onStatus('cancelled')}
-          className="min-h-[44px] px-3 rounded-xl text-sm font-medium ml-auto"
-          style={{ backgroundColor: '#242424', color: '#f87171', border: '1px solid #2e2e2e' }}>
-          {t('Отменить запись')}
-        </button>
-      )}
-    </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-2 gap-2" role="group" aria-label={t('Статус записи')}>
+        {STATUS_BUTTONS.map(s => {
+          const current = a.status === s.key
+          const can = allowed(s.key)
+          return (
+            <button key={s.key} type="button" disabled={busy || !can} aria-pressed={current}
+              onClick={() => onStatus(s.key)}
+              className="min-h-[52px] px-2 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-1.5 disabled:cursor-default"
+              style={{
+                backgroundColor: current ? `${s.color}26` : '#242424',
+                color: current ? s.color : '#e5e7eb',
+                border: `1px solid ${current ? s.color : '#2e2e2e'}`,
+                opacity: !current && !can ? 0.4 : 1,
+              }}>
+              <span aria-hidden="true">{s.icon}</span>{t(s.label)}
+            </button>
+          )
+        })}
+      </div>
+      <p className="text-gray-500 text-xs mt-3">{statusHint(a, paid)}</p>
+      {error && <p role="alert" className="text-red-400 text-sm mt-2">{error}</p>}
+    </Section>
   )
 }
 
@@ -230,35 +243,28 @@ function AddService({ a, master, onDone }) {
   )
 }
 
-// Центральная колонка: статусы, услуги визита с ценой и скидкой, «К оплате»
-export default function VisitColumn({ a, parts, master, isManager, isOwner, busy, error, onStatus, onPatch, onPay, onRemovePayment }) {
-  const paid = !!a.payment
+// Услуги визита с ценой и скидкой, оплата, «К оплате»
+export function ServicesSection({ a, parts, master, isManager, isOwner, busy, onPatch, onPay, onRemovePayment }) {
   const toPay = parts
     .filter(p => !p.payment && p.status !== 'cancelled' && p.status !== 'no_show')
     .reduce((sum, p) => sum + partTotal(p), 0)
   const canAdd = isManager && ACTIVE_STATUSES.includes(a.status) && !!a.master
 
   return (
-    <div className="space-y-3">
-      <Section>
-        <StatusBar a={a} busy={busy} paid={paid} onStatus={onStatus} />
-        {error && <p role="alert" className="text-red-400 text-sm mt-2">{error}</p>}
-      </Section>
-      <Section title={t('Услуги')}>
-        <ul className="space-y-2">
-          {parts.map(p => (
-            <Part key={p.id} part={p} main={p.id === a.id} isManager={isManager} isOwner={isOwner} busy={busy}
-              onPatch={onPatch} onPay={onPay} onRemovePayment={onRemovePayment} />
-          ))}
-        </ul>
-        <div className="flex flex-wrap items-center gap-3 mt-3">
-          {canAdd && <AddService a={a} master={master} />}
-          <div className="ml-auto text-right">
-            <div className="text-gray-500 text-xs">{t('К оплате')}</div>
-            <div className="text-white text-lg font-semibold">{formatMoney(toPay)}</div>
-          </div>
+    <Section title={t('Услуги и оплата')}>
+      <ul className="space-y-2">
+        {parts.map(p => (
+          <Part key={p.id} part={p} main={p.id === a.id} isManager={isManager} isOwner={isOwner} busy={busy}
+            onPatch={onPatch} onPay={onPay} onRemovePayment={onRemovePayment} />
+        ))}
+      </ul>
+      <div className="flex flex-wrap items-center gap-3 mt-3 pt-3" style={{ borderTop: '1px solid #2e2e2e' }}>
+        {canAdd && <AddService a={a} master={master} />}
+        <div className="ml-auto text-right">
+          <div className="text-gray-500 text-xs">{t('К оплате')}</div>
+          <div className="text-white text-xl font-semibold">{formatMoney(toPay)}</div>
         </div>
-      </Section>
-    </div>
+      </div>
+    </Section>
   )
 }
