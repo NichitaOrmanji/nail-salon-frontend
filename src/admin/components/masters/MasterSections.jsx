@@ -3,7 +3,7 @@ import { saveSchedule, fetchDaysOff, addDayOff, removeDayOff, setMasterAccess, r
 import { notifyDataChanged } from '../../utils/events'
 import { WEEKDAYS_SHORT, todayString, addDays, formatShortDate } from '../../utils/time'
 import { Button, Checkbox, ErrorText, Field, TextInput, WarningText } from '../ui'
-import { dayHoursError, hoursLabel, lunchLabel } from '../../utils/schedule'
+import { dayHoursError, hoursLabel, lunchLabel, scheduleErrorText } from '../../utils/schedule'
 import TimeField from './TimeField'
 import { t } from '../../../i18n'
 
@@ -40,7 +40,7 @@ const PRESETS = [
   { label: 'Каждый день 10:00–20:00', days: [0, 1, 2, 3, 4, 5, 6], start: '10:00', end: '20:00' },
 ]
 
-export function ScheduleSection({ master, readOnly, onSaved }) {
+export function ScheduleSection({ master, readOnly, onSaved, hint }) {
   const [rows, setRows] = useState(() => normalizeSchedule(master.schedule))
   const [saved, setSaved] = useState(() => JSON.stringify(normalizeSchedule(master.schedule)))
   const [error, setError] = useState(null)
@@ -88,7 +88,7 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
       notifyDataChanged()
       onSaved?.()
     } catch (err) {
-      setError(err.message)
+      setError(scheduleErrorText(err))
     } finally {
       setSaving(false)
     }
@@ -100,7 +100,7 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
     <Section title={t('График на неделю (шаблон)')}>
       {!readOnly && (
         <p className="text-gray-500 text-xs mb-3">
-          {t('Действует на все недели. Отдельные даты (другие часы, выходной) — во вкладке «Графики». Обед клиентам не показывается: записаться на это время нельзя.')}
+          {hint || t('Действует на все недели. Отдельные даты (другие часы, выходной) — во вкладке «Графики». Обед клиентам не показывается: записаться на это время нельзя.')}
         </p>
       )}
       {!readOnly && (
@@ -145,7 +145,7 @@ export function ScheduleSection({ master, readOnly, onSaved }) {
           </div>
         ))}
       </div>
-      <ErrorText className="mt-3">{error}</ErrorText>
+      <ErrorText className="mt-3 whitespace-pre-line">{error}</ErrorText>
       {!readOnly && (
         <div className="flex flex-wrap items-center justify-end gap-3 mt-3">
           {done && !changed && <span className="text-xs" style={{ color: '#34d399' }}>{t('Сохранено')}</span>}
@@ -206,7 +206,7 @@ export function DaysOffSection({ master, readOnly }) {
       notifyDataChanged()
       await load()
     } catch (err) {
-      setError(err.message)
+      setError(scheduleErrorText(err))
     } finally {
       setBusy(false)
     }
@@ -246,7 +246,7 @@ export function DaysOffSection({ master, readOnly }) {
       )}
       {message && <p className="text-xs mb-3" style={{ color: '#34d399' }}>{message}</p>}
       <WarningText className="mb-3">{warning}</WarningText>
-      <ErrorText className="mb-3">{error}</ErrorText>
+      <ErrorText className="mb-3 whitespace-pre-line">{error}</ErrorText>
       {items === null && !error && <p className="text-gray-500 text-sm">{t('Загрузка...')}</p>}
       {items && items.length === 0 && <p className="text-gray-500 text-sm">{t('Выходных по датам нет')}</p>}
       {items && items.length > 0 && (

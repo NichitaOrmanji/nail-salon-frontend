@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useStaffAuth } from '../context/StaffAuthContext'
-import { fetchStaffMasters, createMaster, updateMaster, hideMaster, uploadMasterPhoto, deleteMasterPhoto } from '../api/masters'
+import { fetchStaffMasters, createMaster, updateMaster, hideMaster, uploadMasterPhoto, deleteMasterPhoto, fetchScheduleHistory } from '../api/masters'
+import { fetchStaffCompany, updateStaffCompany } from '../api/company'
 import { fetchStaffServices } from '../api/services'
 import { notifyDataChanged } from '../utils/events'
 import { WEEKDAYS_SHORT } from '../utils/time'
 import Modal from '../components/Modal'
-import { Button, Checkbox, ErrorText, Field, PageHeader, TextArea, TextInput } from '../components/ui'
+import { Button, Checkbox, ErrorText, Field, PageHeader, Switch, TextArea, TextInput } from '../components/ui'
 import { Section, ScheduleSection, DaysOffSection, AccessSection } from '../components/masters/MasterSections'
 import PhotoField from '../components/PhotoField'
 import MonthSchedule from '../components/masters/MonthSchedule'
@@ -196,7 +197,93 @@ function ProfileSection({ master, services, onSaved }) {
   )
 }
 
-function MasterModal({ master, services, onClose, onChanged, onCreated }) {
+// Право мастера самому менять свой график (личная галочка; общий переключатель — во вкладке «Графики»)
+function SelfScheduleSection({ master, forAll, onChanged }) {
+  const [error, setError] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const on = forAll || master.self_schedule
+
+  async function toggle(value) {
+    setError(null)
+    setBusy(true)
+    try {
+      await updateMaster(master.id, { self_schedule: value })
+      onChanged()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Section title={t('Свой график')}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div id={`self-schedule-${master.id}`} className="text-white text-sm">{t('Мастер сам ставит себе график')}</div>
+          <div className="text-xs mt-0.5" style={{ color: on ? '#34d399' : '#9ca3af' }}>{on ? t('Разрешено') : t('Не разрешено')}</div>
+        </div>
+        <Switch checked={on} disabled={busy || forAll} labelledBy={`self-schedule-${master.id}`} onChange={toggle} />
+      </div>
+      <p className="text-gray-500 text-xs mt-3">
+        {forAll
+          ? t('Включено для всех мастеров во вкладке «Графики». Чтобы выбирать по одному, выключите там общий переключатель.')
+          : t('Мастер сможет сам менять рабочие часы, отдельные дни и выходные. Убрать время, на которое уже есть записи, он не сможет. Все изменения видны ниже, в истории.')}
+      </p>
+      {on && !master.has_access && (
+        <p className="text-xs mt-2" style={{ color: '#f59e0b' }}>{t('У мастера нет доступа в панель — выдайте его ниже, иначе он не сможет войти.')}</p>
+      )}
+      <ErrorText className="mt-2">{error}</ErrorText>
+    </Section>
+  )
+}
+
+function formatChangeTime(iso) {
+  const d = new Date(iso)
+  const pad = n => String(n).padStart(2, '0')
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+// Кто и когда менял график мастера
+function ScheduleHistorySection({ master, version }) {
+  const [rows, setRows] = useState(null)
+  const [error, setError] = useState(null)
+  const [all, setAll] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    fetchScheduleHistory(master.id)
+      .then(list => { if (alive) { setRows(list); setError(null) } })
+      .catch(err => { if (alive) setError(err.message) })
+    return () => { alive = false }
+  }, [master.id, version])
+
+  const shown = rows ? (all ? rows : rows.slice(0, 5)) : []
+  return (
+    <Section title={t('История графика')}>
+      <ErrorText>{error}</ErrorText>
+      {rows === null && !error && <p className="text-gray-500 text-sm">{t('Загрузка...')}</p>}
+      {rows && rows.length === 0 && <p className="text-gray-500 text-sm">{t('Изменений пока не было')}</p>}
+      {shown.length > 0 && (
+        <ul className="space-y-2">
+          {shown.map((row, i) => (
+            <li key={`${row.at}-${i}`} className="text-sm">
+              <div className="text-gray-500 text-xs">
+                {formatChangeTime(row.at)} · {row.by_master ? t('сам мастер') : (row.user || t('администратор'))}
+              </div>
+              <div className="text-gray-200 break-words">{row.text}</div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {rows && rows.length > 5 && (
+        <Button variant="ghost" className="mt-2" onClick={() => setAll(v => !v)}>{all ? t('Свернуть') : t('Показать все')}</Button>
+      )}
+    </Section>
+  )
+}
+
+function MasterModal({ master, services, forAll, onClose, onChanged, onCreated }) {
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
 
@@ -239,8 +326,10 @@ function MasterModal({ master, services, onClose, onChanged, onCreated }) {
                 onRemove={async () => { await deleteMasterPhoto(master.id); onChanged() }}
               />
             </Section>
+            <SelfScheduleSection master={master} forAll={forAll} onChanged={onChanged} />
             <ScheduleSection key={`schedule-${master.id}`} master={master} onSaved={onChanged} />
             <DaysOffSection master={master} />
+            <ScheduleHistorySection master={master} version={JSON.stringify(master.schedule)} />
             <AccessSection key={`access-${master.id}`} master={master} onChanged={onChanged} />
             <Section title={master.is_active ? t('Скрыть мастера') : t('Мастер скрыт')}>
               <p className="text-gray-500 text-xs mb-3">
@@ -265,6 +354,10 @@ export default function MastersPage() {
   const [masters, setMasters] = useState(null)
   const [services, setServices] = useState(null)
   const [error, setError] = useState(null)
+  // Общий переключатель салона «все мастера сами ведут график»
+  const [forAll, setForAll] = useState(false)
+  const [forAllBusy, setForAllBusy] = useState(false)
+  const [forAllError, setForAllError] = useState(null)
   // { id } — открыт мастер, { id: null } — новый
   const [modal, setModal] = useState(null)
   // Вкладка в адресе (?tab=schedules), чтобы после обновления страницы остаться на ней
@@ -285,14 +378,39 @@ export default function MastersPage() {
     load()
   }, [load])
 
+  useEffect(() => {
+    if (!isManager) return
+    fetchStaffCompany().then(c => setForAll(!!c?.masters_self_schedule)).catch(() => {})
+  }, [isManager])
+
+  async function toggleForAll(value) {
+    setForAllError(null)
+    setForAllBusy(true)
+    try {
+      const company = await updateStaffCompany({ masters_self_schedule: value })
+      setForAll(!!company?.masters_self_schedule)
+      await load()
+    } catch (err) {
+      setForAllError(err.message)
+    } finally {
+      setForAllBusy(false)
+    }
+  }
+
   const serviceNames = id => services?.find(s => s.id === id)?.name
 
   // Мастер видит только себя — страница «Мой график», всё только для чтения
   if (!isManager) {
     const self = masters?.[0]
+    const canEdit = !!self?.can_edit_schedule
     return (
       <div className="px-4 md:px-6 py-5 max-w-3xl">
-        <PageHeader title={t('Мой график')} subtitle={t('Изменить график может администратор салона')} />
+        <PageHeader
+          title={t('Мой график')}
+          subtitle={canEdit
+            ? t('Вы сами ведёте свой график. Администратор видит все изменения.')
+            : t('Изменить график может администратор салона')}
+        />
         <ErrorText className="mb-3">{error}</ErrorText>
         {!masters && !error && <Spinner />}
         {masters && !self && <p className="text-gray-500 text-sm">{t('Профиль мастера не найден')}</p>}
@@ -304,11 +422,17 @@ export default function MastersPage() {
                 {t('Услуги:')}{' '}{(self.services || []).map(serviceNames).filter(Boolean).join(', ') || '—'}
               </p>
             </Section>
-            <ScheduleSection key={JSON.stringify(self.schedule)} master={self} readOnly />
+            <ScheduleSection
+              key={`${canEdit}-${JSON.stringify(self.schedule)}`}
+              master={self}
+              readOnly={!canEdit}
+              onSaved={load}
+              hint={t('Действует на все недели. Другие часы или выходной в отдельный день — ниже, в «Графике по датам». Время, на которое уже есть записи, убрать нельзя — сначала перенесите запись.')}
+            />
             <Section title={t('График по датам')}>
-              <MonthSchedule masters={[self]} readOnly />
+              <MonthSchedule masters={[self]} readOnly={!canEdit} />
             </Section>
-            <DaysOffSection master={self} readOnly />
+            <DaysOffSection master={self} readOnly={!canEdit} />
           </div>
         )}
       </div>
@@ -333,6 +457,7 @@ export default function MastersPage() {
           <span className="text-white text-sm font-semibold break-words">{m.name}</span>
           {!m.is_active && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#9ca3af' }}>{t('скрыт')}</span>}
           {m.has_access && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#34d399' }}>{t('доступ в панель')}</span>}
+          {m.can_edit_schedule && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: '#2e2e2e', color: '#f9a8d4' }}>{t('свой график')}</span>}
         </div>
         <div className="text-gray-500 text-xs mt-1 break-words">{scheduleSummary(m.schedule)}</div>
         <div className="text-gray-600 text-xs mt-0.5 break-words">
@@ -369,7 +494,26 @@ export default function MastersPage() {
       <ErrorText className="mb-3">{error}</ErrorText>
       {!masters && !error && <Spinner />}
 
-      {masters && tab === 'schedules' && <MonthSchedule masters={masters} />}
+      {masters && tab === 'schedules' && (
+        <div className="space-y-4">
+          <div className="rounded-2xl p-4" style={{ backgroundColor: '#1f1f1f', border: '1px solid #2e2e2e' }}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div id="masters-self-schedule" className="text-white text-sm font-semibold">{t('Мастера сами ведут свой график')}</div>
+                <div className="text-xs mt-0.5" style={{ color: forAll ? '#34d399' : '#9ca3af' }}>
+                  {forAll ? t('Включено для всех мастеров') : t('Выключено — только тем, кому разрешили в карточке мастера')}
+                </div>
+              </div>
+              <Switch checked={forAll} disabled={forAllBusy} labelledBy="masters-self-schedule" onChange={toggleForAll} />
+            </div>
+            <p className="text-gray-500 text-xs mt-3">
+              {t('Каждый мастер сможет сам выбирать рабочие дни и часы в своей панели. Убрать время, на которое уже есть записи, мастер не сможет. Изменения видны в карточке мастера, в «Истории графика».')}
+            </p>
+            <ErrorText className="mt-2">{forAllError}</ErrorText>
+          </div>
+          <MonthSchedule masters={masters} />
+        </div>
+      )}
 
       {masters && tab === 'masters' && (
         <div className="space-y-6">
@@ -390,6 +534,7 @@ export default function MastersPage() {
         <MasterModal
           master={modalMaster}
           services={services}
+          forAll={forAll}
           onClose={() => setModal(null)}
           onChanged={load}
           onCreated={saved => {

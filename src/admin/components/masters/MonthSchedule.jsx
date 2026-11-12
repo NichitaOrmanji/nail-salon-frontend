@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { fetchMasterDays, saveMasterDays } from '../../api/masters'
 import { notifyDataChanged } from '../../utils/events'
-import { dayHoursError, hoursLabel, lunchLabel } from '../../utils/schedule'
+import { dayHoursError, hoursLabel, lunchLabel, scheduleErrorText } from '../../utils/schedule'
 import { WEEKDAYS_SHORT, addDays, formatShortDate, todayString, weekdayIndex } from '../../utils/time'
 import { Button, ErrorText } from '../ui'
 import Spinner from '../../../components/layout/Spinner'
@@ -243,7 +243,7 @@ export default function MonthSchedule({ masters, readOnly = false }) {
       setSelected([])
       notifyDataChanged()
     } catch (err) {
-      setError(err.message)
+      setError(scheduleErrorText(err))
     } finally {
       setSaving(false)
     }
@@ -289,7 +289,7 @@ export default function MonthSchedule({ masters, readOnly = false }) {
         </div>
       )}
 
-      <ErrorText className="mb-3">{error}</ErrorText>
+      <ErrorText className="mb-3 whitespace-pre-line">{error}</ErrorText>
       {!current && !error && <Spinner />}
       {current && (
         <>

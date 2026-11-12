@@ -1,4 +1,4 @@
-import { timeToMin } from './time'
+import { timeToMin, formatShortDate } from './time'
 import { t } from '../../i18n'
 
 // Ошибка в часах дня или обеде (null — всё верно). Обед — оба времени или ни одного, внутри дня
@@ -24,4 +24,13 @@ export function hoursLabel(day) {
 
 export function lunchLabel(day) {
   return day?.break_start && day?.break_end ? `${day.break_start}–${day.break_end}` : ''
+}
+
+// Ошибка сохранения графика: мастеру сервер не даёт убрать часы с записями и присылает conflicts
+export function scheduleErrorText(err) {
+  const conflicts = Array.isArray(err?.data?.conflicts) ? err.data.conflicts : []
+  if (!conflicts.length) return err?.message || t('Не удалось сохранить')
+  const lines = conflicts.slice(0, 10).map(c => `• ${formatShortDate(c.date)}, ${c.start_time}–${c.end_time} · ${c.client_name} (${t(c.reason)})`)
+  if (conflicts.length > 10) lines.push('…')
+  return [err.message, ...lines].join('\n')
 }

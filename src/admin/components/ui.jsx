@@ -107,3 +107,25 @@ export function PageHeader({ title, subtitle, children }) {
     </div>
   )
 }
+
+// Переключатель «вкл/выкл» (role=switch); подпись — через labelledBy
+export function Switch({ checked, onChange, labelledBy, label, disabled }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={!!checked}
+      aria-labelledby={labelledBy}
+      aria-label={labelledBy ? undefined : label}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className="relative flex-shrink-0 w-14 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 disabled:opacity-60"
+      style={{ backgroundColor: checked ? '#db2777' : '#3a3a3a' }}
+    >
+      <span
+        className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform"
+        style={{ transform: checked ? 'translateX(24px)' : 'none' }}
+      />
+    </button>
+  )
+}
