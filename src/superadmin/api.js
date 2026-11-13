@@ -81,7 +81,7 @@ export async function fetchSalon(id) {
   return (await api.get(`/salons/${id}/`)).data
 }
 
-// action: status | trial | resend-verification | password-reset | note → свежая карточка салона
+// action: status | trial | resend-verification | verify | password-reset | note → свежая карточка салона
 export async function salonAction(id, action, data = {}) {
   return (await api.post(`/salons/${id}/${action}/`, data)).data
 }
