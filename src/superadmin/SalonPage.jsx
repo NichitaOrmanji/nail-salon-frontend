@@ -178,6 +178,14 @@ export default function SalonPage() {
                     Отправить письмо подтверждения ещё раз
                   </Button>
                 )}
+                {salon.status === 'pending' && (
+                  <Button disabled={busy} onClick={() => {
+                    const reason = window.prompt('Подтвердить email вручную? Салон сразу станет виден клиентам. Делайте так, только если уверены, что адрес принадлежит владельцу (например, письмо не дошло из-за сбоя почты).\n\nПричина (для журнала):', 'Письмо не дошло')
+                    if (reason !== null) run('verify', { reason }, 'Email подтверждён вручную — салон открыт для клиентов')
+                  }}>
+                    Подтвердить email вручную
+                  </Button>
+                )}
                 <Button disabled={busy || !owner.email}
                   onClick={() => window.confirm(`Отправить владельцу на ${owner.email} ссылку для смены пароля? Текущий пароль продолжит работать, пока он не задаст новый.`)
                     && run('password-reset', {}, `Ссылка для сброса пароля отправлена на ${owner.email}`)}>

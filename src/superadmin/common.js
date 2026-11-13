@@ -11,6 +11,7 @@ export const ACTIONS = {
   salon_unblocked: 'Салон разблокирован',
   trial_extended: 'Продлён пробный период',
   verification_resent: 'Отправлено письмо подтверждения',
+  salon_verified_manually: 'Email подтверждён вручную',
   password_reset_sent: 'Отправлена ссылка для сброса пароля',
   note_added: 'Добавлена заметка',
   impersonation_started: 'Вход в панель салона',
