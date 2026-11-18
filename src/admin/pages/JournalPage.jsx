@@ -28,6 +28,10 @@ function weekTitle(start) {
 }
 
 // Журнал записей: неделя (по умолчанию) или день.
+function defaultViewFor(role) {
+  return role === 'master' && window.matchMedia?.('(max-width: 767px)').matches ? 'day' : 'week'
+}
+
 // Вид, дата, мастер и открытая карточка — в адресе: ?view=week&date=2026-10-20&master=3&open=15.
 // Открытие карточки и формы добавляет запись в историю (state.journalOverlay),
 // поэтому кнопка «Назад» на телефоне закрывает их, а не уводит из панели.
@@ -41,7 +45,10 @@ export default function JournalPage() {
   const dateInUrl = isValidDateString(dateParam)
   const date = dateInUrl ? dateParam : todayString()
   const openId = Number(searchParams.get('open')) || null
-  const view = searchParams.get('view') === 'day' ? 'day' : 'week'
+  // Мастеру на телефоне по умолчанию — «День» (его записи крупно), остальным — «Неделя»
+  const [defaultView] = useState(() => defaultViewFor(me?.role))
+  const viewParam = searchParams.get('view')
+  const view = viewParam === 'day' || viewParam === 'week' ? viewParam : defaultView
   const masterFilter = Number(searchParams.get('master')) || null
   // Неделя всегда с понедельника; день — сама дата
   const rangeFrom = view === 'week' ? weekStart(date) : date
@@ -118,7 +125,7 @@ export default function JournalPage() {
   function setParams(next, { push = false, state = historyState } = {}) {
     const params = { date: next.date ?? date }
     const nextView = next.view ?? view
-    if (nextView === 'day') params.view = 'day'
+    if (nextView !== defaultView) params.view = nextView
     const nextMaster = 'master' in next ? next.master : masterFilter
     if (nextMaster) params.master = String(nextMaster)
     const nextOpen = 'open' in next ? next.open : openId
