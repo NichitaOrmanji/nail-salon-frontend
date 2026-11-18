@@ -1080,4 +1080,13 @@ export default {
   'Для салона без администратора, где мастера арендуют место. Мастер сам принимает оплату (наличные, карта), переносит свои записи, видит своих клиентов и выручку. Владелец видит всё.': 'Pentru salon fără administrator, unde maeștrii închiriază locul. Maestrul primește singur plata (numerar, card), își mută programările, își vede clienții și încasările. Proprietarul vede tot.',
   'Мои клиенты': 'Clienții mei',
   'Клиенты, которые были у вас или записаны к вам': 'Clienții care au fost la dvs. sau sunt programați la dvs.',
+  // Telegram сотрудника
+  'Напоминать за час до клиента': 'Memento cu o oră înainte de client',
+  'Имя, услуга и телефон клиента': 'Numele, serviciul și telefonul clientului',
+  'Список записей на завтра': 'Lista programărilor pentru mâine',
+  'Каждый вечер в 20:00, если завтра есть записи': 'În fiecare seară la 20:00, dacă mâine aveți programări',
+  'Каждый вечер в 20:00 — записи салона на завтра': 'În fiecare seară la 20:00 — programările salonului pentru mâine',
+  'Подключите Telegram': 'Conectați Telegram',
+  'Новые онлайн-записи, напоминание за час до клиента и список на завтра — прямо в телефон.': 'Programări online noi, memento cu o oră înainte de client și lista pentru mâine — direct în telefon.',
+  'Позже': 'Mai târziu',
 }
