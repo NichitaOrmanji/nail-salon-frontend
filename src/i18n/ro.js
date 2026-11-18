@@ -1085,4 +1085,13 @@ export default {
   'Не удалось прочитать файл': 'Fișierul nu a putut fi citit',
   'Услуга сохранена, но фото не загрузилось: {error}': 'Serviciul a fost salvat, dar fotografia nu s-a încărcat: {error}',
   'Как выглядит результат. Клиенты увидят фото рядом с услугой на сайте записи.': 'Cum arată rezultatul. Clienții vor vedea fotografia lângă serviciu pe site-ul de programare.',
+  // Telegram сотрудника
+  'Напоминать за час до клиента': 'Memento cu o oră înainte de client',
+  'Имя, услуга и телефон клиента': 'Numele, serviciul și telefonul clientului',
+  'Список записей на завтра': 'Lista programărilor pentru mâine',
+  'Каждый вечер в 20:00, если завтра есть записи': 'În fiecare seară la 20:00, dacă mâine aveți programări',
+  'Каждый вечер в 20:00 — записи салона на завтра': 'În fiecare seară la 20:00 — programările salonului pentru mâine',
+  'Подключите Telegram': 'Conectați Telegram',
+  'Новые онлайн-записи, напоминание за час до клиента и список на завтра — прямо в телефон.': 'Programări online noi, memento cu o oră înainte de client și lista pentru mâine — direct în telefon.',
+  'Позже': 'Mai târziu',
 }
