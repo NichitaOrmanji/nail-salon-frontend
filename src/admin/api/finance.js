@@ -61,3 +61,9 @@ export async function fetchMySalary(range) {
   const response = await staffApi.get('/finance/my-salary/', { params: period(range) })
   return response.data
 }
+
+// Выручка мастера, который работает сам: { revenue, visits, by_method, by_day, payments, unpaid }
+export async function fetchMyRevenue(range) {
+  const response = await staffApi.get('/finance/my-revenue/', { params: period(range) })
+  return response.data
+}

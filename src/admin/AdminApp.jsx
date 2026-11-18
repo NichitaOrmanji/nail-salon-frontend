@@ -13,6 +13,7 @@ import MastersPage from './pages/MastersPage'
 import SettingsPage from './pages/SettingsPage'
 import SalonPage from './pages/SalonPage'
 import FinancePage from './pages/FinancePage'
+import MyRevenuePage from './pages/MyRevenuePage'
 import MySalaryPage from './pages/MySalaryPage'
 import ClientsPage from './pages/ClientsPage'
 import HelpPage from './pages/HelpPage'
@@ -42,13 +43,14 @@ export default function AdminApp() {
             <Route index element={<JournalPage />} />
             <Route path="salon" element={<ManagerOnly><SalonPage /></ManagerOnly>} />
             <Route path="start" element={<Navigate to="/admin-panel/salon" replace />} />
-            <Route path="clients" element={<ManagerOnly><ClientsPage /></ManagerOnly>} />
+            <Route path="clients" element={<ManagerOnly allowIndependent><ClientsPage /></ManagerOnly>} />
             <Route path="debtors" element={<Navigate to="/admin-panel/clients?tab=debtors" replace />} />
             <Route path="services" element={<ServicesPage />} />
             <Route path="masters" element={<MastersPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="finance" element={<OwnerOnly><FinancePage /></OwnerOnly>} />
             <Route path="salary" element={<MySalaryPage />} />
+            <Route path="revenue" element={<MyRevenuePage />} />
             <Route path="help" element={<HelpPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/admin-panel" replace />} />

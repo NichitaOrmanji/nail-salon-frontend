@@ -4,6 +4,7 @@ import { fetchClients } from '../api/clients'
 import { formatMoney } from '../utils/money'
 import { clientDate } from '../utils/time'
 import { REBOOK_KEY } from '../utils/rebook'
+import { useStaffAuth } from '../context/StaffAuthContext'
 import ClientCardModal from '../components/clients/ClientCardModal'
 import { Button, ErrorText, PageHeader, Select, TextInput } from '../components/ui'
 import DebtorsView from '../components/clients/DebtorsView'
@@ -165,7 +166,17 @@ const TABS = tr([['all', 'Все клиенты'], ['debtors', 'Должники
 // Клиенты: вся база и должники (неоплаченные штрафы) — вкладками; ?tab=debtors
 export default function ClientsPage() {
   const [params, setParams] = useSearchParams()
-  const tab = params.get('tab') === 'debtors' ? 'debtors' : 'all'
+  const { isManager } = useStaffAuth()
+  // Мастер, который работает сам, видит только своих клиентов, без должников салона
+  const tab = isManager && params.get('tab') === 'debtors' ? 'debtors' : 'all'
+  if (!isManager) {
+    return (
+      <div className="px-4 md:px-6 py-5 max-w-3xl">
+        <PageHeader title={t('Мои клиенты')} subtitle={t('Клиенты, которые были у вас или записаны к вам')} />
+        <ClientsList />
+      </div>
+    )
+  }
   return (
     <div className="px-4 md:px-6 py-5 max-w-3xl">
       <PageHeader title={t('Клиенты')} />

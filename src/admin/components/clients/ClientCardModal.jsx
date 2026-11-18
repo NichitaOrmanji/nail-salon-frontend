@@ -60,7 +60,7 @@ function NoteEditor({ phone, initial, onSaved }) {
 
 // Чёрный список: штрафы клиента и действия с ними (оплачен на месте / простить / отменить оплату)
 function BlacklistSection({ card, onChanged }) {
-  const { me } = useStaffAuth()
+  const { me, isManager } = useStaffAuth()
   const [method, setMethod] = useState('cash')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
@@ -108,7 +108,7 @@ function BlacklistSection({ card, onChanged }) {
           {(p.service || p.note) && (
             <div className="text-xs text-gray-500 mt-0.5">{[p.service, p.note].filter(Boolean).join(' · ')}</div>
           )}
-          {p.status === 'unpaid' && (
+          {p.status === 'unpaid' && isManager && (
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <Select value={method} onChange={e => setMethod(e.target.value)} aria-label={t('Способ оплаты штрафа')} className="max-w-[140px]">
                 {METHODS.map(m => <option key={m.key} value={m.key}>{m.label}</option>)}
@@ -174,6 +174,7 @@ function ForgetSection({ phone, onForgotten }) {
 }
 
 export default function ClientCardModal({ phone, onClose, onRebook, onForgotten, backLabel }) {
+  const { isManager } = useStaffAuth()
   const [card, setCard] = useState(null)
   const [error, setError] = useState(null)
 
@@ -236,7 +237,7 @@ export default function ClientCardModal({ phone, onClose, onRebook, onForgotten,
             )}
           </div>
 
-          <ForgetSection phone={card.phone} onForgotten={() => (onForgotten || onClose)()} />
+          {isManager && <ForgetSection phone={card.phone} onForgotten={() => (onForgotten || onClose)()} />}
         </div>
       )}
     </Modal>
