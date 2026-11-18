@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useStaffAuth } from '../context/StaffAuthContext'
-import { fetchStaffServices, createService, updateService, fetchCategories, createCategory, renameCategory, deleteCategory } from '../api/services'
+import { fetchStaffServices, createService, updateService, fetchCategories, createCategory, renameCategory, deleteCategory, uploadServicePhoto, deleteServicePhoto } from '../api/services'
+import PhotoField from '../components/PhotoField'
 import { normalizeDecimal } from '../utils/time'
 import { formatDuration, formatPrice } from '../../utils/format'
 import Modal from '../components/Modal'
@@ -8,8 +9,40 @@ import { Button, Checkbox, ErrorText, Field, PageHeader, Select, TextInput } fro
 import Spinner from '../../components/layout/Spinner'
 import { t } from '../../i18n'
 
-function ServiceModal({ service, categories, onClose, onSaved }) {
+// Превью ещё не загруженного фото (data: разрешён в CSP)
+function readAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = () => reject(new Error(t('Не удалось прочитать файл')))
+    reader.readAsDataURL(file)
+  })
+}
+
+function ServiceModal({ service, categories, onClose, onSaved, onPhotoChanged }) {
   const isEdit = !!service
+  // Фото: у существующей услуги сохраняется сразу; у новой — после создания услуги
+  const [photoUrl, setPhotoUrl] = useState(service?.photo || null)
+  const [pendingPhoto, setPendingPhoto] = useState(null)
+  const [preview, setPreview] = useState(null)
+
+  async function uploadPhoto(file) {
+    if (!isEdit) {
+      setPendingPhoto(file)
+      setPreview(await readAsDataUrl(file))
+      return
+    }
+    const saved = await uploadServicePhoto(service.id, file)
+    setPhotoUrl(saved.photo)
+    onPhotoChanged?.()
+  }
+
+  async function removePhoto() {
+    if (!isEdit) { setPendingPhoto(null); setPreview(null); return }
+    const saved = await deleteServicePhoto(service.id)
+    setPhotoUrl(saved.photo)
+    onPhotoChanged?.()
+  }
   const [name, setName] = useState(service?.name || '')
   const [category, setCategory] = useState(service?.category ? String(service.category) : '')
   const [duration, setDuration] = useState(service ? String(service.duration) : '60')
@@ -34,8 +67,19 @@ function ServiceModal({ service, categories, onClose, onSaved }) {
     setError(null)
     setSaving(true)
     try {
-      if (isEdit) await updateService(service.id, body)
-      else await createService(body)
+      if (isEdit) {
+        await updateService(service.id, body)
+      } else {
+        const created = await createService(body)
+        if (pendingPhoto) {
+          try {
+            await uploadServicePhoto(created.id, pendingPhoto)
+          } catch (err) {
+            // Услуга создана; фото можно добавить потом в «Изменить»
+            window.alert(t('Услуга сохранена, но фото не загрузилось: {error}', { error: err.message }))
+          }
+        }
+      }
       onSaved()
     } catch (err) {
       setError(err.message)
@@ -74,6 +118,15 @@ function ServiceModal({ service, categories, onClose, onSaved }) {
             <TextInput inputMode="decimal" value={price} onChange={e => setPrice(e.target.value)} placeholder="0" />
           </Field>
         </div>
+        <PhotoField
+            label={t('Фото')}
+            hint={t('Как выглядит результат. Клиенты увидят фото рядом с услугой на сайте записи.')}
+            url={isEdit ? photoUrl : preview}
+            shape="wide"
+            maxSide={1200}
+            onUpload={uploadPhoto}
+            onRemove={removePhoto}
+          />
         <ErrorText>{error}</ErrorText>
       </form>
     </Modal>
@@ -229,6 +282,7 @@ export default function ServicesPage() {
                   className="rounded-2xl px-4 py-3 flex flex-wrap items-center gap-x-3 gap-y-2"
                   style={{ backgroundColor: 'var(--c-raised)', opacity: s.is_active ? 1 : 0.6 }}
                 >
+                  {s.photo && <img src={s.photo} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0" />}
                   <div className="flex-1 min-w-[160px]">
                     <div className="text-ink text-sm font-medium break-words">
                       {s.name}
@@ -257,6 +311,7 @@ export default function ServicesPage() {
           categories={categories}
           onClose={() => setEditing(null)}
           onSaved={() => { setEditing(null); load() }}
+          onPhotoChanged={load}
         />
       )}
       {categoriesOpen && (

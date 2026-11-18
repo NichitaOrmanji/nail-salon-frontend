@@ -36,6 +36,8 @@ export default function ServicesPage() {
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  // Услуга, чьё фото открыто крупно
+  const [photoOpen, setPhotoOpen] = useState(null)
 
   // Если мастер уже выбран — показываем только его услуги,
   // если сначала выбрали время — только услуги, на которые есть свободный мастер
@@ -191,15 +193,21 @@ export default function ServicesPage() {
                     const order = selected.findIndex(x => x.id === item.id)
                     const isSelected = order >= 0
                     return (
-                      <button
-                        key={item.id}
-                        onClick={() => selectService(item)}
-                        aria-pressed={isSelected}
-                        className="w-full flex items-center justify-between px-4 py-4 transition-all active:scale-95"
+                      <div key={item.id} className="flex items-center"
                         style={{
                           borderBottom: idx < arr.length - 1 ? '1px solid #2e2e2e' : 'none',
                           backgroundColor: isSelected ? '#2e2e2e' : 'transparent'
-                        }}
+                        }}>
+                      {item.photo && (
+                        <button type="button" onClick={() => setPhotoOpen(item)} aria-label={t('Фото: {name}', { name: item.name })}
+                          className="ml-4 w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 active:scale-95 transition-all">
+                          <img src={item.photo} alt="" loading="lazy" className="w-full h-full object-cover" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => selectService(item)}
+                        aria-pressed={isSelected}
+                        className="flex-1 min-w-0 flex items-center justify-between px-4 py-4 transition-all active:scale-95"
                       >
                         <div className="text-left flex-1 wrap-anywhere">
                           <div className="text-white text-sm font-medium">{item.name}</div>
@@ -219,6 +227,7 @@ export default function ServicesPage() {
                             : <IconCheck />)}
                         </div>
                       </button>
+                      </div>
                     )
                   })}
                 </div>
@@ -243,6 +252,17 @@ export default function ServicesPage() {
                 : `${service.name} · ${formatDurationRange(service, getLang())} · ${formatPriceRange(service)}`}
             </div>
           </button>
+        </div>
+      )}
+
+      {photoOpen && (
+        <div role="dialog" aria-modal="true" aria-label={photoOpen.name} onClick={() => setPhotoOpen(null)}
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.9)' }}>
+          <img src={photoOpen.photo} alt={photoOpen.name} className="max-w-full max-h-[75vh] rounded-2xl object-contain" />
+          <div className="text-white text-base font-medium mt-4 text-center wrap-anywhere">{photoOpen.name}</div>
+          <div className="text-gray-400 text-sm mt-1">{formatDurationRange(photoOpen, getLang())} · {formatPriceRange(photoOpen)}</div>
+          <button type="button" onClick={() => setPhotoOpen(null)} className="mt-5 px-6 py-3 rounded-2xl text-white text-sm font-medium"
+            style={{ backgroundColor: '#2e2e2e' }}>{t('Закрыть')}</button>
         </div>
       )}
     </div>
