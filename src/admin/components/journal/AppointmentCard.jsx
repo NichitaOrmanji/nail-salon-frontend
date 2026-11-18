@@ -34,8 +34,10 @@ export default function AppointmentCard({ appointment: a, parts, masters = [], i
   // Вопрос про чёрный список: 'no_show' | 'cancel' | null
   const [penaltyAsk, setPenaltyAsk] = useState(null)
   const panelRef = useRef(null)
-  const { me } = useStaffAuth()
+  const { me, isIndependent } = useStaffAuth()
   const isOwner = me?.role === 'owner'
+  // Мастер, который работает сам, ведёт свои визиты как администратор: оплата, перенос, услуги, клиент
+  const canWork = isManager || isIndependent
   const fee = penaltyAmount(a, me?.company)
   const master = a.master ? masters.find(m => m.id === a.master.id) || null : null
   const visitParts = parts && parts.length ? parts : [a]
@@ -48,7 +50,7 @@ export default function AppointmentCard({ appointment: a, parts, masters = [], i
 
   const notesChanged = notes !== serverNotes
   const paid = !!a.payment
-  const canEdit = isManager && !paid
+  const canEdit = canWork && !paid
 
   // Журнал знает, есть ли несохранённая заметка (переспросить при переходе к другой записи)
   useEffect(() => {
@@ -173,12 +175,12 @@ export default function AppointmentCard({ appointment: a, parts, masters = [], i
           {/* Слева: мастер и время, придёт ли клиент, комментарий */}
           <div className={column}>
             <div className="order-4 xl:order-none">
-              <BookingSection a={a} master={master} isManager={isManager} canEdit={canEdit} paid={paid} busy={busy}
+              <BookingSection a={a} master={master} isManager={canWork} canEdit={canEdit} paid={paid} busy={busy}
                 onPatch={patch} onEdit={onEdit} onStatus={changeStatus} />
             </div>
             {active && (
               <div className="order-3 xl:order-none">
-                <VisitConfirmSection a={a} isManager={isManager} canMark={canEdit || !isManager} />
+                <VisitConfirmSection a={a} isManager={canWork} canMark={canEdit || !canWork} />
               </div>
             )}
             <div className="order-7 xl:order-none">
@@ -192,16 +194,16 @@ export default function AppointmentCard({ appointment: a, parts, masters = [], i
               <StatusSection a={a} busy={busy} paid={paid} error={error} onStatus={changeStatus} />
             </div>
             <div className="order-2 xl:order-none">
-              <ServicesSection a={a} parts={visitParts} master={master} isManager={isManager} isOwner={isOwner} busy={busy}
+              <ServicesSection a={a} parts={visitParts} master={master} isManager={canWork} isOwner={isOwner || isIndependent} busy={busy}
                 onPatch={patchPart} onPay={setCheckoutPart} onRemovePayment={removePayment} />
             </div>
             <div className="order-8 xl:order-none">
-              <ExtrasSection a={a} isManager={isManager} />
+              <ExtrasSection a={a} isManager={canWork} />
             </div>
           </div>
           {/* Справа: клиент */}
           <div className="order-5 xl:order-none flex flex-col gap-4 min-w-0">
-            <ClientColumn a={a} isManager={isManager} canEdit={canEdit}
+            <ClientColumn a={a} isManager={canWork} canEdit={canEdit}
               onNavigateAway={e => { if (notesChanged && !window.confirm(t(DISCARD_CONFIRM))) e.preventDefault() }} />
           </div>
         </div>

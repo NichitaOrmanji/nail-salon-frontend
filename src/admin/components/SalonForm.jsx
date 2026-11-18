@@ -22,8 +22,15 @@ function toForm(company) {
     penalty_on: Number(company.penalty_percent ?? 0) > 0,
     late_cancel_hours: String(company.late_cancel_hours ?? 0),
     auto_confirm: Boolean(company.auto_confirm),
+    masters_independent: Boolean(company.masters_independent),
   }
 }
+
+// Режим работы: с администратором (оплата через него) или мастера работают сами
+const WORK_MODES = [
+  { value: false, title: 'С администратором', hint: 'Оплату принимает администратор или владелец. Мастер видит свои записи и график.' },
+  { value: true, title: 'Мастера работают сами', hint: 'Для салона без администратора, где мастера арендуют место. Мастер сам принимает оплату (наличные, карта), переносит свои записи, видит своих клиентов и выручку. Владелец видит всё.' },
+]
 
 // Координата: '' -> null, «47,0447862» -> 47.0447862; NaN — ошибка
 function parseCoordinate(value) {
@@ -132,6 +139,7 @@ export default function SalonForm({ part }) {
     if (penaltyPercent !== Number(initial.penalty_percent || 0)) body.penalty_percent = penaltyPercent
     if (form.late_cancel_hours !== initial.late_cancel_hours) body.late_cancel_hours = lateHours
     if (form.auto_confirm !== initial.auto_confirm) body.auto_confirm = form.auto_confirm
+    if (form.masters_independent !== initial.masters_independent) body.masters_independent = form.masters_independent
     for (const field of FIELDS) {
       const value = field === 'name' ? form[field].trim() : form[field]
       if (value !== initial[field]) body[field] = value
@@ -152,7 +160,7 @@ export default function SalonForm({ part }) {
       setInitial(toForm(saved))
       setDone(true)
       // Название салона в шапке и правила чёрного списка в журнале берутся из /me/
-      if ('name' in body || 'penalty_percent' in body || 'late_cancel_hours' in body) refreshMe().catch(() => {})
+      if ('name' in body || 'penalty_percent' in body || 'late_cancel_hours' in body || 'masters_independent' in body) refreshMe().catch(() => {})
     } catch (err) {
       setError(err.message)
     } finally {
@@ -217,6 +225,24 @@ export default function SalonForm({ part }) {
           </p>
           </>}
           {!info && <>
+          <fieldset className="rounded-2xl p-4 space-y-2" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
+            <legend className="sr-only">{t('Как работает салон')}</legend>
+            <div className="text-ink text-sm font-semibold">{t('Как работает салон')}</div>
+            {WORK_MODES.map(mode => {
+              const active = form.masters_independent === mode.value
+              return (
+                <label key={String(mode.value)} className="flex items-start gap-3 rounded-xl p-3 cursor-pointer"
+                  style={{ border: `1px solid ${active ? 'var(--accent)' : 'var(--c-line)'}`, backgroundColor: active ? 'var(--accent-soft)' : 'transparent' }}>
+                  <input type="radio" name="work-mode" className="mt-1 w-4 h-4 accent-pink-500" checked={active}
+                    onChange={() => set('masters_independent', mode.value)} />
+                  <span>
+                    <span className="block text-ink text-sm font-medium">{t(mode.title)}</span>
+                    <span className="block text-gray-500 text-xs mt-0.5">{t(mode.hint)}</span>
+                  </span>
+                </label>
+              )
+            })}
+          </fieldset>
           <Field
             label={t('Клиент может отменить запись сам не позже чем за, часов')}
             hint={t('0 — до самого начала визита. Позже клиент видит «позвоните в салон»; персонал отменяет в журнале всегда.')}

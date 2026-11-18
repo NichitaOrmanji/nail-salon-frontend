@@ -23,6 +23,15 @@ function sections(me, isManager) {
   const salary = me.master_id && me.role !== 'owner'
     ? [{ to: '/admin-panel/salary', label: t('Моя зарплата'), icon: IconWallet }]
     : []
+  if (me.role === 'master' && me.company?.masters_independent) {
+    // Мастер работает сам: свои клиенты и выручка вместо зарплаты
+    return [
+      { to: JOURNAL_PATH, label: t('Журнал'), icon: IconCalendar, end: true },
+      { to: '/admin-panel/clients', label: t('Мои клиенты'), icon: IconContact },
+      { to: '/admin-panel/revenue', label: t('Моя выручка'), icon: IconWallet },
+      { to: '/admin-panel/masters', label: t('Мой график'), icon: IconUsers },
+    ]
+  }
   if (!isManager) {
     return [
       { to: JOURNAL_PATH, label: t('Журнал'), icon: IconCalendar, end: true },

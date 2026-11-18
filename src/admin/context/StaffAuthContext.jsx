@@ -72,9 +72,11 @@ export function StaffAuthProvider({ children }) {
   }
 
   const isManager = isManagerRole(me?.role)
+  // Мастера работают сами (салон без администратора): мастер принимает оплату, видит своих клиентов и выручку
+  const isIndependent = me?.role === 'master' && !!me?.company?.masters_independent
 
   return (
-    <StaffAuthContext.Provider value={{ me, loading, meError, login, signIn, logout, refreshMe: loadMe, replaceMe: setMe, isManager, logoutMessage }}>
+    <StaffAuthContext.Provider value={{ me, loading, meError, login, signIn, logout, refreshMe: loadMe, replaceMe: setMe, isManager, isIndependent, logoutMessage }}>
       {children}
     </StaffAuthContext.Provider>
   )
