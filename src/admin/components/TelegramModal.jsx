@@ -1,13 +1,29 @@
 import { useCallback, useEffect, useState } from 'react'
 import Modal from './Modal'
 import { Button, ErrorText } from './ui'
-import { createTelegramLink, disconnectTelegram, fetchTelegramStatus } from '../api/telegram'
+import { createTelegramLink, disconnectTelegram, fetchTelegramStatus, updateTelegramSettings } from '../api/telegram'
+import { useStaffAuth } from '../context/StaffAuthContext'
 import { t } from '../../i18n'
 
 // Пока открыта ссылка на бота — проверяем, подключился ли Telegram
 const POLL_MS = 3000
 
+// Что присылать, кроме новых записей и отмен
+function NotifyToggle({ checked, title, hint, disabled, onChange }) {
+  return (
+    <label className="flex items-start gap-3 cursor-pointer">
+      <input type="checkbox" className="mt-1 w-4 h-4 accent-pink-500" checked={checked} disabled={disabled}
+        onChange={e => onChange(e.target.checked)} />
+      <span>
+        <span className="block text-ink text-sm">{title}</span>
+        <span className="block text-gray-500 text-xs mt-0.5">{hint}</span>
+      </span>
+    </label>
+  )
+}
+
 export default function TelegramModal({ onClose }) {
+  const { me } = useStaffAuth()
   const [status, setStatus] = useState(null)
   const [link, setLink] = useState(null)
   const [error, setError] = useState(null)
@@ -57,6 +73,18 @@ export default function TelegramModal({ onClose }) {
     }
   }
 
+  async function toggle(field, value) {
+    setError(null)
+    setBusy(true)
+    try {
+      setStatus(await updateTelegramSettings({ [field]: value }))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   let body
   if (!status) {
     body = <p className="text-gray-400 text-sm">{error ? '' : t('Загружаем...')}</p>
@@ -66,6 +94,15 @@ export default function TelegramModal({ onClose }) {
     body = (
       <div className="space-y-4">
         <p className="text-ink text-sm">{t('✅ Telegram подключён. Сюда приходят новые записи и отмены клиентами.')}</p>
+        <div className="rounded-2xl p-4 space-y-3" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
+          {me?.master_id && (
+            <NotifyToggle checked={status.remind_before} disabled={busy} onChange={value => toggle('remind_before', value)}
+              title={t('Напоминать за час до клиента')} hint={t('Имя, услуга и телефон клиента')} />
+          )}
+          <NotifyToggle checked={status.daily_summary} disabled={busy} onChange={value => toggle('daily_summary', value)}
+            title={t('Список записей на завтра')}
+            hint={me?.master_id ? t('Каждый вечер в 20:00, если завтра есть записи') : t('Каждый вечер в 20:00 — записи салона на завтра')} />
+        </div>
         <Button variant="danger" onClick={handleDisconnect} disabled={busy}>{t('Отключить')}</Button>
       </div>
     )

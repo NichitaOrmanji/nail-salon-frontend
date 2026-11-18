@@ -11,6 +11,7 @@ import ErrorBoundary from '../../components/layout/ErrorBoundary'
 import LoadCalendar from '../../components/LoadCalendar'
 import NewAppointmentsModal from '../components/NewAppointmentsModal'
 import OnlineToasts from '../components/OnlineToasts'
+import TelegramBanner from '../components/TelegramBanner'
 import { IconCalendar, IconScissors, IconUsers, IconSettings, IconClose, IconWallet, IconContact, IconPanel, IconStore } from '../components/Icons'
 import { t } from '../../i18n'
 import { journalNav, JOURNAL_PATH } from './journalNav'
@@ -338,6 +339,7 @@ export default function AdminLayout() {
         </header>
 
         <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+          {location.pathname.replace(/\/$/, '') === JOURNAL_PATH && <TelegramBanner me={me} />}
           {/* key — после ошибки на странице можно уйти в другой раздел меню */}
           <ErrorBoundary key={location.pathname} homePath="/admin-panel" homeLabel={t('В журнал')}>
             <Outlet />
