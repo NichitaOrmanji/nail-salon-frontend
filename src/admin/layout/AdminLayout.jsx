@@ -288,7 +288,8 @@ export default function AdminLayout() {
             type="button"
             aria-label={t('Меню')}
             onClick={() => setMenuOpen(true)}
-            className="md:hidden w-11 h-11 -ml-1 rounded-xl flex items-center justify-center text-gray-300 flex-shrink-0"
+            className="md:hidden w-11 h-11 -ml-1 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: 'var(--accent)', color: '#ffffff' }}
           >
             <IconPanel />
           </button>
