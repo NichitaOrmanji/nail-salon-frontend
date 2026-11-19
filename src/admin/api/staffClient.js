@@ -16,15 +16,17 @@ export const LOGIN_PATH = '/admin-panel/login'
 
 // Вход — у каждой вкладки свой: в одной вкладке администратор, в соседней мастер, в третьей другой мастер,
 // и перезагрузка их не смешивает.
-// Почему не только sessionStorage: Safari на iPhone выгружает фоновые вкладки из памяти и при возврате
-// или перезагрузке может открыть вкладку с пустым sessionStorage — раньше такая вкладка брала «последний вход»
-// и становилась копией соседней. Теперь у вкладки есть номер, который хранится в двух местах
-// (sessionStorage и window.name — его Safari сохраняет за вкладкой), а токены каждой вкладки лежат
-// в localStorage под этим номером. Потерялся sessionStorage — вход находится по номеру из window.name.
+// Почему не только sessionStorage: Safari на iPhone выгружает фоновые вкладки из памяти, а при перезапуске
+// Safari стирает и sessionStorage, и window.name — раньше такая вкладка брала «последний вход» и становилась
+// копией соседней. Единственное, что Safari точно восстанавливает за вкладкой, — её адрес. Поэтому у вкладки
+// есть номер: в адресе (?tab=…), в sessionStorage и в window.name, а токены каждой вкладки лежат
+// в localStorage под этим номером. Потерялось что угодно, кроме адреса, — вход находится по номеру из адреса.
 // Последний вход (ACCESS_KEY/REFRESH_KEY в localStorage) подхватывает только по-настоящему новая вкладка.
 const TAB_ID_KEY = 'staff_tab_id'
 const TABS_KEY = 'staff_tab_logins'
 const WINDOW_NAME_PREFIX = 'tp-tab:'
+const URL_PARAM = 'tab'
+const PANEL_PREFIX = '/admin-panel'
 // Дольше refresh-токена (30 дней) вход вкладки не живёт — старые записи убираем
 const TAB_LOGIN_TTL_MS = 31 * 24 * 60 * 60 * 1000
 
@@ -46,9 +48,49 @@ function windowNameTabId() {
   } catch { return null }
 }
 
+function urlTabId() {
+  try {
+    const id = new URLSearchParams(window.location.search).get(URL_PARAM)
+    return id && /^[\w-]{4,40}$/.test(id) ? id : null
+  } catch { return null }
+}
+
+// Адрес панели с номером вкладки: '/admin-panel/clients?x=1' → '/admin-panel/clients?x=1&tab=…'
+function withTabParam(url) {
+  if (!tabId || url == null) return url
+  try {
+    const target = new URL(String(url), window.location.href)
+    if (target.origin !== window.location.origin || !target.pathname.startsWith(PANEL_PREFIX)) return url
+    if (target.searchParams.get(URL_PARAM) === tabId) return url
+    target.searchParams.set(URL_PARAM, tabId)
+    return target.pathname + target.search + target.hash
+  } catch { return url }
+}
+
+// Переходы внутри панели (React Router) идут через history — номер вкладки дописываем в каждый адрес
+;(function keepTabInUrl() {
+  try {
+    const { history } = window
+    if (!history || history.__tpTab) return
+    const push = history.pushState.bind(history)
+    const replace = history.replaceState.bind(history)
+    history.pushState = (state, title, url) => push(state, title, withTabParam(url))
+    history.replaceState = (state, title, url) => replace(state, title, withTabParam(url))
+    history.__tpTab = true
+  } catch { /* недоступно */ }
+})()
+
+function syncUrl() {
+  try {
+    if (!window.location.pathname.startsWith(PANEL_PREFIX)) return
+    window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search + window.location.hash)
+  } catch { /* недоступно */ }
+}
+
 function rememberTabId(id) {
   try { tabStore()?.setItem(TAB_ID_KEY, id) } catch { /* хранилище недоступно */ }
   try { window.name = WINDOW_NAME_PREFIX + id } catch { /* недоступно */ }
+  syncUrl()
 }
 
 function readTabLogins() {
@@ -68,8 +110,14 @@ let tabId = null
 function currentTabId() {
   if (tabId) return tabId
   let id = null
-  try { id = tabStore()?.getItem(TAB_ID_KEY) || null } catch { /* хранилище недоступно */ }
-  tabId = id || windowNameTabId() || newTabId()
+  let live = false
+  try {
+    const tab = tabStore()
+    id = tab?.getItem(TAB_ID_KEY) || null
+    live = !!(tab?.getItem(ACCESS_KEY) || tab?.getItem(REFRESH_KEY))
+  } catch { /* хранилище недоступно */ }
+  // Вкладка жива (вход в sessionStorage) — её номер; иначе номер из адреса: его Safari восстанавливает всегда
+  tabId = (live && id) || urlTabId() || id || windowNameTabId() || newTabId()
   rememberTabId(tabId)
   return tabId
 }
