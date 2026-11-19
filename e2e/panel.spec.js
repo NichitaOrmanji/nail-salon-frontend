@@ -115,7 +115,7 @@ test('вкладки владельца и мастера не смешиваю�
 
   // Номер вкладки — в адресе и не теряется при переходах внутри панели
   await second.evaluate(() => window.history.pushState({}, '', '/admin-panel/settings'))
-  expect(new URL(second.url()).searchParams.get('tab')).toBeTruthy()
+  expect(new URL(second.url()).searchParams.get('w')).toBeTruthy()
 
   // Перезапуск Safari: вкладки открываются заново по своим адресам, без sessionStorage и window.name
   for (const [tab, want] of [[page, 'owner'], [second, 'master']]) {

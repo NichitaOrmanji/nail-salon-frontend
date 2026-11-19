@@ -19,13 +19,16 @@ export const LOGIN_PATH = '/admin-panel/login'
 // Почему не только sessionStorage: Safari на iPhone выгружает фоновые вкладки из памяти, а при перезапуске
 // Safari стирает и sessionStorage, и window.name — раньше такая вкладка брала «последний вход» и становилась
 // копией соседней. Единственное, что Safari точно восстанавливает за вкладкой, — её адрес. Поэтому у вкладки
-// есть номер: в адресе (?tab=…), в sessionStorage и в window.name, а токены каждой вкладки лежат
+// есть номер: в адресе (?w=…), в sessionStorage и в window.name, а токены каждой вкладки лежат
 // в localStorage под этим номером. Потерялось что угодно, кроме адреса, — вход находится по номеру из адреса.
 // Последний вход (ACCESS_KEY/REFRESH_KEY в localStorage) подхватывает только по-настоящему новая вкладка.
 const TAB_ID_KEY = 'staff_tab_id'
 const TABS_KEY = 'staff_tab_logins'
 const WINDOW_NAME_PREFIX = 'tp-tab:'
-const URL_PARAM = 'tab'
+// Не «tab»: так страницы панели называют свои вкладки (?tab=debtors, ?tab=schedules)
+const URL_PARAM = 'w'
+// Страницы без входа — номер вкладки им не нужен
+const PUBLIC_PATHS = ['/login', '/signup', '/verify-email', '/forgot-password', '/reset-password', '/terms']
 const PANEL_PREFIX = '/admin-panel'
 // Дольше refresh-токена (30 дней) вход вкладки не живёт — старые записи убираем
 const TAB_LOGIN_TTL_MS = 31 * 24 * 60 * 60 * 1000
@@ -61,6 +64,8 @@ function withTabParam(url) {
   try {
     const target = new URL(String(url), window.location.href)
     if (target.origin !== window.location.origin || !target.pathname.startsWith(PANEL_PREFIX)) return url
+    const rest = target.pathname.slice(PANEL_PREFIX.length)
+    if (PUBLIC_PATHS.some(path => rest === path || rest.startsWith(path + '/'))) return url
     if (target.searchParams.get(URL_PARAM) === tabId) return url
     target.searchParams.set(URL_PARAM, tabId)
     return target.pathname + target.search + target.hash
