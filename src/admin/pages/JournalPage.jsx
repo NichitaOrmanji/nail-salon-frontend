@@ -386,6 +386,7 @@ export default function JournalPage() {
             minColumnWidth={view === 'week' ? 120 : undefined}
             selectedId={openId}
             canManage={isManager}
+            solo={me?.role === 'master'}
             onSelect={a => openCard(a.id)}
             onEmptyClick={openCreate}
             onToggleDayOff={toggleDayOff}
