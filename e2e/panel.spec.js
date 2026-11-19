@@ -112,4 +112,17 @@ test('вкладки владельца и мастера не смешиваю�
   await second.evaluate(() => sessionStorage.clear())
   await second.reload()
   expect(await role(second)).toBe('master')
+
+  // Номер вкладки — в адресе и не теряется при переходах внутри панели
+  await second.evaluate(() => window.history.pushState({}, '', '/admin-panel/settings'))
+  expect(new URL(second.url()).searchParams.get('w')).toBeTruthy()
+
+  // Перезапуск Safari: вкладки открываются заново по своим адресам, без sessionStorage и window.name
+  for (const [tab, want] of [[page, 'owner'], [second, 'master']]) {
+    const url = tab.url()
+    await tab.close()
+    const reopened = await context.newPage()
+    await reopened.goto(url)
+    expect(await role(reopened)).toBe(want)
+  }
 })
