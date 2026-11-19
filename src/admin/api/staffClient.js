@@ -14,8 +14,20 @@ const REFRESH_KEY = 'staff_refresh_token'
 
 export const LOGIN_PATH = '/admin-panel/login'
 
-// Вход — у каждой вкладки свой (sessionStorage): в одной вкладке администратор, в соседней мастер,
-// и перезагрузка их не смешивает. localStorage хранит последний вход — его подхватывает новая вкладка
+// Вход — у каждой вкладки свой: в одной вкладке администратор, в соседней мастер, в третьей другой мастер,
+// и перезагрузка их не смешивает.
+// Почему не только sessionStorage: Safari на iPhone выгружает фоновые вкладки из памяти и при возврате
+// или перезагрузке может открыть вкладку с пустым sessionStorage — раньше такая вкладка брала «последний вход»
+// и становилась копией соседней. Теперь у вкладки есть номер, который хранится в двух местах
+// (sessionStorage и window.name — его Safari сохраняет за вкладкой), а токены каждой вкладки лежат
+// в localStorage под этим номером. Потерялся sessionStorage — вход находится по номеру из window.name.
+// Последний вход (ACCESS_KEY/REFRESH_KEY в localStorage) подхватывает только по-настоящему новая вкладка.
+const TAB_ID_KEY = 'staff_tab_id'
+const TABS_KEY = 'staff_tab_logins'
+const WINDOW_NAME_PREFIX = 'tp-tab:'
+// Дольше refresh-токена (30 дней) вход вкладки не живёт — старые записи убираем
+const TAB_LOGIN_TTL_MS = 31 * 24 * 60 * 60 * 1000
+
 function tabStore() {
   try { return window.sessionStorage } catch { return null }
 }
@@ -23,17 +35,87 @@ function sharedStore() {
   try { return window.localStorage } catch { return null }
 }
 
-// Новая вкладка без своего входа — берёт последний вход
-;(function adoptLastLogin() {
+function newTabId() {
+  try { return crypto.randomUUID().slice(0, 12) } catch { return Math.random().toString(36).slice(2, 14) }
+}
+
+function windowNameTabId() {
+  try {
+    const name = window.name || ''
+    return name.startsWith(WINDOW_NAME_PREFIX) ? name.slice(WINDOW_NAME_PREFIX.length) : null
+  } catch { return null }
+}
+
+function rememberTabId(id) {
+  try { tabStore()?.setItem(TAB_ID_KEY, id) } catch { /* хранилище недоступно */ }
+  try { window.name = WINDOW_NAME_PREFIX + id } catch { /* недоступно */ }
+}
+
+function readTabLogins() {
+  try { return JSON.parse(sharedStore()?.getItem(TABS_KEY) || '{}') || {} } catch { return {} }
+}
+
+function writeTabLogins(logins) {
+  const now = Date.now()
+  for (const [id, login] of Object.entries(logins)) {
+    if (!login || now - (login.at || 0) > TAB_LOGIN_TTL_MS) delete logins[id]
+  }
+  try { sharedStore()?.setItem(TABS_KEY, JSON.stringify(logins)) } catch { /* хранилище недоступно */ }
+}
+
+let tabId = null
+
+function currentTabId() {
+  if (tabId) return tabId
+  let id = null
+  try { id = tabStore()?.getItem(TAB_ID_KEY) || null } catch { /* хранилище недоступно */ }
+  tabId = id || windowNameTabId() || newTabId()
+  rememberTabId(tabId)
+  return tabId
+}
+
+function saveTabLogin(access, refresh) {
+  const logins = readTabLogins()
+  const id = currentTabId()
+  const prev = logins[id] || {}
+  logins[id] = { access: access ?? prev.access ?? null, refresh: refresh ?? prev.refresh ?? null, at: Date.now() }
+  writeTabLogins(logins)
+}
+
+function markTabLoggedOut() {
+  const logins = readTabLogins()
+  logins[currentTabId()] = { access: null, refresh: null, at: Date.now() }
+  writeTabLogins(logins)
+}
+
+function forgetTabLogin() {
+  const logins = readTabLogins()
+  delete logins[currentTabId()]
+  writeTabLogins(logins)
+}
+
+// При открытии вкладки: свой вход → вход по номеру вкладки → последний вход (только новая вкладка)
+;(function restoreTabLogin() {
   const tab = tabStore()
   const shared = sharedStore()
-  if (!tab || !shared) return
+  const id = currentTabId()
   try {
-    if (tab.getItem(ACCESS_KEY) || tab.getItem(REFRESH_KEY)) return
+    if (tab && (tab.getItem(ACCESS_KEY) || tab.getItem(REFRESH_KEY))) return
+    const own = readTabLogins()[id]
+    // Запись есть, но пустая — из этой вкладки вышли: чужой последний вход не подхватываем
+    if (own) {
+      if (tab) {
+        if (own.access) tab.setItem(ACCESS_KEY, own.access)
+        if (own.refresh) tab.setItem(REFRESH_KEY, own.refresh)
+      }
+      return
+    }
+    if (!tab || !shared) return
     const access = shared.getItem(ACCESS_KEY)
     const refresh = shared.getItem(REFRESH_KEY)
     if (access) tab.setItem(ACCESS_KEY, access)
     if (refresh) tab.setItem(REFRESH_KEY, refresh)
+    if (access || refresh) saveTabLogin(access, refresh)
   } catch { /* хранилище недоступно */ }
 })()
 
@@ -51,10 +133,18 @@ export function saveStaffTokens({ access, refresh }) {
   try {
     // Последний вход обновляем, если это новый вход (есть refresh) или та же сессия, что в нём записана
     const sameAsShared = shared && shared.getItem(REFRESH_KEY) === readStorage(REFRESH_KEY)
+    if (refresh) {
+      // Новый вход — у вкладки новый номер: копия вкладки (Safari копирует sessionStorage и window.name
+      // в открытую из неё вкладку) больше не делит с ней запись входа
+      forgetTabLogin()
+      tabId = newTabId()
+      rememberTabId(tabId)
+    }
     if (tab) {
       if (access) tab.setItem(ACCESS_KEY, access)
       if (refresh) tab.setItem(REFRESH_KEY, refresh)
     }
+    saveTabLogin(access, refresh)
     if (shared && (refresh || sameAsShared || !tab)) {
       if (access) shared.setItem(ACCESS_KEY, access)
       if (refresh) shared.setItem(REFRESH_KEY, refresh)
@@ -88,6 +178,7 @@ export function clearStaffTokens() {
       tab.removeItem(ACCESS_KEY)
       tab.removeItem(REFRESH_KEY)
     }
+    markTabLoggedOut()
   } catch { /* хранилище недоступно */ }
 }
 

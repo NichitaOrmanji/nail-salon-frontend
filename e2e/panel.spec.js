@@ -83,3 +83,33 @@ test('администратор не видит финансы, мастер �
   await expect(page.getByRole('button', { name: 'Сменить пароль' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Салон' })).toHaveCount(0)
 })
+
+// Вход у каждой вкладки свой: владелец в одной, мастер в другой — перезагрузка их не смешивает,
+// даже если браузер потерял память вкладки (Safari на iPhone выгружает фоновые вкладки)
+test('вкладки владельца и мастера не смешиваются @desktop', async ({ page, context }) => {
+  const role = p => p.evaluate(async () => {
+    const token = sessionStorage.getItem('staff_access_token')
+    if (!token) return null
+    const response = await fetch('/api/staff/me/', { headers: { Authorization: 'Bearer ' + token } })
+    return (await response.json()).role
+  })
+  await staffLogin(page, 'e2e_owner')
+
+  const second = await context.newPage()
+  await second.goto('/admin-panel/settings')
+  await second.getByRole('button', { name: /Выйти/ }).first().click()
+  await expect(second).toHaveURL(/\/login/)
+  await staffLogin(second, 'e2e_master')
+
+  await page.reload()
+  expect(await role(page)).toBe('owner')
+  await second.reload()
+  expect(await role(second)).toBe('master')
+
+  await page.evaluate(() => sessionStorage.clear())
+  await page.reload()
+  expect(await role(page)).toBe('owner')
+  await second.evaluate(() => sessionStorage.clear())
+  await second.reload()
+  expect(await role(second)).toBe('master')
+})
