@@ -184,7 +184,7 @@ function MasterInfoModal({ col, colAppointments, canManage, onToggleDayOff, onCl
   )
 }
 
-function ColumnHeader({ col, colAppointments, canManage, onToggleDayOff }) {
+function ColumnHeader({ col, colAppointments, canManage, solo, onToggleDayOff }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [infoOpen, setInfoOpen] = useState(false)
   const buttonRef = useRef(null)
@@ -228,6 +228,19 @@ function ColumnHeader({ col, colAppointments, canManage, onToggleDayOff }) {
       {columnHours(col)}
     </div>
   )
+
+  // Мастер видит только свой журнал: фото и имя не нужны, оставляем одну тонкую строку с часами,
+  // чтобы почти весь экран телефона занимали записи
+  if (masterDay && solo) {
+    return (
+      <div
+        className="sticky top-0 z-20 min-w-0 px-2 py-1 text-center"
+        style={{ backgroundColor: 'var(--c-head)', borderBottom: '1px solid var(--c-line)', borderLeft: '1px solid var(--c-line)' }}
+      >
+        {hoursLine}
+      </div>
+    )
+  }
 
   // День: фото сверху, под ним полное имя (нажатие — окно мастера), ниже часы
   if (masterDay) {
@@ -355,7 +368,7 @@ function AppointmentBlock({ appointment: a, range, lane, lanes, selected, showMa
 
 // Сетка журнала: колонки (мастера дня или дни недели) × строки по 30 минут.
 // Прокручивается только она сама; шапка и колонка времени закреплены.
-export default function JournalGrid({ columns, appointments, range, dataKey, selectedId, canManage, showMaster, scrollToNow = true, minColumnWidth = COL_MIN_PX, onSelect, onEmptyClick, onToggleDayOff }) {
+export default function JournalGrid({ columns, appointments, range, dataKey, selectedId, canManage, solo = false, showMaster, scrollToNow = true, minColumnWidth = COL_MIN_PX, onSelect, onEmptyClick, onToggleDayOff }) {
   const scrollRef = useRef(null)
   const scrolledFor = useRef(null)
   const isToday = columns.some(col => col.isToday)
@@ -424,7 +437,7 @@ export default function JournalGrid({ columns, appointments, range, dataKey, sel
         <div className="sticky top-0 left-0 z-30" style={{ backgroundColor: 'var(--c-head)', borderBottom: '1px solid var(--c-line)' }} />
 
         {layout.map(({ col, colAppointments }) => (
-          <ColumnHeader key={col.key} col={col} colAppointments={colAppointments} canManage={canManage} onToggleDayOff={onToggleDayOff} />
+          <ColumnHeader key={col.key} col={col} colAppointments={colAppointments} canManage={canManage} solo={solo} onToggleDayOff={onToggleDayOff} />
         ))}
 
         {/* Колонка времени */}
