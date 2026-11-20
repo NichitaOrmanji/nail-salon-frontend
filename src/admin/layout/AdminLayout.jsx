@@ -40,6 +40,21 @@ function sections(me, isManager) {
   const salary = me.master_id && me.role !== 'owner'
     ? [{ to: '/admin-panel/salary', label: t('Моя зарплата'), icon: IconWallet }]
     : []
+  if (me.company?.kind === 'solo' && isManager) {
+    // Соло-мастер: без мастеров, ролей, зарплат и кассы салона — только то, что нужно одному мастеру
+    return [
+      { to: JOURNAL_PATH, label: t('Журнал'), icon: IconCalendar, end: true },
+      { to: '/admin-panel/clients', label: t('Мои клиенты'), icon: IconContact },
+      ...rhythm,
+      ...reviews,
+      ...portfolio,
+      ...promo,
+      { to: '/admin-panel/services', label: t('Услуги'), icon: IconScissors },
+      { to: '/admin-panel/masters', label: t('Профиль и график'), icon: IconUsers },
+      ...(me.master_id ? [{ to: '/admin-panel/revenue', label: t('Моя выручка'), icon: IconWallet }] : []),
+      { to: SALON_PATH, label: t('Моя страница'), icon: IconStore },
+    ]
+  }
   if (me.role === 'master' && me.company?.masters_independent) {
     // Мастер работает сам: свои клиенты и выручка вместо зарплаты
     return [

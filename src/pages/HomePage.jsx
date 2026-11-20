@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
 import { useAuth } from '../context/AuthContext'
@@ -7,6 +7,10 @@ import { PAGE_WIDTH } from '../components/layout/width'
 import { formatDisplayDate } from '../utils/format'
 import LanguageSwitch from '../components/LanguageSwitch'
 import SalonLogo from '../components/SalonLogo'
+import { fetchMasters } from '../api/masters'
+
+// Окно «Работы и отзывы» — только на странице соло-мастера, отдельным файлом
+const MasterWorks = lazy(() => import('../components/MasterWorks'))
 import { getLang, t } from '../i18n'
 
 // ——— Иконки ———
@@ -222,13 +226,26 @@ function SalonInfoSheet({ open, onClose, onBook }) {
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const { reset, hasProgress, service, master, date, time, getNextRoute } = useBooking()
+  const { reset, hasProgress, service, master, date, time, getNextRoute, setMaster } = useBooking()
   const { isLoggedIn } = useAuth()
   const salon = useCompany()
   const [sheetOpen, setSheetOpen] = useState(false)
+  // Соло-мастер: страница записи — личная страница этого мастера
+  const isSolo = salon.kind === 'solo'
+  const [soloMaster, setSoloMaster] = useState(null)
+  const [worksOpen, setWorksOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isSolo) return undefined
+    let cancelled = false
+    fetchMasters().then(list => { if (!cancelled && list.length === 1) setSoloMaster(list[0]) }).catch(() => {})
+    return () => { cancelled = true }
+  }, [isSolo])
 
   function handleNavigate(path) {
     reset()
+    // Мастер один — выбран заранее, шаг «выберите мастера» пропускается
+    if (soloMaster) setMaster(soloMaster)
     navigate(path)
   }
 
@@ -237,13 +254,14 @@ export default function HomePage() {
     handleNavigate('/services')
   }
 
+  const soloWorks = soloMaster && (soloMaster.works_count > 0 || soloMaster.reviews_count > 0)
   const menuItems = [
-    {
+    ...(isSolo ? [] : [{
       icon: <IconMasters />,
       label: t('Выбрать специалиста'),
       sub: t('Посмотреть мастеров и их работы'),
       path: '/masters'
-    },
+    }]),
     {
       icon: <IconCalendar />,
       label: t('Выбрать дату и время'),
@@ -256,6 +274,13 @@ export default function HomePage() {
       sub: t('Цены и длительность'),
       path: '/services'
     },
+    ...(soloWorks ? [{
+      icon: <IconMasters />,
+      label: t('Работы и отзывы'),
+      sub: soloMaster.avg_rating ? t('Рейтинг {rating} · отзывов: {count}', { rating: Number(soloMaster.avg_rating).toFixed(1), count: soloMaster.reviews_count }) : t('Фото работ мастера'),
+      path: 'works',
+      onClick: () => setWorksOpen(true),
+    }] : []),
   ]
 
   return (
@@ -288,7 +313,9 @@ export default function HomePage() {
           className="w-24 h-24 rounded-full overflow-hidden border-4 bg-white flex items-center justify-center mb-4 active:scale-95 transition-all"
           style={{ borderColor: '#1a1a1a' }}
         >
-          <SalonLogo salon={salon} textClass="text-4xl" />
+          {isSolo && soloMaster?.photo
+            ? <img src={soloMaster.photo} alt="" className="w-full h-full object-cover" />
+            : <SalonLogo salon={salon} textClass="text-4xl" />}
         </button>
 
         {/* Название + адрес + стрелка */}
@@ -302,6 +329,10 @@ export default function HomePage() {
           </div>
           <span className="text-gray-400 mt-1 flex-shrink-0"><IconChevronDown /></span>
         </button>
+
+        {isSolo && soloMaster?.description && (
+          <p className="text-gray-300 text-sm -mt-5 mb-8 whitespace-pre-line wrap-anywhere">{soloMaster.description}</p>
+        )}
 
         {/* Заголовок секции */}
         <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-medium">{t('Запись онлайн')}</p>
@@ -332,7 +363,7 @@ export default function HomePage() {
           {menuItems.map(item => (
             <button
               key={item.path}
-              onClick={() => handleNavigate(item.path)}
+              onClick={() => (item.onClick ? item.onClick() : handleNavigate(item.path))}
               className="w-full h-full flex items-center justify-between px-5 py-5 rounded-2xl transition-all active:scale-95"
               style={{ backgroundColor: '#242424' }}
             >
@@ -356,8 +387,23 @@ export default function HomePage() {
           <span className="text-gray-700 text-xs mx-2">·</span>
           <Link to="/privacy" className="text-gray-600 text-xs underline">{t('Политика конфиденциальности')}</Link>
         </div>
+        {/* Рост снизу: мастер видит, где сделана страница, и может завести свою */}
+        {isSolo && (
+          <div className="text-center mt-4 pb-6">
+            <span className="text-gray-600 text-xs">{t('Запись через TimePoint')}</span>
+            <span className="text-gray-700 text-xs mx-2">·</span>
+            <a href="https://timepoint.tech/admin-panel/signup?kind=solo" className="text-gray-500 text-xs underline">{t('Создать свою страницу')}</a>
+          </div>
+        )}
 
       </div>
+
+      {worksOpen && soloMaster && (
+        <Suspense fallback={null}>
+          <MasterWorks master={soloMaster} onClose={() => setWorksOpen(false)}
+            onBook={() => { setWorksOpen(false); handleNavigate('/services') }} />
+        </Suspense>
+      )}
 
       <SalonInfoSheet
         open={sheetOpen}
