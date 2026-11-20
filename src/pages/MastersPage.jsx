@@ -5,6 +5,7 @@ import { fetchMasters } from '../api/masters'
 import { fetchSlotsByMaster, fetchNearestSlots } from '../api/slots'
 import Spinner from '../components/layout/Spinner'
 import SalonHeader from '../components/layout/SalonHeader'
+import MasterWorks from '../components/MasterWorks'
 import { getLang, t } from '../i18n'
 import { formatDisplayDate, toDateString } from '../utils/format'
 
@@ -43,6 +44,8 @@ export default function MastersPage() {
   const [selected, setSelected] = useState(master ? (master.id ?? 'any') : null)
   // Ближайшие окна каждого мастера: { masterId: { date, slots } } (только когда услуга выбрана)
   const [nearest, setNearest] = useState({})
+  // Окно «Работы мастера» (портфолио и отзывы)
+  const [worksOf, setWorksOf] = useState(null)
 
   // Время уже выбрано — показываем только мастеров, свободных в это время
   const filteredByTime = !!(service && date && time)
@@ -200,6 +203,15 @@ export default function MastersPage() {
                   )}
                 </div>
               </button>
+              {m.works_count > 0 && (
+                <div className="pl-[84px] pr-4 pb-2 -mt-2">
+                  <button type="button" onClick={() => setWorksOf(m)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium active:scale-95"
+                    style={{ backgroundColor: '#242424', color: 'var(--accent-ink-2)' }}>
+                    {t('Работы · {count}', { count: m.works_count })}
+                  </button>
+                </div>
+              )}
               {near && (
                 <div className="pl-[84px] pr-4 pb-3 -mt-2">
                   <div className="text-gray-500 text-xs mb-1.5">{t('Ближайшее время: {day}', { day: dayLabel(near.date) })}</div>
@@ -223,6 +235,10 @@ export default function MastersPage() {
             )
           })}
         </div>
+      )}
+      {worksOf && (
+        <MasterWorks master={worksOf} onClose={() => setWorksOf(null)}
+          onBook={() => { const m = worksOf; setWorksOf(null); handleSelect(m) }} />
       )}
     </div>
   )
