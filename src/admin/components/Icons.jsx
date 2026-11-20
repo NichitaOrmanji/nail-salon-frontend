@@ -143,6 +143,14 @@ export function IconLogout({ size }) {
   return <Svg size={size}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></Svg>
 }
 
+export function IconStar({ size }) {
+  return (
+    <Svg size={size}>
+      <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
+    </Svg>
+  )
+}
+
 export function IconRepeat({ size }) {
   return (
     <Svg size={size}>

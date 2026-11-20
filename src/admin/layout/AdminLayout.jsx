@@ -12,7 +12,7 @@ import LoadCalendar from '../../components/LoadCalendar'
 import NewAppointmentsModal from '../components/NewAppointmentsModal'
 import OnlineToasts from '../components/OnlineToasts'
 import TelegramBanner from '../components/TelegramBanner'
-import { IconCalendar, IconScissors, IconUsers, IconSettings, IconClose, IconWallet, IconContact, IconPanel, IconStore, IconRepeat } from '../components/Icons'
+import { IconCalendar, IconScissors, IconUsers, IconSettings, IconClose, IconWallet, IconContact, IconPanel, IconStore, IconRepeat, IconStar } from '../components/Icons'
 import { t } from '../../i18n'
 import { journalNav, JOURNAL_PATH } from './journalNav'
 
@@ -25,6 +25,10 @@ function sections(me, isManager) {
   const rhythm = me.company?.rhythm_enabled
     ? [{ to: '/admin-panel/rhythm', label: t('Пора записаться'), icon: IconRepeat }]
     : []
+  // Отзывы после визита — только если владелец включил их в правилах записи
+  const reviews = me.company?.reviews_enabled
+    ? [{ to: '/admin-panel/reviews', label: t('Отзывы'), icon: IconStar }]
+    : []
   const salary = me.master_id && me.role !== 'owner'
     ? [{ to: '/admin-panel/salary', label: t('Моя зарплата'), icon: IconWallet }]
     : []
@@ -34,6 +38,7 @@ function sections(me, isManager) {
       { to: JOURNAL_PATH, label: t('Журнал'), icon: IconCalendar, end: true },
       { to: '/admin-panel/clients', label: t('Мои клиенты'), icon: IconContact },
       ...rhythm,
+      ...reviews,
       { to: '/admin-panel/revenue', label: t('Моя выручка'), icon: IconWallet },
       { to: '/admin-panel/masters', label: t('Мой график'), icon: IconUsers },
     ]
@@ -49,6 +54,7 @@ function sections(me, isManager) {
     { to: JOURNAL_PATH, label: t('Журнал'), icon: IconCalendar, end: true },
     { to: '/admin-panel/clients', label: t('Клиенты'), icon: IconContact },
     ...rhythm,
+    ...reviews,
     { to: '/admin-panel/masters', label: t('Мастера'), icon: IconUsers },
     { to: '/admin-panel/services', label: t('Услуги'), icon: IconScissors },
     ...(me.role === 'owner' ? [{ to: '/admin-panel/finance', label: t('Финансы'), icon: IconWallet }] : []),

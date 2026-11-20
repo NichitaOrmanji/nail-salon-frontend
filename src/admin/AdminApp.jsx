@@ -15,6 +15,7 @@ import SalonPage from './pages/SalonPage'
 import FinancePage from './pages/FinancePage'
 import MyRevenuePage from './pages/MyRevenuePage'
 import RhythmPage from './pages/RhythmPage'
+import ReviewsPage from './pages/ReviewsPage'
 import MySalaryPage from './pages/MySalaryPage'
 import ClientsPage from './pages/ClientsPage'
 import HelpPage from './pages/HelpPage'
@@ -53,6 +54,7 @@ export default function AdminApp() {
             <Route path="salary" element={<MySalaryPage />} />
             <Route path="revenue" element={<MyRevenuePage />} />
             <Route path="rhythm" element={<ManagerOnly allowIndependent><RhythmPage /></ManagerOnly>} />
+            <Route path="reviews" element={<ManagerOnly allowIndependent><ReviewsPage /></ManagerOnly>} />
             <Route path="help" element={<HelpPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/admin-panel" replace />} />
