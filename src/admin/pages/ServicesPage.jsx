@@ -47,6 +47,9 @@ function ServiceModal({ service, categories, onClose, onSaved, onPhotoChanged })
   const [category, setCategory] = useState(service?.category ? String(service.category) : '')
   const [duration, setDuration] = useState(service ? String(service.duration) : '60')
   const [price, setPrice] = useState(service ? String(Number(service.price)) : '')
+  const { me } = useStaffAuth()
+  const showRepeat = !!me?.company?.rhythm_enabled
+  const [repeatDays, setRepeatDays] = useState(service?.repeat_days ? String(service.repeat_days) : '')
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
 
@@ -57,12 +60,15 @@ function ServiceModal({ service, categories, onClose, onSaved, onPhotoChanged })
     if (!name.trim()) return setError(t('Укажите название'))
     if (!Number.isInteger(durationNum) || durationNum < 5 || durationNum > 600) return setError(t('Длительность — от 5 до 600 минут'))
     if (priceStr === '' || Number.isNaN(Number(priceStr)) || Number(priceStr) < 0) return setError(t('Укажите цену (число не меньше 0)'))
+    const repeatNum = repeatDays.trim() === '' ? null : Number(repeatDays)
+    if (repeatNum !== null && (!Number.isInteger(repeatNum) || repeatNum < 1 || repeatNum > 365)) return setError(t('Повтор — от 1 до 365 дней'))
 
     const body = {
       name: name.trim(),
       category: category ? Number(category) : null,
       duration: durationNum,
       price: priceStr,
+      ...(showRepeat ? { repeat_days: repeatNum } : {}),
     }
     setError(null)
     setSaving(true)
@@ -118,6 +124,11 @@ function ServiceModal({ service, categories, onClose, onSaved, onPhotoChanged })
             <TextInput inputMode="decimal" value={price} onChange={e => setPrice(e.target.value)} placeholder="0" />
           </Field>
         </div>
+        {showRepeat && (
+          <Field label={t('Обычно повторяют через, дней')} hint={t('Для раздела «Пора записаться»: когда звать клиента после первого визита. Пусто — по истории салона.')}>
+            <TextInput inputMode="numeric" value={repeatDays} onChange={e => setRepeatDays(e.target.value.replace(/\D/g, ''))} placeholder="21" />
+          </Field>
+        )}
         <PhotoField
             label={t('Фото')}
             hint={t('Как выглядит результат. Клиенты увидят фото рядом с услугой на сайте записи.')}

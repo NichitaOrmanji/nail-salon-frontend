@@ -23,6 +23,7 @@ function toForm(company) {
     late_cancel_hours: String(company.late_cancel_hours ?? 0),
     auto_confirm: Boolean(company.auto_confirm),
     masters_independent: Boolean(company.masters_independent),
+    rhythm_enabled: Boolean(company.rhythm_enabled),
   }
 }
 
@@ -140,6 +141,7 @@ export default function SalonForm({ part }) {
     if (form.late_cancel_hours !== initial.late_cancel_hours) body.late_cancel_hours = lateHours
     if (form.auto_confirm !== initial.auto_confirm) body.auto_confirm = form.auto_confirm
     if (form.masters_independent !== initial.masters_independent) body.masters_independent = form.masters_independent
+    if (form.rhythm_enabled !== initial.rhythm_enabled) body.rhythm_enabled = form.rhythm_enabled
     for (const field of FIELDS) {
       const value = field === 'name' ? form[field].trim() : form[field]
       if (value !== initial[field]) body[field] = value
@@ -160,7 +162,7 @@ export default function SalonForm({ part }) {
       setInitial(toForm(saved))
       setDone(true)
       // Название салона в шапке и правила чёрного списка в журнале берутся из /me/
-      if ('name' in body || 'penalty_percent' in body || 'late_cancel_hours' in body || 'masters_independent' in body) refreshMe().catch(() => {})
+      if ('name' in body || 'penalty_percent' in body || 'late_cancel_hours' in body || 'masters_independent' in body || 'rhythm_enabled' in body) refreshMe().catch(() => {})
     } catch (err) {
       setError(err.message)
     } finally {
@@ -303,6 +305,33 @@ export default function SalonForm({ part }) {
                 {t('Клиентов не штрафуют за неявку и позднюю отмену, правило штрафа клиентам не показывается. Включите, если хотите, чтобы неявка добавляла штраф к следующему визиту.')}
               </p>
             )}
+          </div>
+          <div className="rounded-2xl p-4 space-y-2" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div id="rhythm-title" className="text-ink text-sm font-semibold">{t('Ритм клиента — «Пора записаться»')}</div>
+                <div className="text-xs mt-0.5 font-medium" style={{ color: form.rhythm_enabled ? 'var(--c-ok)' : 'var(--c-muted)' }}>
+                  {form.rhythm_enabled ? t('Включён') : t('Выключен')}
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.rhythm_enabled}
+                aria-labelledby="rhythm-title"
+                onClick={() => set('rhythm_enabled', !form.rhythm_enabled)}
+                className="relative flex-shrink-0 w-14 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                style={{ backgroundColor: form.rhythm_enabled ? 'var(--accent)' : 'var(--c-line-2)' }}
+              >
+                <span
+                  className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform"
+                  style={{ transform: form.rhythm_enabled ? 'translateX(24px)' : 'none' }}
+                />
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs">
+              {t('Панель сама считает, через сколько каждый клиент обычно возвращается, и показывает в разделе «Пора записаться», кому пора снова и кто перестал ходить. Позвать клиента — одной кнопкой в WhatsApp или Viber с готовым текстом. Клиентам ничего не отправляется автоматически.')}
+            </p>
           </div>
           </>}
           <ErrorText>{error}</ErrorText>
