@@ -3,11 +3,11 @@ import { deleteCompanyPhoto, fetchStaffCompany, updateStaffCompany, uploadCompan
 import { useStaffAuth } from '../context/StaffAuthContext'
 import { t } from '../../i18n'
 import { normalizeDecimal } from '../utils/time'
-import { Button, ErrorText, Field, TextArea, TextInput } from './ui'
+import { Button, Checkbox, ErrorText, Field, TextArea, TextInput } from './ui'
 import PhotoField from './PhotoField'
 import Spinner from '../../components/layout/Spinner'
 
-const FIELDS = ['name', 'address', 'phone', 'description']
+const FIELDS = ['name', 'address', 'phone', 'description', 'district']
 
 function toForm(company) {
   return {
@@ -15,6 +15,9 @@ function toForm(company) {
     address: company.address || '',
     phone: company.phone || '',
     description: company.description || '',
+    district: company.district || '',
+    address_private: Boolean(company.address_private),
+    kind: company.kind || 'salon',
     latitude: company.latitude === null || company.latitude === undefined ? '' : String(company.latitude),
     longitude: company.longitude === null || company.longitude === undefined ? '' : String(company.longitude),
     cancel_hours: String(company.cancel_hours ?? 0),
@@ -152,6 +155,7 @@ export default function SalonForm({ part }) {
     if (form.reviews_enabled !== initial.reviews_enabled) body.reviews_enabled = form.reviews_enabled
     if (form.portfolio_enabled !== initial.portfolio_enabled) body.portfolio_enabled = form.portfolio_enabled
     if (form.promo_enabled !== initial.promo_enabled) body.promo_enabled = form.promo_enabled
+    if (form.address_private !== initial.address_private) body.address_private = form.address_private
     for (const field of ['review_google_url', 'review_instagram']) {
       if (form[field].trim() !== initial[field]) body[field] = form[field].trim()
     }
@@ -218,9 +222,19 @@ export default function SalonForm({ part }) {
           <Field label={t('Название')}>
             <TextInput value={form.name} onChange={e => set('name', e.target.value)} />
           </Field>
-          <Field label={t('Адрес')}>
+          <Field label={t('Адрес')} hint={form.address_private ? t('Клиент увидит его только в подтверждении записи') : undefined}>
             <TextInput value={form.address} onChange={e => set('address', e.target.value)} />
           </Field>
+          {/* Мастер работает дома: на сайте записи — только район */}
+          {(form.kind === 'solo' || form.address_private) && (
+            <>
+              <Field label={t('Район')} hint={t('Виден клиентам на странице записи, например «Ботаника»')}>
+                <TextInput value={form.district} onChange={e => set('district', e.target.value)} maxLength={100} />
+              </Field>
+              <Checkbox checked={form.address_private} onChange={value => set('address_private', value)}
+                label={t('Показывать на сайте только район, точный адрес — после записи')} />
+            </>
+          )}
           <Field label={t('Телефон')}>
             <TextInput type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} />
           </Field>

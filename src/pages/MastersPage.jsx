@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBooking } from '../context/BookingContext'
+import { useCompany } from '../context/CompanyContext'
 import { fetchMasters } from '../api/masters'
 import { fetchSlotsByMaster, fetchNearestSlots } from '../api/slots'
 import Spinner from '../components/layout/Spinner'
@@ -38,6 +39,7 @@ function Stars({ count }) {
 export default function MastersPage() {
   const navigate = useNavigate()
   const { master, setMaster, service, date, time, setDate, setTime, getNextRoute } = useBooking()
+  const salon = useCompany()
   const [masters, setMasters] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -60,7 +62,15 @@ export default function MastersPage() {
 
   function load() {
     return loadMasters()
-      .then(data => { setMasters(data); setLoading(false) })
+      .then(data => {
+        // Соло-мастер: выбирать некого — сразу к следующему шагу (назад сюда не возвращаемся)
+        if (salon.kind === 'solo' && data.length === 1) {
+          setMaster(data[0])
+          navigate(!service ? '/services' : (date && time ? '/confirm' : '/slots'), { replace: true })
+          return
+        }
+        setMasters(data); setLoading(false)
+      })
       .catch(err => { setError(err.message || t('Не удалось загрузить мастеров')); setLoading(false) })
   }
 

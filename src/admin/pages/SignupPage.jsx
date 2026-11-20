@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { checkSlug, fetchSignupConfig, signup } from '../api/signup'
 import { useStaffAuth } from '../context/StaffAuthContext'
 import AuthCard from '../components/AuthCard'
-import { Button, ErrorText, Field, TextInput } from '../components/ui'
+import { Button, ErrorText, Field, Select, TextInput } from '../components/ui'
 import Spinner from '../../components/layout/Spinner'
 import { t } from '../../i18n'
 
@@ -27,11 +27,25 @@ function useSlugCheck(query) {
 }
 
 // Поля, ошибки которых сервер возвращает отдельно и мы показываем под самим полем
-const FIELD_ERRORS = ['salon_name', 'email', 'password', 'phone']
+const FIELD_ERRORS = ['salon_name', 'email', 'password', 'phone', 'specialization', 'district']
+
+// Соло-мастер: услуги по специализации появятся сразу (их можно поменять)
+const SPECIALIZATIONS = [
+  { id: 'manicure', label: 'Маникюр и педикюр' },
+  { id: 'brows', label: 'Брови' },
+  { id: 'lashes', label: 'Ресницы' },
+  { id: 'hair', label: 'Парикмахер' },
+  { id: 'massage', label: 'Массаж' },
+  { id: 'other', label: 'Другое' },
+]
 
 // Регистрация салона: название, адрес сайта, email, пароль → сразу в панель
 export default function SignupPage() {
   const { me, signIn } = useStaffAuth()
+  const [searchParams] = useSearchParams()
+  // «Я салон / студия» или «Я мастер, работаю сам» (?kind=solo — со страницы мастера)
+  const [kind, setKind] = useState(searchParams.get('kind') === 'solo' ? 'solo' : 'salon')
+  const [solo, setSolo] = useState({ specialization: 'manicure', district: '' })
   const [config, setConfig] = useState(null)
   const [configError, setConfigError] = useState(null)
   const [form, setForm] = useState({ salon_name: '', email: '', password: '', phone: '', accept_terms: false })
@@ -71,7 +85,8 @@ export default function SignupPage() {
     setError(null)
     try {
       const data = await signup({ ...form, slug, salon_name: form.salon_name.trim(), email: form.email.trim(),
-        website: honeypotRef.current?.value || '' })
+        website: honeypotRef.current?.value || '',
+        ...(kind === 'solo' ? { kind, specialization: solo.specialization, district: solo.district.trim() } : {}) })
       setCreated({ emailSent: data.email_sent })
       await signIn(data)
     } catch (err) {
@@ -103,13 +118,41 @@ export default function SignupPage() {
   }
 
   const preview = config.salon_url_template.replace('{slug}', slug || 'adres')
+  const isSolo = kind === 'solo'
 
   return (
-    <AuthCard title={t('Регистрация салона')} wide onSubmit={handleSubmit}
-      subtitle={t('Онлайн-запись для вашего салона · {trial_days} дней бесплатно', { trial_days: config.trial_days })}>
-      <Field label={t('Название салона')} hint={t('Так его увидят клиенты')} error={fieldErrors.salon_name}>
+    <AuthCard title={isSolo ? t('Регистрация мастера') : t('Регистрация салона')} wide onSubmit={handleSubmit}
+      subtitle={isSolo
+        ? t('Своя страница записи, журнал и клиенты · {trial_days} дней бесплатно', { trial_days: config.trial_days })
+        : t('Онлайн-запись для вашего салона · {trial_days} дней бесплатно', { trial_days: config.trial_days })}>
+      <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('Кто регистрируется')}>
+        {[['salon', t('Я салон / студия')], ['solo', t('Я мастер, работаю сам')]].map(([value, label]) => (
+          <button key={value} type="button" role="radio" aria-checked={kind === value} onClick={() => setKind(value)}
+            className="min-h-[48px] px-3 rounded-2xl text-sm font-medium"
+            style={kind === value
+              ? { backgroundColor: 'var(--accent)', color: '#fff' }
+              : { backgroundColor: 'var(--c-raised)', color: 'var(--c-ink)', border: '1px solid var(--c-line)' }}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <Field label={isSolo ? t('Ваше имя и фамилия') : t('Название салона')}
+        hint={isSolo ? t('Так вас увидят клиенты на странице записи') : t('Так его увидят клиенты')} error={fieldErrors.salon_name}>
         <TextInput value={form.salon_name} onChange={e => set('salon_name', e.target.value)} maxLength={200} autoFocus />
       </Field>
+      {isSolo && (
+        <>
+          <Field label={t('Специализация')} hint={t('Сразу добавим типовые услуги — цены и длительность поменяете')} error={fieldErrors.specialization}>
+            <Select value={solo.specialization} onChange={e => setSolo(s => ({ ...s, specialization: e.target.value }))}>
+              {SPECIALIZATIONS.map(item => <option key={item.id} value={item.id}>{t(item.label)}</option>)}
+            </Select>
+          </Field>
+          <Field label={t('Район (необязательно)')} hint={t('Клиенты увидят только район, точный адрес — после записи')} error={fieldErrors.district}>
+            <TextInput value={solo.district} onChange={e => setSolo(s => ({ ...s, district: e.target.value }))} maxLength={100}
+              placeholder={t('Например: Ботаника')} />
+          </Field>
+        </>
+      )}
 
       <Field label={t('Адрес сайта записи')} hint={t('Латинские буквы, цифры и дефис')}>
         <TextInput
@@ -145,7 +188,7 @@ export default function SignupPage() {
         <TextInput type="password" autoComplete="new-password" value={form.password}
           onChange={e => set('password', e.target.value)} maxLength={128} />
       </Field>
-      <Field label={t('Телефон салона (необязательно)')} error={fieldErrors.phone}>
+      <Field label={isSolo ? t('Телефон (необязательно)') : t('Телефон салона (необязательно)')} error={fieldErrors.phone}>
         <TextInput type="tel" autoComplete="tel" value={form.phone} onChange={e => set('phone', e.target.value)} maxLength={30} />
       </Field>
 
@@ -165,7 +208,7 @@ export default function SignupPage() {
 
       <ErrorText className="text-center">{error}</ErrorText>
       <Button type="submit" variant="primary" className="w-full" disabled={!canSubmit}>
-        {busy ? t('Создаём салон...') : t('Создать салон')}
+        {busy ? (isSolo ? t('Создаём страницу...') : t('Создаём салон...')) : (isSolo ? t('Создать страницу') : t('Создать салон'))}
       </Button>
       <p className="text-center text-gray-500 text-xs">
         {t('Уже зарегистрированы?')}{' '}<Link to="/admin-panel/login" className="underline" style={{ color: 'var(--accent-ink)' }}>{t('Войти')}</Link>
