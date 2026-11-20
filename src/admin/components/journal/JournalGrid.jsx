@@ -102,15 +102,17 @@ function ColumnMenu({ anchorRef, onClose, children }) {
   )
 }
 
-function MasterAvatar({ master, dim, size = 40 }) {
-  const style = { width: size, height: size, opacity: dim ? 0.6 : 1 }
+// compact — шапка журнала на телефоне: кружок 28px вместо 40px (на компьютере прежний размер)
+function MasterAvatar({ master, dim, size = 40, compact = false }) {
+  const style = compact ? { opacity: dim ? 0.6 : 1 } : { width: size, height: size, opacity: dim ? 0.6 : 1 }
+  const sizeClass = compact ? 'w-7 h-7 md:w-10 md:h-10' : ''
   return master.photo ? (
-    <img src={master.photo} alt="" className="rounded-full object-cover flex-shrink-0" style={style} />
+    <img src={master.photo} alt="" className={`rounded-full object-cover flex-shrink-0 ${sizeClass}`} style={style} />
   ) : (
     <span
       aria-hidden="true"
-      className="rounded-full flex items-center justify-center font-semibold flex-shrink-0"
-      style={{ ...style, backgroundColor: 'var(--accent-soft)', color: 'var(--accent-ink)', fontSize: Math.round(size * 0.38) }}
+      className={`rounded-full flex items-center justify-center font-semibold flex-shrink-0 ${sizeClass} ${compact ? 'text-[11px] md:text-[15px]' : ''}`}
+      style={{ ...style, backgroundColor: 'var(--accent-soft)', color: 'var(--accent-ink)', ...(compact ? {} : { fontSize: Math.round(size * 0.38) }) }}
     >
       {(master.name || '?').trim().charAt(0).toUpperCase()}
     </span>
@@ -253,11 +255,11 @@ function ColumnHeader({ col, colAppointments, canManage, solo, onToggleDayOff })
           type="button"
           onClick={() => setInfoOpen(true)}
           aria-label={t('{name}: о мастере', { name: col.master.name })}
-          className="w-full flex flex-col items-center text-center gap-1 px-2 pt-2 pb-1.5 min-w-0 rounded-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-pink-400"
+          className="w-full flex flex-col items-center text-center gap-0.5 md:gap-1 px-1.5 md:px-2 pt-1 md:pt-2 pb-1 md:pb-1.5 min-w-0 rounded-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-pink-400"
         >
-          <MasterAvatar master={col.master} dim={col.hidden} />
+          <MasterAvatar master={col.master} dim={col.hidden} compact />
           <span
-            className="text-sm font-semibold leading-tight line-clamp-2 break-words max-w-full"
+            className="text-xs md:text-sm font-semibold leading-tight line-clamp-1 md:line-clamp-2 break-words max-w-full"
             style={{ opacity: col.hidden ? 0.6 : 1, color: 'var(--c-ink)' }}
           >
             {col.master.name}
