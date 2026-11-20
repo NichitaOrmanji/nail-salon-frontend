@@ -25,6 +25,9 @@ function toForm(company) {
     masters_independent: Boolean(company.masters_independent),
     rhythm_enabled: Boolean(company.rhythm_enabled),
     rhythm_auto: Boolean(company.rhythm_auto),
+    reviews_enabled: Boolean(company.reviews_enabled),
+    review_google_url: company.review_google_url || '',
+    review_instagram: company.review_instagram || '',
   }
 }
 
@@ -144,6 +147,10 @@ export default function SalonForm({ part }) {
     if (form.masters_independent !== initial.masters_independent) body.masters_independent = form.masters_independent
     if (form.rhythm_enabled !== initial.rhythm_enabled) body.rhythm_enabled = form.rhythm_enabled
     if (form.rhythm_auto !== initial.rhythm_auto) body.rhythm_auto = form.rhythm_auto
+    if (form.reviews_enabled !== initial.reviews_enabled) body.reviews_enabled = form.reviews_enabled
+    for (const field of ['review_google_url', 'review_instagram']) {
+      if (form[field].trim() !== initial[field]) body[field] = form[field].trim()
+    }
     for (const field of FIELDS) {
       const value = field === 'name' ? form[field].trim() : form[field]
       if (value !== initial[field]) body[field] = value
@@ -164,7 +171,7 @@ export default function SalonForm({ part }) {
       setInitial(toForm(saved))
       setDone(true)
       // Название салона в шапке и правила чёрного списка в журнале берутся из /me/
-      if ('name' in body || 'penalty_percent' in body || 'late_cancel_hours' in body || 'masters_independent' in body || 'rhythm_enabled' in body) refreshMe().catch(() => {})
+      if ('name' in body || 'penalty_percent' in body || 'late_cancel_hours' in body || 'masters_independent' in body || 'rhythm_enabled' in body || 'reviews_enabled' in body) refreshMe().catch(() => {})
     } catch (err) {
       setError(err.message)
     } finally {
@@ -357,6 +364,43 @@ export default function SalonForm({ part }) {
                 <p className="text-gray-500 text-xs">
                   {t('Бот сам напишет клиенту в Telegram (или письмом, если Telegram нет), когда подходит срок: не больше двух напоминаний, только с 10:00 до 20:00, с кнопкой «Не напоминать». Тем, у кого срок давно прошёл, бот не пишет — их зовите вручную.')}
                 </p>
+              </div>
+            )}
+          </div>
+          <div className="rounded-2xl p-4 space-y-2" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div id="reviews-title" className="text-ink text-sm font-semibold">{t('Отзывы после визита')}</div>
+                <div className="text-xs mt-0.5 font-medium" style={{ color: form.reviews_enabled ? 'var(--c-ok)' : 'var(--c-muted)' }}>
+                  {form.reviews_enabled ? t('Включены') : t('Выключены')}
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.reviews_enabled}
+                aria-labelledby="reviews-title"
+                onClick={() => set('reviews_enabled', !form.reviews_enabled)}
+                className="relative flex-shrink-0 w-14 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                style={{ backgroundColor: form.reviews_enabled ? 'var(--accent)' : 'var(--c-line-2)' }}
+              >
+                <span
+                  className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform"
+                  style={{ transform: form.reviews_enabled ? 'translateX(24px)' : 'none' }}
+                />
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs">
+              {t('Через 2 часа после визита (с 10:00 до 20:00) бот спросит клиента в Telegram или письмом: «Как вам визит?» — оценка одним нажатием, не чаще раза в месяц. О низкой оценке (1–3) владельцу и администраторам сразу придёт сообщение в Telegram — чтобы успеть позвонить. Все отзывы — в разделе «Отзывы».')}
+            </p>
+            {form.reviews_enabled && (
+              <div className="pt-3 mt-1 space-y-3" style={{ borderTop: '1px solid var(--c-line)' }}>
+                <Field label={t('Ссылка на отзыв в Google')} hint={t('Google Карты → ваш салон → «Попросить оставить отзыв» → скопировать ссылку. Её увидят все, кто поставил оценку.')}>
+                  <TextInput value={form.review_google_url} onChange={e => set('review_google_url', e.target.value)} placeholder="https://g.page/r/…" inputMode="url" />
+                </Field>
+                <Field label={t('Instagram салона')} hint={t('Довольным клиентам предложим отметить вас в сторис.')}>
+                  <TextInput value={form.review_instagram} onChange={e => set('review_instagram', e.target.value)} placeholder="@salon" />
+                </Field>
               </div>
             )}
           </div>
