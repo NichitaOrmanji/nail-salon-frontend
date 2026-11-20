@@ -14,7 +14,7 @@ import AppointmentCard from '../components/journal/AppointmentCard'
 import AppointmentFormModal from '../components/journal/AppointmentFormModal'
 import UnconfirmedButton from '../components/journal/UnconfirmedButton'
 import { Button, Checkbox, ErrorText, Select } from '../components/ui'
-import { IconCalendar, IconChevronLeft, IconChevronRight, IconMoreVertical, IconPlus } from '../components/Icons'
+import { IconCalendar, IconChevronLeft, IconChevronRight, IconMoreVertical } from '../components/Icons'
 import Spinner from '../../components/layout/Spinner'
 import { t } from '../../i18n'
 
@@ -306,40 +306,47 @@ export default function JournalPage() {
   return (
     <div className="h-full flex flex-col">
 
-      {/* Телефон: две тонкие строки вместо пяти — почти весь экран отдан журналу.
-          Строка 1: листание, «Сегодня», неделя/день, «+». Строка 2: период (нажатие — выбор даты),
-          мастер, «не подтвердили» и «⋯» (отменённые и легенда цветов) */}
+      {/* Телефон: компактные строки вместо пяти — почти весь экран отдан журналу.
+          Строка 1: листание, «Сегодня», неделя/день и «⋯» (отменённые и легенда цветов).
+          Строка 2: период (нажатие — выбор даты) и крупная «+ Запись».
+          Строка 3 (если есть что показать): мастер и «не подтвердили» */}
       <div className="md:hidden flex-shrink-0 px-2 py-1.5 space-y-1.5" style={{ backgroundColor: 'var(--c-surface)', borderBottom: '1px solid var(--c-line)' }}>
         <div className="flex items-center gap-1.5">
-          <Button aria-label={t(view === 'week' ? 'Предыдущая неделя' : 'Предыдущий день')} className="!min-h-[40px] w-9 !px-0" onClick={() => goToDate(addDays(date, -step))}>
+          <Button aria-label={t(view === 'week' ? 'Предыдущая неделя' : 'Предыдущий день')} className="!min-h-[40px] w-9 !px-0 flex-shrink-0" onClick={() => goToDate(addDays(date, -step))}>
             <IconChevronLeft />
           </Button>
-          <Button className="!min-h-[40px] !px-2.5" onClick={() => goToDate(todayString())} style={isToday ? { color: 'var(--accent-ink)' } : undefined}>{t('Сегодня')}</Button>
-          <Button aria-label={t(view === 'week' ? 'Следующая неделя' : 'Следующий день')} className="!min-h-[40px] w-9 !px-0" onClick={() => goToDate(addDays(date, step))}>
+          <Button className="!min-h-[40px] !px-2.5 flex-shrink-0" onClick={() => goToDate(todayString())} style={isToday ? { color: 'var(--accent-ink)' } : undefined}>{t('Сегодня')}</Button>
+          <Button aria-label={t(view === 'week' ? 'Следующая неделя' : 'Следующий день')} className="!min-h-[40px] w-9 !px-0 flex-shrink-0" onClick={() => goToDate(addDays(date, step))}>
             <IconChevronRight />
           </Button>
-          <div className="flex rounded-xl overflow-hidden flex-1" style={{ border: '1px solid var(--c-line)' }} role="group" aria-label={t('Вид журнала')}>
+          <div className="flex rounded-xl overflow-hidden flex-1 min-w-0" style={{ border: '1px solid var(--c-line)' }} role="group" aria-label={t('Вид журнала')}>
             {[['week', t('Неделя')], ['day', t('День')]].map(([key, label]) => (
               <button
                 key={key}
                 type="button"
                 aria-pressed={view === key}
                 onClick={() => changeView(key)}
-                className="min-h-[40px] flex-1 px-1.5 text-sm font-medium"
+                className="min-h-[40px] flex-1 min-w-0 px-1 text-sm font-medium truncate"
                 style={{ backgroundColor: view === key ? 'var(--accent)' : 'var(--c-raised)', color: view === key ? '#ffffff' : 'var(--c-muted)' }}
               >
                 {t(label)}
               </button>
             ))}
           </div>
-          <Button variant="primary" aria-label={t('+ Запись')} className="!min-h-[40px] w-10 !px-0" onClick={() => openCreate(null, '')}>
-            <IconPlus />
+          <Button
+            aria-label={t('Ещё: отменённые и цвета')}
+            aria-expanded={optionsOpen}
+            className="!min-h-[40px] w-9 !px-0 flex-shrink-0"
+            onClick={() => setOptionsOpen(o => !o)}
+            style={optionsOpen ? { color: 'var(--accent-ink)' } : undefined}
+          >
+            <IconMoreVertical />
           </Button>
         </div>
         <div className="flex items-center gap-1.5">
           {/* Период и выбор даты в одном месте: поле даты лежит прозрачным поверх надписи */}
-          <label className="relative flex-1 min-w-0 min-h-[40px] px-2.5 rounded-xl flex items-center gap-1.5 text-ink text-base font-semibold" style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-line)' }}>
-            <IconCalendar size={16} />
+          <label className="relative flex-1 min-w-0 min-h-[44px] px-3 rounded-xl flex items-center gap-2 text-ink text-base font-semibold" style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-line)' }}>
+            <span className="flex-shrink-0 text-gray-400"><IconCalendar size={16} /></span>
             <span className="truncate">{periodTitle}</span>
             <input
               type="date"
@@ -351,24 +358,23 @@ export default function JournalPage() {
               style={{ colorScheme: 'var(--c-scheme)' }}
             />
           </label>
+          <Button variant="primary" className="flex-shrink-0 !px-4 text-base font-semibold" onClick={() => openCreate(null, '')}>
+            {t('+ Запись')}
+          </Button>
+        </div>
+        {/* Пустая строка (нет фильтра мастера и все подтвердили) не занимает места */}
+        <div className="flex items-center gap-1.5 empty:hidden">
           {view === 'week' && isManager && current && (
-            <Select aria-label={t('Мастер')} value={masterFilter || ''} onChange={e => changeMaster(Number(e.target.value) || null)} className="!min-h-[40px] !py-1 w-[104px] flex-shrink-0">
-              <option value="">{t('Все мастера')}</option>
-              {current.masters.filter(m => m.is_active || m.id === masterFilter).map(m => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </Select>
+            <div className="flex-1 min-w-0">
+              <Select aria-label={t('Мастер')} value={masterFilter || ''} onChange={e => changeMaster(Number(e.target.value) || null)} className="!min-h-[40px] !py-1">
+                <option value="">{t('Все мастера')}</option>
+                {current.masters.filter(m => m.is_active || m.id === masterFilter).map(m => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </Select>
+            </div>
           )}
           <UnconfirmedButton compact />
-          <Button
-            aria-label={t('Ещё: отменённые и цвета')}
-            aria-expanded={optionsOpen}
-            className="!min-h-[40px] w-10 !px-0 flex-shrink-0"
-            onClick={() => setOptionsOpen(o => !o)}
-            style={optionsOpen ? { color: 'var(--accent-ink)' } : undefined}
-          >
-            <IconMoreVertical />
-          </Button>
         </div>
         {optionsOpen && (
           <div className="pt-0.5">

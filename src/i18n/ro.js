@@ -1000,6 +1000,8 @@ export default {
   'Клиент ещё не ответил в Telegram': 'Clientul încă nu a răspuns în Telegram',
   'Нет Telegram — позвоните клиенту': 'Fără Telegram — sunați clientul',
   'Завтра не подтвердили: {count}': 'Neconfirmați mâine: {count}',
+  'Не подтвердили: {count}': 'Neconfirmați: {count}',
+  'Ещё: отменённые и цвета': 'Mai mult: anulate și culori',
   'Не подтвердили визит': 'Nu au confirmat vizita',
   'Клиенты с Telegram получают напоминание с кнопкой «Приду». Здесь — те, кто ещё не ответил или без Telegram. Позвоните им и отметьте, если клиент подтвердил.': 'Clienții cu Telegram primesc un memento cu butonul «Vin». Aici sunt cei care încă nu au răspuns sau nu au Telegram. Sunați-i și bifați dacă clientul a confirmat.',
   'Все клиенты на завтра подтвердили визит': 'Toți clienții de mâine au confirmat vizita',

@@ -7,7 +7,7 @@ import { formatDayTitle } from '../../utils/time'
 import { t } from '../../../i18n'
 
 // «Завтра не подтвердили»: кому из клиентов на завтра позвонить (вместо обзвона всех)
-// compact — на телефоне только «☎ 17», полный текст остаётся подписью для экранного диктора
+// compact — на телефоне короче: «☎ Не подтвердили: 17» (полный текст — подпись для экранного диктора)
 export default function UnconfirmedButton({ compact = false }) {
   const [data, setData] = useState(null) // { date, appointments }
   const [open, setOpen] = useState(false)
@@ -46,7 +46,7 @@ export default function UnconfirmedButton({ compact = false }) {
           className="!min-h-[40px] !px-2.5 flex-shrink-0 tabular-nums"
           style={{ color: 'var(--c-warn)' }}
         >
-          ☎ {list.length}
+          ☎ {t('Не подтвердили: {count}', { count: list.length })}
         </Button>
       ) : (
         <Button onClick={() => setOpen(true)} style={{ color: 'var(--c-warn)' }}>
