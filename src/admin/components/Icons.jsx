@@ -153,6 +153,16 @@ export function IconImage({ size }) {
   )
 }
 
+export function IconMegaphone({ size }) {
+  return (
+    <Svg size={size}>
+      <path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z" />
+      <path d="M16 8.5a5 5 0 0 1 0 7" />
+      <path d="M19 5.5a9 9 0 0 1 0 13" />
+    </Svg>
+  )
+}
+
 export function IconStar({ size }) {
   return (
     <Svg size={size}>

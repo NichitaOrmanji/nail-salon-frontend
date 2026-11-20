@@ -29,6 +29,7 @@ function toForm(company) {
     review_google_url: company.review_google_url || '',
     review_instagram: company.review_instagram || '',
     portfolio_enabled: Boolean(company.portfolio_enabled),
+    promo_enabled: Boolean(company.promo_enabled),
   }
 }
 
@@ -150,6 +151,7 @@ export default function SalonForm({ part }) {
     if (form.rhythm_auto !== initial.rhythm_auto) body.rhythm_auto = form.rhythm_auto
     if (form.reviews_enabled !== initial.reviews_enabled) body.reviews_enabled = form.reviews_enabled
     if (form.portfolio_enabled !== initial.portfolio_enabled) body.portfolio_enabled = form.portfolio_enabled
+    if (form.promo_enabled !== initial.promo_enabled) body.promo_enabled = form.promo_enabled
     for (const field of ['review_google_url', 'review_instagram']) {
       if (form[field].trim() !== initial[field]) body[field] = form[field].trim()
     }
@@ -173,7 +175,7 @@ export default function SalonForm({ part }) {
       setInitial(toForm(saved))
       setDone(true)
       // Название салона в шапке и правила чёрного списка в журнале берутся из /me/
-      if ('name' in body || 'penalty_percent' in body || 'late_cancel_hours' in body || 'masters_independent' in body || 'rhythm_enabled' in body || 'reviews_enabled' in body || 'portfolio_enabled' in body) refreshMe().catch(() => {})
+      if ('name' in body || 'penalty_percent' in body || 'late_cancel_hours' in body || 'masters_independent' in body || 'rhythm_enabled' in body || 'reviews_enabled' in body || 'portfolio_enabled' in body || 'promo_enabled' in body) refreshMe().catch(() => {})
     } catch (err) {
       setError(err.message)
     } finally {
@@ -431,6 +433,33 @@ export default function SalonForm({ part }) {
             </div>
             <p className="text-gray-500 text-xs">
               {t('В карточке записи появится блок «Работа»: мастер фотографирует результат и пишет материалы (гель, форма, длина). В следующий визит клиента мастер сразу видит, что делали в прошлый раз. Фото попадают в работы мастера на сайте записи — клиент выбирает мастера по работам. Владелец может скрыть любое фото.')}
+            </p>
+          </div>
+          <div className="rounded-2xl p-4 space-y-2" style={{ backgroundColor: 'var(--c-card)', border: '1px solid var(--c-line)' }}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div id="promo-title" className="text-ink text-sm font-semibold">{t('Привлечение клиентов')}</div>
+                <div className="text-xs mt-0.5 font-medium" style={{ color: form.promo_enabled ? 'var(--c-ok)' : 'var(--c-muted)' }}>
+                  {form.promo_enabled ? t('Включено') : t('Выключено')}
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.promo_enabled}
+                aria-labelledby="promo-title"
+                onClick={() => set('promo_enabled', !form.promo_enabled)}
+                className="relative flex-shrink-0 w-14 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                style={{ backgroundColor: form.promo_enabled ? 'var(--accent)' : 'var(--c-line-2)' }}
+              >
+                <span
+                  className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform"
+                  style={{ transform: form.promo_enabled ? 'translateX(24px)' : 'none' }}
+                />
+              </button>
+            </div>
+            <p className="text-gray-500 text-xs">
+              {t('В панели появится раздел «Привлечение»: картинка «Свободные окна» для сторис и готовый текст для Telegram и Viber одной кнопкой, личные ссылки мастеров для Instagram и статистика — откуда приходят записи (сторис, Instagram, ссылка мастера). На сайте записи ничего не меняется.')}
             </p>
           </div>
           </>}

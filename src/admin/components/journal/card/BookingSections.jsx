@@ -4,6 +4,8 @@ import { remindAppointment, setVisitConfirmed } from '../../../api/appointments'
 import { notifyDataChanged } from '../../../utils/events'
 import { formatShortDate } from '../../../utils/time'
 import { ACTIVE_STATUSES } from '../../../utils/statuses'
+import { SOURCE_LABELS } from '../../../utils/sources'
+import { useStaffAuth } from '../../../context/StaffAuthContext'
 import { visitStatus } from '../../../utils/visit'
 import { formatDuration } from '../../../../utils/format'
 import { t } from '../../../../i18n'
@@ -166,6 +168,8 @@ function Row({ title, subtitle, onClick }) {
 // Дополнительно: повтор, история, откуда запись
 export function ExtrasSection({ a, isManager }) {
   const [modal, setModal] = useState(null) // 'repeat' | 'history'
+  const { me } = useStaffAuth()
+  const promo = Boolean(me?.company?.promo_enabled)
   return (
     <Section title={t('Дополнительно')}>
       <div className="grid grid-cols-2 gap-3 mb-2">
@@ -175,7 +179,11 @@ export function ExtrasSection({ a, isManager }) {
         </div>
         <div>
           <div className="text-gray-500 text-xs">{t('Источник')}</div>
-          <div className="text-ink text-sm">{a.source === 'staff' ? t('Персонал') : t('Онлайн')}</div>
+          <div className="text-ink text-sm">
+            {a.source === 'staff' ? t('Персонал') : t('Онлайн')}
+            {/* Привлечение включено — видно, откуда пришёл онлайн-клиент */}
+            {promo && a.source !== 'staff' && a.came_from && a.came_from !== 'site' && ` · ${t(SOURCE_LABELS[a.came_from] || a.came_from)}`}
+          </div>
         </div>
       </div>
       {isManager && <Row title={t('Повторить запись')} subtitle={t('Та же запись через неделю, две…')} onClick={() => setModal('repeat')} />}
