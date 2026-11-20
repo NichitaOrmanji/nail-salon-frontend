@@ -12,7 +12,7 @@ import LoadCalendar from '../../components/LoadCalendar'
 import NewAppointmentsModal from '../components/NewAppointmentsModal'
 import OnlineToasts from '../components/OnlineToasts'
 import TelegramBanner from '../components/TelegramBanner'
-import { IconCalendar, IconScissors, IconUsers, IconSettings, IconClose, IconWallet, IconContact, IconPanel, IconStore, IconRepeat, IconStar } from '../components/Icons'
+import { IconCalendar, IconScissors, IconUsers, IconSettings, IconClose, IconWallet, IconContact, IconPanel, IconStore, IconRepeat, IconStar, IconImage } from '../components/Icons'
 import { t } from '../../i18n'
 import { journalNav, JOURNAL_PATH } from './journalNav'
 
@@ -29,6 +29,10 @@ function sections(me, isManager) {
   const reviews = me.company?.reviews_enabled
     ? [{ to: '/admin-panel/reviews', label: t('Отзывы'), icon: IconStar }]
     : []
+  // Портфолио — только если владелец включил; мастер видит свою галерею
+  const portfolio = me.company?.portfolio_enabled
+    ? [{ to: '/admin-panel/portfolio', label: t('Портфолио'), icon: IconImage }]
+    : []
   const salary = me.master_id && me.role !== 'owner'
     ? [{ to: '/admin-panel/salary', label: t('Моя зарплата'), icon: IconWallet }]
     : []
@@ -39,6 +43,7 @@ function sections(me, isManager) {
       { to: '/admin-panel/clients', label: t('Мои клиенты'), icon: IconContact },
       ...rhythm,
       ...reviews,
+      ...portfolio,
       { to: '/admin-panel/revenue', label: t('Моя выручка'), icon: IconWallet },
       { to: '/admin-panel/masters', label: t('Мой график'), icon: IconUsers },
     ]
@@ -47,6 +52,7 @@ function sections(me, isManager) {
     return [
       { to: JOURNAL_PATH, label: t('Журнал'), icon: IconCalendar, end: true },
       { to: '/admin-panel/masters', label: t('Мой график'), icon: IconUsers },
+      ...(me.master_id ? portfolio : []),
       ...salary,
     ]
   }
@@ -55,6 +61,7 @@ function sections(me, isManager) {
     { to: '/admin-panel/clients', label: t('Клиенты'), icon: IconContact },
     ...rhythm,
     ...reviews,
+    ...portfolio,
     { to: '/admin-panel/masters', label: t('Мастера'), icon: IconUsers },
     { to: '/admin-panel/services', label: t('Услуги'), icon: IconScissors },
     ...(me.role === 'owner' ? [{ to: '/admin-panel/finance', label: t('Финансы'), icon: IconWallet }] : []),

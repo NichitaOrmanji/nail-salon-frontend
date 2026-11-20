@@ -15,6 +15,7 @@ import { t } from '../../../i18n'
 import { BookingSection, VisitConfirmSection, CommentSection, ExtrasSection } from './card/BookingSections'
 import { StatusSection, ServicesSection } from './card/VisitColumn'
 import ClientColumn from './card/ClientColumn'
+import WorkSection from './card/WorkSection'
 
 // Карточка записи на весь экран рядом с боковой панелью (на телефоне — весь экран).
 // Широкий экран — три колонки: слева мастер и время, придёт ли клиент, комментарий;
@@ -197,6 +198,12 @@ export default function AppointmentCard({ appointment: a, parts, masters = [], i
               <ServicesSection a={a} parts={visitParts} master={master} isManager={canWork} isOwner={isOwner || isIndependent} busy={busy}
                 onPatch={patchPart} onPay={setCheckoutPart} onRemovePayment={removePayment} />
             </div>
+            {/* Портфолио: фото и детали работы — если владелец включил */}
+            {me?.company?.portfolio_enabled && !['cancelled', 'no_show'].includes(a.status) && (
+              <div className="order-6 xl:order-none">
+                <WorkSection a={a} />
+              </div>
+            )}
             <div className="order-8 xl:order-none">
               <ExtrasSection a={a} isManager={canWork} />
             </div>
