@@ -1129,7 +1129,6 @@ export default {
   'Ритм клиента — «Пора записаться»': 'Ritmul clientului — „E timpul pentru programare”',
   'Включён': 'Activat',
   'Выключен': 'Dezactivat',
-  'Панель сама считает, через сколько каждый клиент обычно возвращается, и показывает в разделе «Пора записаться», кому пора снова и кто перестал ходить. Позвать клиента — одной кнопкой в WhatsApp или Viber с готовым текстом. Клиентам ничего не отправляется автоматически.': 'Panoul calculează singur după cât timp revine de obicei fiecare client și arată în secțiunea „E timpul pentru programare” cine ar trebui să revină și cine a încetat să vină. Invitați clientul cu un singur buton în WhatsApp sau Viber, cu text gata scris. Clienților nu li se trimite nimic automat.',
   'Повтор — от 1 до 365 дней': 'Repetarea — de la 1 la 365 de zile',
   'Обычно повторяют через, дней': 'De obicei se repetă după, zile',
   'Для раздела «Пора записаться»: когда звать клиента после первого визита. Пусто — по истории салона.': 'Pentru secțiunea „E timpul pentru programare”: când să invitați clientul după prima vizită. Gol — după istoricul salonului.',
@@ -1137,4 +1136,9 @@ export default {
   'в WhatsApp': 'în WhatsApp',
   'в Viber': 'în Viber',
   'звонком': 'telefonic',
+  // Ритм клиента: автонапоминания
+  'Панель сама считает, через сколько каждый клиент обычно возвращается, и показывает в разделе «Пора записаться», кому пора снова и кто перестал ходить. Позвать клиента — одной кнопкой в WhatsApp или Viber с готовым текстом.': 'Panoul calculează singur după cât timp revine de obicei fiecare client și arată în secțiunea „E timpul pentru programare” cine ar trebui să revină și cine a încetat să vină. Invitați clientul cu un singur buton în WhatsApp sau Viber, cu text gata scris.',
+  'Клиентам ничего не отправляется автоматически.': 'Clienților nu li se trimite nimic automat.',
+  'Напоминать клиентам автоматически': 'Amintește automat clienților',
+  'Бот сам напишет клиенту в Telegram (или письмом, если Telegram нет), когда подходит срок: не больше двух напоминаний, только с 10:00 до 20:00, с кнопкой «Не напоминать». Тем, у кого срок давно прошёл, бот не пишет — их зовите вручную.': 'Botul îi scrie singur clientului în Telegram (sau pe e-mail, dacă nu are Telegram) când se apropie termenul: cel mult două mementouri, doar între 10:00 și 20:00, cu butonul „Nu-mi mai aminti”. Celor la care termenul a trecut de mult botul nu le scrie — invitați-i manual.',
 }
