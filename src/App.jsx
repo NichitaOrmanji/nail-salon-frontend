@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { BookingProvider } from './context/BookingContext'
 import { AuthProvider } from './context/AuthContext'
@@ -8,6 +8,7 @@ import { PAGE_WIDTH } from './components/layout/width'
 import ErrorBoundary from './components/layout/ErrorBoundary'
 import Spinner from './components/layout/Spinner'
 import { useLang } from './i18n'
+import { captureSource } from './utils/source'
 
 // Страницу грузим, когда она нужна. После выкладки новой версии старые файлы исчезают —
 // открытая вкладка один раз перезагружается и получает новые (иначе — экран ошибки)
@@ -41,6 +42,7 @@ const ManagePage = lazyPage(() => import('./pages/ManagePage'))
 const PrivacyPage = lazyPage(() => import('./pages/PrivacyPage'))
 const RulesPage = lazyPage(() => import('./pages/RulesPage'))
 const NotFoundPage = lazyPage(() => import('./pages/NotFoundPage'))
+const MasterLinkPage = lazyPage(() => import('./pages/MasterLinkPage'))
 
 // Страница продукта («Начать работу» → регистрация салона) — вне клиентских провайдеров и мобильной обёртки
 const LandingPage = lazyPage(() => import('./pages/LandingPage'))
@@ -80,6 +82,8 @@ function ClientApp() {
   // выбранная запись хранится в провайдерах выше и не теряется
   const lang = useLang()
   usePrefetchBooking()
+  // Метка ?from= — до первой отрисовки страниц (ссылка мастера её учитывает)
+  useState(captureSource)
   return (
     <AuthProvider>
       <CompanyProvider>
@@ -99,6 +103,7 @@ function ClientApp() {
                   <Route path="/privacy" element={<PrivacyPage />} />
                   <Route path="/rules" element={<RulesPage />} />
                   <Route path="/manage/:token" element={<ManagePage />} />
+                  <Route path="/m/:slug" element={<MasterLinkPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
                 </Suspense>

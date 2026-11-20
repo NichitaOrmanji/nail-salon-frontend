@@ -344,6 +344,10 @@ export default function JournalPage() {
         </div>
         <Checkbox checked={showCancelled} onChange={setShowCancelled} label={t('Показывать отменённые')} className="mr-auto lg:mr-0" />
         <UnconfirmedButton />
+        {/* Привлечение включено: свободные окна этого дня — картинкой в сторис */}
+        {me?.company?.promo_enabled && (me.master_id || isManager) && (
+          <Button onClick={() => navigate('/admin-panel/promo')}>{t('📣 Поделиться окнами')}</Button>
+        )}
         <Button variant="primary" onClick={() => openCreate(null, '')}>{t('+ Запись')}</Button>
       </div>
 

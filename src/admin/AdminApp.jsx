@@ -17,6 +17,7 @@ import MyRevenuePage from './pages/MyRevenuePage'
 import RhythmPage from './pages/RhythmPage'
 import ReviewsPage from './pages/ReviewsPage'
 import PortfolioPage from './pages/PortfolioPage'
+import PromoPage from './pages/PromoPage'
 import MySalaryPage from './pages/MySalaryPage'
 import ClientsPage from './pages/ClientsPage'
 import HelpPage from './pages/HelpPage'
@@ -57,6 +58,7 @@ export default function AdminApp() {
             <Route path="rhythm" element={<ManagerOnly allowIndependent><RhythmPage /></ManagerOnly>} />
             <Route path="reviews" element={<ManagerOnly allowIndependent><ReviewsPage /></ManagerOnly>} />
             <Route path="portfolio" element={<PortfolioPage />} />
+            <Route path="promo" element={<PromoPage />} />
             <Route path="help" element={<HelpPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/admin-panel" replace />} />

@@ -3,6 +3,7 @@ import { Link, useNavigate, Navigate } from 'react-router-dom'
 import { isValidPhoneNumber } from 'libphonenumber-js'
 import { useBooking, CONTACT_DRAFT_KEY } from '../context/BookingContext'
 import { createAppointment, createVisit } from '../api/appointments'
+import { bookingSource } from '../utils/source'
 import { fetchMe } from '../api/auth'
 import { useAuth } from '../context/AuthContext'
 import { fetchSlotsByMaster } from '../api/slots'
@@ -138,6 +139,8 @@ export default function ConfirmationPage() {
         reminder_minutes: reminder === '' ? null : Number(reminder),
         // Поле-ловушка: человек его не видит; заполнил — значит бот, сервер запись не примет
         website: honeypotRef.current?.value || '',
+        // Откуда пришёл клиент (?from= или ссылка мастера) — для статистики салона
+        source: bookingSource(),
       }
       let created
       if (isVisit) {
