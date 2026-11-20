@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import { initSentry } from './sentry'
 import { applyAdminAppearance, readCachedAppearance } from './utils/appearance'
+import { makePanelInstallable } from './utils/installable'
 
 initSentry()
 
@@ -18,7 +19,10 @@ if (pathname === '/welcome' || (pathname === '/' && ['timepoint.tech', 'www.time
 }
 
 // Панель салона: сразу своя тема и цвет (из прошлого входа), пока грузится код и профиль
-if (pathname.startsWith('/admin-panel')) applyAdminAppearance(readCachedAppearance())
+if (pathname.startsWith('/admin-panel')) {
+  applyAdminAppearance(readCachedAppearance())
+  makePanelInstallable()
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
