@@ -24,6 +24,7 @@ function toForm(company) {
     auto_confirm: Boolean(company.auto_confirm),
     masters_independent: Boolean(company.masters_independent),
     rhythm_enabled: Boolean(company.rhythm_enabled),
+    rhythm_auto: Boolean(company.rhythm_auto),
   }
 }
 
@@ -142,6 +143,7 @@ export default function SalonForm({ part }) {
     if (form.auto_confirm !== initial.auto_confirm) body.auto_confirm = form.auto_confirm
     if (form.masters_independent !== initial.masters_independent) body.masters_independent = form.masters_independent
     if (form.rhythm_enabled !== initial.rhythm_enabled) body.rhythm_enabled = form.rhythm_enabled
+    if (form.rhythm_auto !== initial.rhythm_auto) body.rhythm_auto = form.rhythm_auto
     for (const field of FIELDS) {
       const value = field === 'name' ? form[field].trim() : form[field]
       if (value !== initial[field]) body[field] = value
@@ -330,8 +332,33 @@ export default function SalonForm({ part }) {
               </button>
             </div>
             <p className="text-gray-500 text-xs">
-              {t('Панель сама считает, через сколько каждый клиент обычно возвращается, и показывает в разделе «Пора записаться», кому пора снова и кто перестал ходить. Позвать клиента — одной кнопкой в WhatsApp или Viber с готовым текстом. Клиентам ничего не отправляется автоматически.')}
+              {t('Панель сама считает, через сколько каждый клиент обычно возвращается, и показывает в разделе «Пора записаться», кому пора снова и кто перестал ходить. Позвать клиента — одной кнопкой в WhatsApp или Viber с готовым текстом.')}
+              {!form.rhythm_auto && ` ${t('Клиентам ничего не отправляется автоматически.')}`}
             </p>
+            {form.rhythm_enabled && (
+              <div className="pt-3 mt-1 space-y-2" style={{ borderTop: '1px solid var(--c-line)' }}>
+                <div className="flex items-start justify-between gap-3">
+                  <div id="rhythm-auto-title" className="text-ink text-sm font-medium min-w-0">{t('Напоминать клиентам автоматически')}</div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={form.rhythm_auto}
+                    aria-labelledby="rhythm-auto-title"
+                    onClick={() => set('rhythm_auto', !form.rhythm_auto)}
+                    className="relative flex-shrink-0 w-14 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                    style={{ backgroundColor: form.rhythm_auto ? 'var(--accent)' : 'var(--c-line-2)' }}
+                  >
+                    <span
+                      className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-transform"
+                      style={{ transform: form.rhythm_auto ? 'translateX(24px)' : 'none' }}
+                    />
+                  </button>
+                </div>
+                <p className="text-gray-500 text-xs">
+                  {t('Бот сам напишет клиенту в Telegram (или письмом, если Telegram нет), когда подходит срок: не больше двух напоминаний, только с 10:00 до 20:00, с кнопкой «Не напоминать». Тем, у кого срок давно прошёл, бот не пишет — их зовите вручную.')}
+                </p>
+              </div>
+            )}
           </div>
           </>}
           <ErrorText>{error}</ErrorText>
