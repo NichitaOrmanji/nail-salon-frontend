@@ -30,8 +30,9 @@ const URL_PARAM = 'w'
 // Страницы без входа — номер вкладки им не нужен
 const PUBLIC_PATHS = ['/login', '/signup', '/verify-email', '/forgot-password', '/reset-password', '/terms']
 const PANEL_PREFIX = '/admin-panel'
-// Дольше refresh-токена (30 дней) вход вкладки не живёт — старые записи убираем
-const TAB_LOGIN_TTL_MS = 31 * 24 * 60 * 60 * 1000
+// Refresh-токен живёт 90 дней и продлевается при каждом обновлении (запись вкладки обновляется вместе с ним),
+// поэтому запись, к которой не обращались 95 дней, уже не пригодится — убираем
+const TAB_LOGIN_TTL_MS = 95 * 24 * 60 * 60 * 1000
 
 function tabStore() {
   try { return window.sessionStorage } catch { return null }
@@ -180,13 +181,15 @@ export function getStaffAccessToken() {
   return readStorage(ACCESS_KEY)
 }
 
-export function saveStaffTokens({ access, refresh }) {
+// renewed — сервер продлил тот же вход и выдал новый refresh (скользящий срок): это не новый вход,
+// номер вкладки остаётся прежним
+export function saveStaffTokens({ access, refresh, renewed = false }) {
   const tab = tabStore()
   const shared = sharedStore()
   try {
     // Последний вход обновляем, если это новый вход (есть refresh) или та же сессия, что в нём записана
     const sameAsShared = shared && shared.getItem(REFRESH_KEY) === readStorage(REFRESH_KEY)
-    if (refresh) {
+    if (refresh && !renewed) {
       // Новый вход — у вкладки новый номер: копия вкладки (Safari копирует sessionStorage и window.name
       // в открытую из неё вкладку) больше не делит с ней запись входа
       forgetTabLogin()
@@ -391,7 +394,7 @@ function refreshAccessToken() {
         // Пока шёл запрос, токены уже сменились (смена пароля, другая вкладка) —
         // не перетираем их, повтор возьмёт текущий access-токен
         if (readStorage(REFRESH_KEY) === refresh) {
-          saveStaffTokens({ access, refresh: response.data?.refresh })
+          saveStaffTokens({ access, refresh: response.data?.refresh, renewed: true })
         }
         return access
       }, error => {
