@@ -332,14 +332,14 @@ export default function AdminLayout() {
         )}
         {/* Шапка: кнопка панели, название салона и бейдж новых записей */}
         <header
-          className="flex items-center gap-2 px-3 md:px-5 h-14 flex-shrink-0"
+          className="flex items-center gap-2 px-3 md:px-5 h-12 md:h-14 flex-shrink-0"
           style={{ backgroundColor: 'var(--c-surface)', borderBottom: '1px solid var(--c-line)' }}
         >
           <button
             type="button"
             aria-label={t('Меню')}
             onClick={() => setMenuOpen(true)}
-            className="md:hidden w-11 h-11 -ml-1 rounded-xl flex items-center justify-center flex-shrink-0"
+            className="md:hidden w-10 h-10 -ml-1 rounded-xl flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: 'var(--accent)', color: '#ffffff' }}
           >
             <IconPanel />
@@ -369,7 +369,7 @@ export default function AdminLayout() {
           <button
             type="button"
             onClick={() => setNewListOpen(true)}
-            className="min-h-[44px] px-3 rounded-xl text-sm font-medium flex-shrink-0 flex items-center gap-2"
+            className="min-h-[40px] md:min-h-[44px] px-3 rounded-xl text-sm font-medium flex-shrink-0 flex items-center gap-2"
             style={{
               backgroundColor: pendingCount ? 'rgba(245, 158, 11, 0.15)' : 'var(--c-raised)',
               color: pendingCount ? 'var(--c-warn-2)' : 'var(--c-muted)',

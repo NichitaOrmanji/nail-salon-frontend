@@ -7,7 +7,8 @@ import { formatDayTitle } from '../../utils/time'
 import { t } from '../../../i18n'
 
 // «Завтра не подтвердили»: кому из клиентов на завтра позвонить (вместо обзвона всех)
-export default function UnconfirmedButton() {
+// compact — на телефоне только «☎ 17», полный текст остаётся подписью для экранного диктора
+export default function UnconfirmedButton({ compact = false }) {
   const [data, setData] = useState(null) // { date, appointments }
   const [open, setOpen] = useState(false)
   const [busyId, setBusyId] = useState(null)
@@ -38,9 +39,20 @@ export default function UnconfirmedButton() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} style={{ color: 'var(--c-warn)' }}>
-        ☎ {t('Завтра не подтвердили: {count}', { count: list.length })}
-      </Button>
+      {compact ? (
+        <Button
+          onClick={() => setOpen(true)}
+          aria-label={t('Завтра не подтвердили: {count}', { count: list.length })}
+          className="!min-h-[40px] !px-2.5 flex-shrink-0 tabular-nums"
+          style={{ color: 'var(--c-warn)' }}
+        >
+          ☎ {list.length}
+        </Button>
+      ) : (
+        <Button onClick={() => setOpen(true)} style={{ color: 'var(--c-warn)' }}>
+          ☎ {t('Завтра не подтвердили: {count}', { count: list.length })}
+        </Button>
+      )}
       {open && (
         <Modal title={t('Не подтвердили визит')} onClose={() => setOpen(false)}>
           <p className="text-gray-400 text-sm mb-1">{data && formatDayTitle(data.date)}</p>

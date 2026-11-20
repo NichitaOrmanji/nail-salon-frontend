@@ -14,7 +14,7 @@ import AppointmentCard from '../components/journal/AppointmentCard'
 import AppointmentFormModal from '../components/journal/AppointmentFormModal'
 import UnconfirmedButton from '../components/journal/UnconfirmedButton'
 import { Button, Checkbox, ErrorText, Select } from '../components/ui'
-import { IconChevronLeft, IconChevronRight } from '../components/Icons'
+import { IconCalendar, IconChevronLeft, IconChevronRight, IconMoreVertical, IconPlus } from '../components/Icons'
 import Spinner from '../../components/layout/Spinner'
 import { t } from '../../i18n'
 
@@ -77,6 +77,8 @@ export default function JournalPage() {
   // После сохранения формы, открытой поверх карточки: вернуться на запись карточки и заменить её
   const pendingParamsRef = useRef(null)
   const toolbarRef = useRef(null)
+  // Телефон: «⋯» раскрывает «Показывать отменённые» и легенду цветов
+  const [optionsOpen, setOptionsOpen] = useState(false)
   // Несохранённая заметка в открытой карточке; cardResetKey — сбросить её после «Закрыть без сохранения»
   const cardDirtyRef = useRef(false)
   const [cardResetKey, setCardResetKey] = useState(0)
@@ -293,11 +295,91 @@ export default function JournalPage() {
 
   const isToday = view === 'week' ? rangeFrom === weekStart(todayString()) : date === todayString()
 
+  const periodTitle = view === 'week' ? weekTitle(rangeFrom) : formatDayTitle(date)
+  const legendItems = Object.entries(KINDS).filter(([key]) => key !== 'cancelled' || showCancelled).map(([key, kind]) => (
+    <span key={key} className="inline-flex items-center gap-1.5 text-xs text-gray-400">
+      <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: kind.color }} />
+      {t(kind.label)}
+    </span>
+  ))
+
   return (
     <div className="h-full flex flex-col">
 
-      {/* Панель дня */}
-      <div ref={toolbarRef} className="flex-shrink-0 px-3 md:px-5 py-3 flex flex-wrap items-center gap-2" style={{ backgroundColor: 'var(--c-surface)', borderBottom: '1px solid var(--c-line)' }}>
+      {/* Телефон: две тонкие строки вместо пяти — почти весь экран отдан журналу.
+          Строка 1: листание, «Сегодня», неделя/день, «+». Строка 2: период (нажатие — выбор даты),
+          мастер, «не подтвердили» и «⋯» (отменённые и легенда цветов) */}
+      <div className="md:hidden flex-shrink-0 px-2 py-1.5 space-y-1.5" style={{ backgroundColor: 'var(--c-surface)', borderBottom: '1px solid var(--c-line)' }}>
+        <div className="flex items-center gap-1.5">
+          <Button aria-label={t(view === 'week' ? 'Предыдущая неделя' : 'Предыдущий день')} className="!min-h-[40px] w-9 !px-0" onClick={() => goToDate(addDays(date, -step))}>
+            <IconChevronLeft />
+          </Button>
+          <Button className="!min-h-[40px] !px-2.5" onClick={() => goToDate(todayString())} style={isToday ? { color: 'var(--accent-ink)' } : undefined}>{t('Сегодня')}</Button>
+          <Button aria-label={t(view === 'week' ? 'Следующая неделя' : 'Следующий день')} className="!min-h-[40px] w-9 !px-0" onClick={() => goToDate(addDays(date, step))}>
+            <IconChevronRight />
+          </Button>
+          <div className="flex rounded-xl overflow-hidden flex-1" style={{ border: '1px solid var(--c-line)' }} role="group" aria-label={t('Вид журнала')}>
+            {[['week', t('Неделя')], ['day', t('День')]].map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={view === key}
+                onClick={() => changeView(key)}
+                className="min-h-[40px] flex-1 px-1.5 text-sm font-medium"
+                style={{ backgroundColor: view === key ? 'var(--accent)' : 'var(--c-raised)', color: view === key ? '#ffffff' : 'var(--c-muted)' }}
+              >
+                {t(label)}
+              </button>
+            ))}
+          </div>
+          <Button variant="primary" aria-label={t('+ Запись')} className="!min-h-[40px] w-10 !px-0" onClick={() => openCreate(null, '')}>
+            <IconPlus />
+          </Button>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {/* Период и выбор даты в одном месте: поле даты лежит прозрачным поверх надписи */}
+          <label className="relative flex-1 min-w-0 min-h-[40px] px-2.5 rounded-xl flex items-center gap-1.5 text-ink text-base font-semibold" style={{ backgroundColor: 'var(--c-raised)', border: '1px solid var(--c-line)' }}>
+            <IconCalendar size={16} />
+            <span className="truncate">{periodTitle}</span>
+            <input
+              type="date"
+              aria-label={t('Дата')}
+              value={date}
+              onChange={e => e.target.value && goToDate(e.target.value)}
+              onClick={e => { try { e.currentTarget.showPicker?.() } catch { /* нет showPicker */ } }}
+              className="absolute inset-0 w-full h-full opacity-0"
+              style={{ colorScheme: 'var(--c-scheme)' }}
+            />
+          </label>
+          {view === 'week' && isManager && current && (
+            <Select aria-label={t('Мастер')} value={masterFilter || ''} onChange={e => changeMaster(Number(e.target.value) || null)} className="!min-h-[40px] !py-1 w-[104px] flex-shrink-0">
+              <option value="">{t('Все мастера')}</option>
+              {current.masters.filter(m => m.is_active || m.id === masterFilter).map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
+              ))}
+            </Select>
+          )}
+          <UnconfirmedButton compact />
+          <Button
+            aria-label={t('Ещё: отменённые и цвета')}
+            aria-expanded={optionsOpen}
+            className="!min-h-[40px] w-10 !px-0 flex-shrink-0"
+            onClick={() => setOptionsOpen(o => !o)}
+            style={optionsOpen ? { color: 'var(--accent-ink)' } : undefined}
+          >
+            <IconMoreVertical />
+          </Button>
+        </div>
+        {optionsOpen && (
+          <div className="pt-0.5">
+            <Checkbox checked={showCancelled} onChange={setShowCancelled} label={t('Показывать отменённые')} className="!min-h-[36px]" />
+            <div className="flex flex-wrap gap-x-4 gap-y-1 pb-1">{legendItems}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Панель дня (компьютер и планшет) */}
+      <div ref={toolbarRef} className="hidden md:flex flex-shrink-0 px-3 md:px-5 py-3 flex-wrap items-center gap-2" style={{ backgroundColor: 'var(--c-surface)', borderBottom: '1px solid var(--c-line)' }}>
         <div className="flex items-center gap-1">
           <Button aria-label={t(view === 'week' ? 'Предыдущая неделя' : 'Предыдущий день')} className="w-11 px-0" onClick={() => goToDate(addDays(date, -step))}>
             <IconChevronLeft />
@@ -340,7 +422,7 @@ export default function JournalPage() {
           </div>
         )}
         <div className="basis-full lg:basis-auto lg:flex-1 min-w-0 text-ink text-lg font-semibold truncate lg:pl-2">
-          {view === 'week' ? weekTitle(rangeFrom) : formatDayTitle(date)}
+          {periodTitle}
         </div>
         <Checkbox checked={showCancelled} onChange={setShowCancelled} label={t('Показывать отменённые')} className="mr-auto lg:mr-0" />
         <UnconfirmedButton />
@@ -359,13 +441,8 @@ export default function JournalPage() {
       )}
 
       {/* Легенда цветов */}
-      <div className="flex-shrink-0 px-3 md:px-5 py-2 flex flex-wrap gap-x-4 gap-y-1" style={{ backgroundColor: 'var(--c-surface)', borderBottom: '1px solid var(--c-line)' }}>
-        {Object.entries(KINDS).filter(([key]) => key !== 'cancelled' || showCancelled).map(([key, kind]) => (
-          <span key={key} className="inline-flex items-center gap-1.5 text-xs text-gray-400">
-            <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: kind.color }} />
-            {t(kind.label)}
-          </span>
-        ))}
+      <div className="hidden md:flex flex-shrink-0 px-3 md:px-5 py-2 flex-wrap gap-x-4 gap-y-1" style={{ backgroundColor: 'var(--c-surface)', borderBottom: '1px solid var(--c-line)' }}>
+        {legendItems}
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col">
